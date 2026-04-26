@@ -1,18 +1,30 @@
 import { View, Text, TextInput, ScrollView, Pressable, KeyboardAvoidingView, Platform, StyleSheet, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, typo, space, radius } from "../../src/theme";
 import Spinner from "../../src/components/Spinner";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
+import { extractRecipeFromUrl, ExtractStep } from "../../src/services/extractRecipe";
+import { useRecipes } from "../../src/store/recipeStore";
+
+const STEP_INDEX: Record<ExtractStep, number> = {
+  fetch: 0,
+  extract: 1,
+  structure: 2,
+  done: 3,
+};
 
 export default function AddRecipeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { addRecipe } = useRecipes();
   const [url, setUrl] = useState("");
   const [parsing, setParsing] = useState(false);
   const [parseStep, setParseStep] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const cancelled = useRef(false);
 
   const steps = [
     "페이지 내용 가져오는 중...",
@@ -21,17 +33,48 @@ export default function AddRecipeScreen() {
     "레시피 완성!",
   ];
 
-  function startParsing() {
-    if (!url.trim()) return;
+  function validateUrl(input: string): boolean {
+    return /^https?:\/\/.+\..+/.test(input.trim());
+  }
+
+  async function startParsing() {
+    const trimmed = url.trim();
+    if (!trimmed) return;
+
+    if (!validateUrl(trimmed)) {
+      Alert.alert("잘못된 URL", "올바른 링크를 입력해주세요.\n예: https://youtube.com/watch?v=...");
+      return;
+    }
+
     setParsing(true);
     setParseStep(0);
-    setTimeout(() => setParseStep(1), 1200);
-    setTimeout(() => setParseStep(2), 2400);
-    setTimeout(() => setParseStep(3), 3600);
-    setTimeout(() => {
+    setError(null);
+    cancelled.current = false;
+
+    try {
+      const recipe = await extractRecipeFromUrl(trimmed, (p) => {
+        if (cancelled.current) return;
+        setParseStep(STEP_INDEX[p.step]);
+      });
+
+      if (cancelled.current) return;
+
+      await addRecipe(recipe);
       setParsing(false);
-      router.push("/recipe/1");
-    }, 4800);
+      setUrl("");
+      router.push(`/recipe/${recipe.id}`);
+    } catch (err: any) {
+      if (cancelled.current) return;
+      setParsing(false);
+      setError(err.message || "레시피 추출에 실패했어요");
+      Alert.alert("추출 실패", err.message || "레시피를 추출할 수 없습니다. 다시 시도해주세요.");
+    }
+  }
+
+  function cancelParsing() {
+    cancelled.current = true;
+    setParsing(false);
+    setParseStep(0);
   }
 
   if (parsing) {
@@ -65,7 +108,7 @@ export default function AddRecipeScreen() {
             </View>
           ))}
         </View>
-        <Pressable onPress={() => setParsing(false)} style={{ marginTop: space.xl }}>
+        <Pressable onPress={cancelParsing} style={{ marginTop: space.xl }}>
           <Text style={[typo.body2, { color: colors.textTertiary }]}>취소</Text>
         </Pressable>
       </View>
@@ -81,74 +124,76 @@ export default function AddRecipeScreen() {
         <Text style={[typo.screenTitle, { color: colors.textPrimary }]}>레시피 추가</Text>
       </View>
 
-      <ScrollViewContent url={url} setUrl={setUrl} startParsing={startParsing} />
-    </KeyboardAvoidingView>
-  );
-}
-
-function ScrollViewContent({ url, setUrl, startParsing }: { url: string; setUrl: (v: string) => void; startParsing: () => void }) {
-  const router = useRouter();
-  return (
-    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-      {/* URL Card */}
-      <View style={s.card}>
-        <Text style={[typo.caption1, { color: colors.textTertiary, marginBottom: space.lg }]}>
-          링크를 붙여넣으면 AI가 레시피로 변환해요
-        </Text>
-        <View style={s.inputBox}>
-          <Ionicons name="link-outline" size={18} color={colors.textDisabled} />
-          <TextInput
-            style={s.input}
-            placeholder="유튜브, 블로그 링크 붙여넣기"
-            placeholderTextColor={colors.textDisabled}
-            value={url}
-            onChangeText={setUrl}
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="url"
-          />
-        </View>
-        <AnimatedPressable
-          onPress={startParsing}
-          style={[s.primaryBtn, !url.trim() && { backgroundColor: colors.gray200 }]}
-        >
-          <Text style={[s.primaryBtnText, !url.trim() && { color: colors.textDisabled }]}>
-            AI 레시피 변환
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+        {/* URL Card */}
+        <View style={s.card}>
+          <Text style={[typo.caption1, { color: colors.textTertiary, marginBottom: space.lg }]}>
+            링크를 붙여넣으면 AI가 레시피로 변환해요
           </Text>
-        </AnimatedPressable>
-      </View>
-
-      {/* Other options */}
-      <View style={s.card}>
-        <AnimatedPressable style={s.option} onPress={() => router.push("/recipe/create")}>
-          <View style={[s.optIcon, { backgroundColor: "#EBF2FE" }]}>
-            <Ionicons name="create-outline" size={20} color={colors.accent} />
+          <View style={s.inputBox}>
+            <Ionicons name="link-outline" size={18} color={colors.textDisabled} />
+            <TextInput
+              style={s.input}
+              placeholder="유튜브, 블로그 링크 붙여넣기"
+              placeholderTextColor={colors.textDisabled}
+              value={url}
+              onChangeText={setUrl}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="url"
+            />
+            {url.length > 0 && (
+              <Pressable onPress={() => setUrl("")}>
+                <Ionicons name="close-circle" size={18} color={colors.textDisabled} />
+              </Pressable>
+            )}
           </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>직접 작성</Text>
-            <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: 2 }]}>
-              나만의 레시피를 직접 입력해요
+          <AnimatedPressable
+            onPress={startParsing}
+            style={[s.primaryBtn, !url.trim() && { backgroundColor: colors.gray200 }]}
+          >
+            <Ionicons name="sparkles" size={18} color={url.trim() ? colors.white : colors.textDisabled} />
+            <Text style={[s.primaryBtnText, !url.trim() && { color: colors.textDisabled }]}>
+              AI 레시피 변환
             </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
-        </AnimatedPressable>
+          </AnimatedPressable>
+          <Text style={[typo.caption3, { color: colors.textTertiary, textAlign: "center", marginTop: space.md }]}>
+            YouTube, 네이버 블로그, 티스토리 등 지원
+          </Text>
+        </View>
 
-        <View style={s.optDivider} />
+        {/* Other options */}
+        <View style={s.card}>
+          <AnimatedPressable style={s.option} onPress={() => router.push("/recipe/create")}>
+            <View style={[s.optIcon, { backgroundColor: colors.accentLight }]}>
+              <Ionicons name="create-outline" size={20} color={colors.accent} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>직접 작성</Text>
+              <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: 2 }]}>
+                나만의 레시피를 직접 입력해요
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
+          </AnimatedPressable>
 
-        <AnimatedPressable style={s.option} onPress={() => Alert.alert("준비 중", "다음 업데이트에서 만나요!")}>
-          <View style={[s.optIcon, { backgroundColor: "#F3EEFF" }]}>
-            <Ionicons name="camera-outline" size={20} color="#8B5CF6" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>사진으로 추가</Text>
-            <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: 2 }]}>
-              레시피 사진을 찍으면 AI가 텍스트로 변환해요
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
-        </AnimatedPressable>
-      </View>
-    </ScrollView>
+          <View style={s.optDivider} />
+
+          <AnimatedPressable style={s.option} onPress={() => Alert.alert("준비 중", "다음 업데이트에서 만나요!")}>
+            <View style={[s.optIcon, { backgroundColor: "#F3EEFF" }]}>
+              <Ionicons name="camera-outline" size={20} color="#8B5CF6" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>사진으로 추가</Text>
+              <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: 2 }]}>
+                레시피 사진을 찍으면 AI가 텍스트로 변환해요
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
+          </AnimatedPressable>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -180,8 +225,10 @@ const s = StyleSheet.create({
     backgroundColor: colors.accent,
     borderRadius: radius.md,
     height: 52,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: space.md,
     marginTop: space.xl,
   },
   primaryBtnText: { ...typo.body1Bold, color: colors.white },
@@ -204,7 +251,6 @@ const s = StyleSheet.create({
     marginVertical: space.xl,
     marginLeft: 60,
   },
-  // Parsing
   parsingRoot: {
     flex: 1,
     backgroundColor: colors.bgPage,
