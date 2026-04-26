@@ -36,55 +36,61 @@ function extractYoutubeId(url: string): string | null {
   return null;
 }
 
-async function fetchYoutubeTranscript(videoId: string): Promise<string> {
-  // YouTube 페이지에서 자막 데이터 추출
-  const pageUrl = `https://www.youtube.com/watch?v=${videoId}`;
-  const resp = await fetch(pageUrl, {
-    headers: { "User-Agent": "Mozilla/5.0", "Accept-Language": "ko-KR,ko;q=0.9" },
-  });
-  const html = await resp.text();
+async function fetchYoutubeContent(videoId: string): Promise<string> {
+  let title = "";
 
-  // 제목 추출
-  const titleMatch = html.match(/<title>(.*?)<\/title>/);
-  const title = titleMatch ? titleMatch[1].replace(" - YouTube", "").trim() : "";
+  // 1) oEmbed로 제목 가져오기
+  const oembedUrls = [
+    `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`,
+    `https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`,
+  ];
 
-  // 설명란(description) 추출
-  const descMatch = html.match(/"shortDescription":"((?:[^"\\]|\\.)*)"/);
-  const description = descMatch
-    ? descMatch[1].replace(/\\n/g, "\n").replace(/\\"/g, '"')
-    : "";
+  for (const url of oembedUrls) {
+    try {
+      const resp = await fetch(url);
+      if (resp.ok) {
+        const data = await resp.json();
+        title = data.title || "";
+        if (title) break;
+      }
+    } catch {}
+  }
 
-  // 자막 URL 추출 시도
-  const captionMatch = html.match(/"captionTracks":\[(.*?)\]/);
-  if (captionMatch) {
-    const koUrl = captionMatch[1].match(/"baseUrl":"(.*?ko.*?)"/)?.[1];
-    const anyUrl = captionMatch[1].match(/"baseUrl":"(.*?)"/)?.[1];
-    const captionUrl = koUrl || anyUrl;
+  // 2) YouTube 모바일 페이지에서 설명 추출 시도
+  let description = "";
+  try {
+    const resp = await fetch(`https://m.youtube.com/watch?v=${videoId}`, {
+      headers: { "Accept-Language": "ko-KR,ko;q=0.9" },
+    });
+    if (resp.ok) {
+      const html = await resp.text();
 
-    if (captionUrl) {
-      try {
-        const cleanUrl = captionUrl.replace(/\\u0026/g, "&");
-        const captionResp = await fetch(cleanUrl);
-        const captionXml = await captionResp.text();
-        const texts = captionXml.match(/<text[^>]*>(.*?)<\/text>/g);
-        if (texts && texts.length > 0) {
-          const transcript = texts
-            .map((t) => t.replace(/<[^>]+>/g, "").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&#39;/g, "'").replace(/&quot;/g, '"'))
-            .join(" ");
-          return `제목: ${title}\n\n자막:\n${transcript}\n\n설명:\n${description}`;
-        }
-      } catch {
-        // 자막 파싱 실패 시 설명란만 사용
+      // 제목 폴백
+      if (!title) {
+        const m = html.match(/<title>(.*?)<\/title>/);
+        if (m) title = m[1].replace(" - YouTube", "").trim();
+      }
+
+      // 설명 추출
+      const descMatch = html.match(/"shortDescription":"((?:[^"\\]|\\.)*)"/);
+      if (descMatch) {
+        description = descMatch[1]
+          .replace(/\\n/g, "\n")
+          .replace(/\\"/g, '"')
+          .replace(/\\\\/g, "\\");
       }
     }
+  } catch {}
+
+  // 3) 결과 조합 → AI에게 전달
+  if (description.length > 100) {
+    // 설명에 재료/레시피 정보가 포함되어 있을 가능성 높음
+    const desc = description.length > 5000 ? description.slice(0, 5000) : description;
+    return `YouTube 요리 영상 정보:\n\n제목: ${title}\n\n설명:\n${desc}\n\n위 영상의 레시피를 정확하게 추출해주세요. 설명에 재료와 조리법이 있으면 그대로 사용하고, 없으면 제목을 기반으로 일반적인 레시피를 만들어주세요.`;
   }
 
-  // 자막이 없으면 설명란 사용
-  if (description.length > 50) {
-    return `제목: ${title}\n\n설명:\n${description}`;
-  }
-
-  return `제목: ${title}\n\n(자막과 설명을 가져올 수 없습니다. 제목을 기반으로 일반적인 레시피를 생성해주세요.)`;
+  // 설명이 없으면 제목만으로 생성
+  return `YouTube 요리 영상 제목: "${title || videoId}"\n\n이 요리의 정확한 레시피를 만들어주세요. 제목에 나온 요리를 기준으로 한국에서 일반적으로 만드는 방식의 레시피를 작성해주세요.`;
 }
 
 async function fetchBlogContent(url: string): Promise<string> {
@@ -213,7 +219,7 @@ export async function extractRecipeFromUrl(
   if (urlType === "youtube") {
     const videoId = extractYoutubeId(url);
     if (!videoId) throw new Error("유효한 YouTube URL이 아닙니다");
-    content = await fetchYoutubeTranscript(videoId);
+    content = await fetchYoutubeContent(videoId);
   } else {
     content = await fetchBlogContent(url);
   }
