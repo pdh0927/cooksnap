@@ -6,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { colors, typo, space, radius } from "../../src/theme";
 import Spinner from "../../src/components/Spinner";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
-import { extractRecipeFromUrl, ExtractStep } from "../../src/services/extractRecipe";
+import { extractRecipeFromUrl, generateRecipeFromName, isUrl, ExtractStep } from "../../src/services/extractRecipe";
 import { useRecipes } from "../../src/store/recipeStore";
 
 const STEP_INDEX: Record<ExtractStep, number> = {
@@ -20,54 +20,45 @@ export default function AddRecipeScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { addRecipe } = useRecipes();
-  const [url, setUrl] = useState("");
+  const [input, setInput] = useState("");
   const [parsing, setParsing] = useState(false);
   const [parseStep, setParseStep] = useState(0);
-  const [error, setError] = useState<string | null>(null);
   const cancelled = useRef(false);
 
-  const steps = [
-    "페이지 내용 가져오는 중...",
-    "재료 목록 추출 중...",
-    "조리 순서 정리 중...",
-    "레시피 완성!",
-  ];
+  const inputIsUrl = isUrl(input);
 
-  function validateUrl(input: string): boolean {
-    return /^https?:\/\/.+\..+/.test(input.trim());
-  }
+  const steps = inputIsUrl
+    ? ["페이지 내용 가져오는 중...", "재료 목록 추출 중...", "조리 순서 정리 중...", "레시피 완성!"]
+    : ["레시피 검색 중...", "레시피 만드는 중...", "조리 순서 정리 중...", "레시피 완성!"];
 
   async function startParsing() {
-    const trimmed = url.trim();
+    const trimmed = input.trim();
     if (!trimmed) return;
-
-    if (!validateUrl(trimmed)) {
-      Alert.alert("잘못된 URL", "올바른 링크를 입력해주세요.\n예: https://youtube.com/watch?v=...");
-      return;
-    }
 
     setParsing(true);
     setParseStep(0);
-    setError(null);
     cancelled.current = false;
 
     try {
-      const recipe = await extractRecipeFromUrl(trimmed, (p) => {
+      const onProgress = (p: { step: string }) => {
         if (cancelled.current) return;
-        setParseStep(STEP_INDEX[p.step]);
-      });
+        setParseStep(STEP_INDEX[p.step as ExtractStep]);
+      };
+
+      const recipe = inputIsUrl
+        ? await extractRecipeFromUrl(trimmed, onProgress)
+        : await generateRecipeFromName(trimmed, onProgress);
 
       if (cancelled.current) return;
 
       await addRecipe(recipe);
       setParsing(false);
-      setUrl("");
+      setInput("");
       router.push(`/recipe/${recipe.id}`);
     } catch (err: any) {
       if (cancelled.current) return;
       setParsing(false);
-      setError(err.message || "레시피 추출에 실패했어요");
-      Alert.alert("추출 실패", err.message || "레시피를 추출할 수 없습니다. 다시 시도해주세요.");
+      Alert.alert("실패", err.message || "레시피를 만들 수 없습니다. 다시 시도해주세요.");
     }
   }
 
@@ -125,40 +116,41 @@ export default function AddRecipeScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-        {/* URL Card */}
+        {/* Input Card */}
         <View style={s.card}>
           <Text style={[typo.caption1, { color: colors.textTertiary, marginBottom: space.lg }]}>
-            링크를 붙여넣으면 AI가 레시피로 변환해요
+            요리 이름이나 링크를 입력하면 AI가 레시피를 만들어요
           </Text>
           <View style={s.inputBox}>
-            <Ionicons name="link-outline" size={18} color={colors.textDisabled} />
+            <Ionicons name={inputIsUrl ? "link-outline" : "restaurant-outline"} size={18} color={colors.textDisabled} />
             <TextInput
               style={s.input}
-              placeholder="유튜브, 블로그 링크 붙여넣기"
+              placeholder={'"김치찌개" 또는 YouTube 링크'}
               placeholderTextColor={colors.textDisabled}
-              value={url}
-              onChangeText={setUrl}
+              value={input}
+              onChangeText={setInput}
               autoCapitalize="none"
               autoCorrect={false}
-              keyboardType="url"
+              returnKeyType="go"
+              onSubmitEditing={startParsing}
             />
-            {url.length > 0 && (
-              <Pressable onPress={() => setUrl("")}>
+            {input.length > 0 && (
+              <Pressable onPress={() => setInput("")}>
                 <Ionicons name="close-circle" size={18} color={colors.textDisabled} />
               </Pressable>
             )}
           </View>
           <AnimatedPressable
             onPress={startParsing}
-            style={[s.primaryBtn, !url.trim() && { backgroundColor: colors.gray200 }]}
+            style={[s.primaryBtn, !input.trim() && { backgroundColor: colors.gray200 }]}
           >
-            <Ionicons name="sparkles" size={18} color={url.trim() ? colors.white : colors.textDisabled} />
-            <Text style={[s.primaryBtnText, !url.trim() && { color: colors.textDisabled }]}>
-              AI 레시피 변환
+            <Ionicons name="sparkles" size={18} color={input.trim() ? colors.white : colors.textDisabled} />
+            <Text style={[s.primaryBtnText, !input.trim() && { color: colors.textDisabled }]}>
+              {inputIsUrl ? "AI 레시피 변환" : "AI 레시피 생성"}
             </Text>
           </AnimatedPressable>
           <Text style={[typo.caption3, { color: colors.textTertiary, textAlign: "center", marginTop: space.md }]}>
-            YouTube, 네이버 블로그, 티스토리 등 지원
+            {inputIsUrl ? "YouTube, 네이버 블로그, 티스토리 등 지원" : "요리 이름을 입력하면 AI가 레시피를 만들어줘요"}
           </Text>
         </View>
 

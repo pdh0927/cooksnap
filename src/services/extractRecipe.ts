@@ -273,3 +273,72 @@ export async function extractRecipeFromUrl(
 
   return recipe;
 }
+
+// ============================================================
+// 4) 요리명으로 레시피 생성
+// ============================================================
+
+export async function generateRecipeFromName(
+  dishName: string,
+  onProgress: (p: ExtractProgress) => void
+): Promise<Recipe> {
+  onProgress({ step: "fetch", message: "레시피 검색 중..." });
+
+  // 바로 AI에게 요리명으로 레시피 생성 요청
+  onProgress({ step: "extract", message: "레시피 만드는 중..." });
+
+  const jsonText = await callAI(
+    `"${dishName}" 레시피를 만들어주세요. 한국에서 일반적으로 만드는 방식으로, 정확한 계량과 실용적인 조리 순서로 작성해주세요.`
+  );
+
+  onProgress({ step: "structure", message: "조리 순서 정리 중..." });
+
+  const cleaned = jsonText.replace(/```json\n?|```\n?/g, "").trim();
+  let parsed: any;
+  try {
+    parsed = JSON.parse(cleaned);
+  } catch {
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      parsed = JSON.parse(jsonMatch[0]);
+    } else {
+      throw new Error("AI 응답을 파싱할 수 없습니다");
+    }
+  }
+
+  onProgress({ step: "done", message: "레시피 완성!" });
+
+  const recipe: Recipe = {
+    id: Date.now().toString(),
+    title: parsed.title || dishName,
+    emoji: parsed.emoji || "🍽️",
+    category: (parsed.category as Category) || "한식",
+    difficulty: (parsed.difficulty as Difficulty) || "보통",
+    cookTimeMinutes: parsed.cookTimeMinutes || 30,
+    servings: parsed.servings || 2,
+    ingredients: (parsed.ingredients || []).map((ing: any) => ({
+      name: ing.name || "",
+      amount: typeof ing.amount === "number" ? ing.amount : 0,
+      unit: ing.unit || "개",
+      scalable: ing.scalable !== false,
+    })),
+    steps: (parsed.steps || []).map((step: any, i: number) => ({
+      order: step.order || i + 1,
+      instruction: step.instruction || "",
+      timerSeconds: step.timerSeconds || null,
+    })),
+    sourceUrl: null,
+    sourceType: null,
+    sourceLabel: "AI 생성",
+    tags: parsed.tags || [],
+    gradientColors: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
+    createdAt: new Date().toISOString(),
+  };
+
+  return recipe;
+}
+
+// URL인지 요리명인지 판별
+export function isUrl(input: string): boolean {
+  return /^https?:\/\/.+\..+/.test(input.trim());
+}
