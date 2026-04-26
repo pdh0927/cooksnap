@@ -7,6 +7,7 @@ import { StatusBar } from "expo-status-bar";
 import { useKeepAwake } from "expo-keep-awake";
 import * as Haptics from "expo-haptics";
 import { useRecipes } from "../../../src/store/recipeStore";
+import StepText from "../../../src/components/StepText";
 import { colors, darkColors, typo, space, radius } from "../../../src/theme";
 
 export default function CookingModeScreen() {
@@ -119,7 +120,7 @@ export default function CookingModeScreen() {
       {/* Step */}
       <View style={st.body}>
         <Text style={st.stepLabel}>STEP {cur + 1}</Text>
-        <Text style={st.stepInst}>{step.instruction}</Text>
+        <StepText instruction={step.instruction} fontSize={24} dark />
 
         {step.timerSeconds != null && (
           <View style={st.timerCard}>
@@ -148,9 +149,7 @@ export default function CookingModeScreen() {
       {cur < total - 1 && (
         <View style={st.nextCard}>
           <Text style={st.nextLabel}>다음 단계</Text>
-          <Text style={[typo.body2, { color: darkColors.text, lineHeight: 20 }]}>
-            {recipe.steps[cur + 1].instruction}
-          </Text>
+          <StepText instruction={recipe.steps[cur + 1].instruction} fontSize={14} dark />
         </View>
       )}
 

@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRecipes } from "../../src/store/recipeStore";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
+import StepText from "../../src/components/StepText";
 import { formatAmount } from "../../src/components/formatAmount";
 import { colors, typo, space, radius, size } from "../../src/theme";
 
@@ -163,9 +164,7 @@ export default function RecipeDetailScreen() {
                     <Text style={s.stepDotText}>{step.order}</Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={[typo.body1, { color: colors.textPrimary, lineHeight: 24 }]}>
-                      {step.instruction}
-                    </Text>
+                    <StepText instruction={step.instruction} fontSize={15} />
                     {step.timerSeconds != null && (
                       <View style={s.timerTag}>
                         <Ionicons name="time-outline" size={12} color={colors.accent} />
