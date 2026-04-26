@@ -1,7 +1,7 @@
 import { Recipe, Category, Difficulty } from "../types/recipe";
 
-const API_KEY = process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY;
-const API_URL = "https://api.anthropic.com/v1/messages";
+const API_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
+const API_URL = "https://api.openai.com/v1/chat/completions";
 
 const GRADIENTS: [string, string][] = [
   ["#DC2626", "#F97316"],
@@ -161,30 +161,21 @@ const SYSTEM_PROMPT = `당신은 요리 레시피 전문가입니다. 주어진 
 - 조리 순서는 구체적이고 실용적으로, 한국어로 작성
 - 콘텐츠에서 레시피를 명확히 추출할 수 없으면 제목을 기반으로 일반적인 레시피를 생성`;
 
-interface ClaudeResponse {
-  content: { type: string; text: string }[];
-}
-
-async function callClaude(content: string): Promise<string> {
+async function callAI(content: string): Promise<string> {
   if (!API_KEY) throw new Error("API 키가 설정되지 않았습니다");
 
   const resp = await fetch(API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": API_KEY,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true",
+      "Authorization": `Bearer ${API_KEY}`,
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
+      model: "gpt-4o-mini",
       max_tokens: 2000,
-      system: SYSTEM_PROMPT,
       messages: [
-        {
-          role: "user",
-          content: `다음 콘텐츠에서 레시피를 추출해주세요:\n\n${content}`,
-        },
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: `다음 콘텐츠에서 레시피를 추출해주세요:\n\n${content}` },
       ],
     }),
   });
@@ -194,8 +185,8 @@ async function callClaude(content: string): Promise<string> {
     throw new Error(`API 오류 (${resp.status}): ${err}`);
   }
 
-  const data: ClaudeResponse = await resp.json();
-  return data.content[0].text;
+  const data = await resp.json();
+  return data.choices[0].message.content;
 }
 
 // ============================================================
@@ -230,7 +221,7 @@ export async function extractRecipeFromUrl(
   // Step 2: AI 추출
   onProgress({ step: "extract", message: "재료 목록 추출 중..." });
 
-  const jsonText = await callClaude(content);
+  const jsonText = await callAI(content);
 
   // Step 3: 구조화
   onProgress({ step: "structure", message: "조리 순서 정리 중..." });
