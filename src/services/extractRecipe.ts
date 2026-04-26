@@ -36,61 +36,38 @@ function extractYoutubeId(url: string): string | null {
   return null;
 }
 
-async function fetchYoutubeContent(videoId: string): Promise<string> {
-  let title = "";
+const API_BASE = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3001";
 
-  // 1) oEmbed로 제목 가져오기
-  const oembedUrls = [
-    `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`,
-    `https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`,
-  ];
+async function fetchYoutubeContent(url: string): Promise<string> {
+  // 백엔드 API 서버에서 yt-dlp로 추출
+  const resp = await fetch(
+    `${API_BASE}/api/youtube?url=${encodeURIComponent(url)}`
+  );
 
-  for (const url of oembedUrls) {
-    try {
-      const resp = await fetch(url);
-      if (resp.ok) {
-        const data = await resp.json();
-        title = data.title || "";
-        if (title) break;
-      }
-    } catch {}
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({ error: "서버 오류" }));
+    throw new Error(err.error || "YouTube 영상 정보를 가져올 수 없습니다");
   }
 
-  // 2) YouTube 모바일 페이지에서 설명 추출 시도
-  let description = "";
-  try {
-    const resp = await fetch(`https://m.youtube.com/watch?v=${videoId}`, {
-      headers: { "Accept-Language": "ko-KR,ko;q=0.9" },
-    });
-    if (resp.ok) {
-      const html = await resp.text();
+  const data = await resp.json();
+  const { title, description, transcript } = data;
 
-      // 제목 폴백
-      if (!title) {
-        const m = html.match(/<title>(.*?)<\/title>/);
-        if (m) title = m[1].replace(" - YouTube", "").trim();
-      }
+  const parts: string[] = [];
+  parts.push(`YouTube 요리 영상 제목: ${title}`);
 
-      // 설명 추출
-      const descMatch = html.match(/"shortDescription":"((?:[^"\\]|\\.)*)"/);
-      if (descMatch) {
-        description = descMatch[1]
-          .replace(/\\n/g, "\n")
-          .replace(/\\"/g, '"')
-          .replace(/\\\\/g, "\\");
-      }
-    }
-  } catch {}
-
-  // 3) 결과 조합 → AI에게 전달
-  if (description.length > 100) {
-    // 설명에 재료/레시피 정보가 포함되어 있을 가능성 높음
-    const desc = description.length > 5000 ? description.slice(0, 5000) : description;
-    return `YouTube 요리 영상 정보:\n\n제목: ${title}\n\n설명:\n${desc}\n\n위 영상의 레시피를 정확하게 추출해주세요. 설명에 재료와 조리법이 있으면 그대로 사용하고, 없으면 제목을 기반으로 일반적인 레시피를 만들어주세요.`;
+  if (transcript && transcript.length > 50) {
+    parts.push(`\n영상 자막:\n${transcript}`);
   }
 
-  // 설명이 없으면 제목만으로 생성
-  return `YouTube 요리 영상 제목: "${title || videoId}"\n\n이 요리의 정확한 레시피를 만들어주세요. 제목에 나온 요리를 기준으로 한국에서 일반적으로 만드는 방식의 레시피를 작성해주세요.`;
+  if (description && description.length > 30) {
+    parts.push(`\n영상 설명:\n${description}`);
+  }
+
+  parts.push(
+    `\n위 영상의 내용을 기반으로 레시피를 정확하게 추출해주세요. 설명이나 자막에 재료와 조리법이 있으면 그대로 사용하세요.`
+  );
+
+  return parts.join("\n");
 }
 
 async function fetchBlogContent(url: string): Promise<string> {
@@ -217,9 +194,7 @@ export async function extractRecipeFromUrl(
   let content: string;
 
   if (urlType === "youtube") {
-    const videoId = extractYoutubeId(url);
-    if (!videoId) throw new Error("유효한 YouTube URL이 아닙니다");
-    content = await fetchYoutubeContent(videoId);
+    content = await fetchYoutubeContent(url);
   } else {
     content = await fetchBlogContent(url);
   }
