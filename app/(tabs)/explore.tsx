@@ -5,7 +5,8 @@ import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRecipes } from "../../src/store/recipeStore";
-import { colors, typo, space, radius } from "../../src/theme";
+import { colors, typo, space, radius, size } from "../../src/theme";
+import AnimatedPressable from "../../src/components/AnimatedPressable";
 import type { Category } from "../../src/types/recipe";
 
 const CATS: { label: string; filter: string | null }[] = [
@@ -73,14 +74,14 @@ export default function ExploreScreen() {
         {/* Cards */}
         {filtered.length > 0 ? (
           filtered.map((r) => (
-            <Pressable key={r.id} onPress={() => router.push(`/recipe/${r.id}`)} style={s.recipeCard}>
+            <AnimatedPressable key={r.id} onPress={() => router.push(`/recipe/${r.id}`)} style={s.recipeCard}>
               <LinearGradient
                 colors={r.gradientColors as [string, string]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={s.recipeImg}
               >
-                <Text style={{ fontSize: 32 }}>{r.emoji}</Text>
+                <Text style={{ fontSize: size.thumbEmoji }}>{r.emoji}</Text>
               </LinearGradient>
               <View style={{ flex: 1 }}>
                 <Text style={s.recipeName}>{r.title}</Text>
@@ -93,7 +94,7 @@ export default function ExploreScreen() {
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
-            </Pressable>
+            </AnimatedPressable>
           ))
         ) : (
           <View style={s.emptyCard}>
@@ -135,7 +136,7 @@ const s = StyleSheet.create({
     alignItems: "center",
     gap: space.xl,
   },
-  recipeImg: { width: 56, height: 56, borderRadius: radius.lg, alignItems: "center", justifyContent: "center" },
+  recipeImg: { width: size.thumb, height: size.thumb, borderRadius: radius.lg, alignItems: "center", justifyContent: "center" },
   recipeName: { ...typo.body1Bold, color: colors.textPrimary, marginBottom: space.xs },
   recipeMeta: { flexDirection: "row", alignItems: "center", gap: space.sm },
   recipeMetaText: { ...typo.caption1, color: colors.textTertiary },

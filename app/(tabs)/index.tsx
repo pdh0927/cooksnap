@@ -5,7 +5,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRecipes } from "../../src/store/recipeStore";
-import { colors, typo, space, radius } from "../../src/theme";
+import { colors, typo, space, radius, size } from "../../src/theme";
+import AnimatedPressable from "../../src/components/AnimatedPressable";
 import type { Category } from "../../src/types/recipe";
 
 const CATEGORIES: (Category | "전체")[] = [
@@ -61,7 +62,7 @@ export default function MyRecipesScreen() {
 
         {/* Recipe cards */}
         {filtered.map((recipe) => (
-          <Pressable
+          <AnimatedPressable
             key={recipe.id}
             onPress={() => router.push(`/recipe/${recipe.id}`)}
             style={s.recipeCard}
@@ -72,7 +73,7 @@ export default function MyRecipesScreen() {
               end={{ x: 1, y: 1 }}
               style={s.recipeImg}
             >
-              <Text style={{ fontSize: 44 }}>{recipe.emoji}</Text>
+              <Text style={{ fontSize: size.thumbEmoji }}>{recipe.emoji}</Text>
             </LinearGradient>
             <View style={s.recipeInfo}>
               <Text style={s.recipeName}>{recipe.title}</Text>
@@ -88,7 +89,7 @@ export default function MyRecipesScreen() {
               )}
             </View>
             <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
-          </Pressable>
+          </AnimatedPressable>
         ))}
 
         {filtered.length === 0 && !loading && (
@@ -147,8 +148,8 @@ const s = StyleSheet.create({
     gap: space.xl,
   },
   recipeImg: {
-    width: 64,
-    height: 64,
+    width: size.thumb,
+    height: size.thumb,
     borderRadius: radius.lg,
     alignItems: "center",
     justifyContent: "center",

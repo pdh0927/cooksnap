@@ -71,3 +71,18 @@ export const radius = {
   xxl: 24,
   full: 9999,
 };
+
+export const size = {
+  thumb: 64,       // 레시피 리스트 썸네일
+  thumbEmoji: 36,  // 썸네일 내 이모지 크기
+  heroEmoji: 72,   // 상세 히어로 이모지
+};
+
+export const darkColors = {
+  bg: "#0C0C0E",
+  card: "rgba(255,255,255,0.06)",
+  border: "rgba(255,255,255,0.08)",
+  text: "rgba(255,255,255,0.5)",
+  textDim: "rgba(255,255,255,0.25)",
+  textFaint: "rgba(255,255,255,0.18)",
+};

@@ -138,8 +138,7 @@ export default function CreateRecipeScreen() {
     };
 
     await addRecipe(recipe);
-    router.back();
-    router.push(`/recipe/${recipe.id}`);
+    router.replace(`/recipe/${recipe.id}`);
   }
 
   return (

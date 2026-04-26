@@ -5,7 +5,8 @@ import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRecipes } from "../../src/store/recipeStore";
-import { colors, typo, space, radius } from "../../src/theme";
+import { colors, typo, space, radius, size } from "../../src/theme";
+import AnimatedPressable from "../../src/components/AnimatedPressable";
 
 const TAGS = ["돼지고기", "닭고기", "소고기", "해산물", "두부", "감자", "계란", "김치", "파스타", "아보카도"];
 
@@ -89,14 +90,14 @@ export default function SearchScreen() {
 
             {filtered.length > 0 ? (
               filtered.map((r) => (
-                <Pressable key={r.id} onPress={() => router.push(`/recipe/${r.id}`)} style={s.resultCard}>
+                <AnimatedPressable key={r.id} onPress={() => router.push(`/recipe/${r.id}`)} style={s.resultCard}>
                   <LinearGradient
                     colors={r.gradientColors as [string, string]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={s.resultImg}
                   >
-                    <Text style={{ fontSize: 28 }}>{r.emoji}</Text>
+                    <Text style={{ fontSize: size.thumbEmoji }}>{r.emoji}</Text>
                   </LinearGradient>
                   <View style={{ flex: 1 }}>
                     <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>{r.title}</Text>
@@ -107,7 +108,7 @@ export default function SearchScreen() {
                     </View>
                   </View>
                   <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
-                </Pressable>
+                </AnimatedPressable>
               ))
             ) : (
               <View style={s.emptyCard}>
@@ -130,14 +131,14 @@ export default function SearchScreen() {
               </View>
             </View>
             {recipes.map((r) => (
-              <Pressable key={r.id} onPress={() => router.push(`/recipe/${r.id}`)} style={s.resultCard}>
+              <AnimatedPressable key={r.id} onPress={() => router.push(`/recipe/${r.id}`)} style={s.resultCard}>
                 <LinearGradient
                   colors={r.gradientColors as [string, string]}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={s.resultImg}
                 >
-                  <Text style={{ fontSize: 28 }}>{r.emoji}</Text>
+                  <Text style={{ fontSize: size.thumbEmoji }}>{r.emoji}</Text>
                 </LinearGradient>
                 <View style={{ flex: 1 }}>
                   <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>{r.title}</Text>
@@ -148,7 +149,7 @@ export default function SearchScreen() {
                   </View>
                 </View>
                 <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
-              </Pressable>
+              </AnimatedPressable>
             ))}
           </>
         )}
@@ -185,7 +186,7 @@ const s = StyleSheet.create({
     alignItems: "center",
     gap: space.xl,
   },
-  resultImg: { width: 52, height: 52, borderRadius: radius.lg, alignItems: "center", justifyContent: "center" },
+  resultImg: { width: size.thumb, height: size.thumb, borderRadius: radius.lg, alignItems: "center", justifyContent: "center" },
   meta: { flexDirection: "row", alignItems: "center", gap: space.sm, marginTop: space.xs },
   metaText: { ...typo.caption1, color: colors.textTertiary },
   dot: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: colors.textDisabled },

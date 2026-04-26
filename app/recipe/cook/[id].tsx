@@ -7,10 +7,7 @@ import { StatusBar } from "expo-status-bar";
 import { useKeepAwake } from "expo-keep-awake";
 import * as Haptics from "expo-haptics";
 import { useRecipes } from "../../../src/store/recipeStore";
-import { colors, typo, space, radius } from "../../../src/theme";
-
-const BG = "#0C0C0E";
-const CARD = "rgba(255,255,255,0.06)";
+import { colors, darkColors, typo, space, radius } from "../../../src/theme";
 
 export default function CookingModeScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -65,7 +62,7 @@ export default function CookingModeScreen() {
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   if (!recipe || !step) {
-    return <View style={st.root}><Text style={{ color: "rgba(255,255,255,0.4)" }}>레시피를 찾을 수 없어요</Text></View>;
+    return <View style={st.root}><Text style={{ color: darkColors.text }}>레시피를 찾을 수 없어요</Text></View>;
   }
 
   if (allSteps) {
@@ -105,7 +102,7 @@ export default function CookingModeScreen() {
         <Pressable onPress={() => router.back()} style={st.iconBtn}>
           <Ionicons name="close" size={18} color={colors.white} />
         </Pressable>
-        <Text style={[typo.body2Bold, { color: "rgba(255,255,255,0.5)" }]}>{recipe.title}</Text>
+        <Text style={[typo.body2Bold, { color: darkColors.text }]}>{recipe.title}</Text>
         <Pressable onPress={() => setAllSteps(true)} style={st.iconBtn}>
           <Ionicons name="list" size={18} color={colors.white} />
         </Pressable>
@@ -116,7 +113,7 @@ export default function CookingModeScreen() {
         <View style={st.progBg}>
           <View style={[st.progFill, { width: `${((cur + 1) / total) * 100}%` }]} />
         </View>
-        <Text style={[typo.caption2, { color: "rgba(255,255,255,0.35)" }]}>{cur + 1} / {total}</Text>
+        <Text style={[typo.caption2, { color: darkColors.textDim }]}>{cur + 1} / {total}</Text>
       </View>
 
       {/* Step */}
@@ -132,12 +129,12 @@ export default function CookingModeScreen() {
               </View>
               <View>
                 <Text style={st.timerVal}>{fmt(sec)}</Text>
-                <Text style={[typo.caption3, { color: "rgba(255,255,255,0.35)" }]}>이 단계 타이머</Text>
+                <Text style={[typo.caption3, { color: darkColors.textDim }]}>이 단계 타이머</Text>
               </View>
             </View>
             <Pressable
               onPress={() => { if (sec > 0) { setRunning((r) => !r); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } }}
-              style={[st.timerBtn, sec === 0 && { backgroundColor: colors.green }, running && { backgroundColor: "rgba(255,255,255,0.12)" }]}
+              style={[st.timerBtn, sec === 0 && { backgroundColor: colors.green }, running && { backgroundColor: darkColors.border }]}
             >
               <Text style={[typo.body2Bold, { color: colors.white }]}>
                 {sec === 0 ? "완료!" : running ? "정지" : "시작"}
@@ -151,16 +148,11 @@ export default function CookingModeScreen() {
       {cur < total - 1 && (
         <View style={st.nextCard}>
           <Text style={st.nextLabel}>다음 단계</Text>
-          <Text style={[typo.body2, { color: "rgba(255,255,255,0.4)", lineHeight: 20 }]}>
+          <Text style={[typo.body2, { color: darkColors.text, lineHeight: 20 }]}>
             {recipe.steps[cur + 1].instruction}
           </Text>
         </View>
       )}
-
-      <View style={st.voiceRow}>
-        <Ionicons name="mic-outline" size={13} color="rgba(255,255,255,0.18)" />
-        <Text style={[typo.caption3, { color: "rgba(255,255,255,0.18)" }]}>"다음"이라고 말하면 다음 단계로 넘어가요</Text>
-      </View>
 
       <View style={[st.navRow, { paddingBottom: insets.bottom + space.lg }]}>
         <Pressable
@@ -169,7 +161,7 @@ export default function CookingModeScreen() {
           disabled={cur === 0}
         >
           <Ionicons name="chevron-back" size={16} color="rgba(255,255,255,0.5)" />
-          <Text style={[typo.body2Bold, { color: "rgba(255,255,255,0.5)" }]}>이전</Text>
+          <Text style={[typo.body2Bold, { color: darkColors.text }]}>이전</Text>
         </Pressable>
         <Pressable
           onPress={() => cur === total - 1 ? router.back() : nav(1)}
@@ -184,17 +176,17 @@ export default function CookingModeScreen() {
 }
 
 const st = StyleSheet.create({
-  root: { flex: 1, backgroundColor: BG },
+  root: { flex: 1, backgroundColor: darkColors.bg },
   topBar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: space.gutter, paddingBottom: space.xl },
-  iconBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: CARD, alignItems: "center", justifyContent: "center" },
+  iconBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: darkColors.card, alignItems: "center", justifyContent: "center" },
   progRow: { flexDirection: "row", alignItems: "center", gap: space.lg, paddingHorizontal: space.gutter, paddingBottom: space.xxl },
-  progBg: { flex: 1, height: 3, backgroundColor: CARD, borderRadius: 2, overflow: "hidden" },
+  progBg: { flex: 1, height: 3, backgroundColor: darkColors.card, borderRadius: 2, overflow: "hidden" },
   progFill: { height: 3, backgroundColor: colors.accent, borderRadius: 2 },
   body: { flex: 1, paddingHorizontal: space.cardPad, justifyContent: "center" },
   stepLabel: { ...typo.caption2, color: colors.accent, letterSpacing: 2, marginBottom: space.xl, fontWeight: "700" },
   stepInst: { fontSize: 24, fontWeight: "700", color: colors.white, lineHeight: 36 },
   timerCard: {
-    backgroundColor: CARD,
+    backgroundColor: darkColors.card,
     borderRadius: radius.xl,
     padding: space.xxl,
     flexDirection: "row",
@@ -209,20 +201,19 @@ const st = StyleSheet.create({
   nextCard: {
     marginHorizontal: space.cardPad,
     padding: space.xxl,
-    backgroundColor: CARD,
+    backgroundColor: darkColors.card,
     borderRadius: radius.xl,
     marginBottom: space.xl,
   },
-  nextLabel: { ...typo.caption3, color: "rgba(255,255,255,0.25)", letterSpacing: 1, marginBottom: space.md, textTransform: "uppercase", fontWeight: "700" },
-  voiceRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: space.xs, paddingBottom: space.md },
+  nextLabel: { ...typo.caption3, color: darkColors.textDim, letterSpacing: 1, marginBottom: space.md, textTransform: "uppercase", fontWeight: "700" },
   navRow: { flexDirection: "row", gap: space.lg, paddingHorizontal: space.cardPad, paddingTop: space.lg },
   navBtn: { flex: 1, height: 52, borderRadius: radius.lg, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: space.sm },
-  navPrev: { backgroundColor: CARD },
+  navPrev: { backgroundColor: darkColors.card },
   navNext: { backgroundColor: colors.accent },
   // All steps
-  allRow: { flexDirection: "row", gap: space.lg, paddingVertical: space.xl, borderBottomWidth: 0.5, borderBottomColor: "rgba(255,255,255,0.06)" },
+  allRow: { flexDirection: "row", gap: space.lg, paddingVertical: space.xl, borderBottomWidth: 0.5, borderBottomColor: darkColors.card },
   allRowActive: { backgroundColor: "rgba(91,155,245,0.08)", marginHorizontal: -space.gutter, paddingHorizontal: space.gutter, borderRadius: radius.lg, borderBottomWidth: 0 },
-  allDot: { width: 24, height: 24, borderRadius: 12, backgroundColor: CARD, alignItems: "center", justifyContent: "center", marginTop: 2 },
-  allDotText: { ...typo.caption2, color: "rgba(255,255,255,0.35)", fontWeight: "700" },
-  allText: { flex: 1, ...typo.body2, color: "rgba(255,255,255,0.35)", lineHeight: 20 },
+  allDot: { width: 24, height: 24, borderRadius: 12, backgroundColor: darkColors.card, alignItems: "center", justifyContent: "center", marginTop: 2 },
+  allDotText: { ...typo.caption2, color: darkColors.textDim, fontWeight: "700" },
+  allText: { flex: 1, ...typo.body2, color: darkColors.textDim, lineHeight: 20 },
 });

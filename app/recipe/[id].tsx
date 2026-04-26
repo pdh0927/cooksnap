@@ -1,12 +1,13 @@
-import { View, Text, ScrollView, Pressable, StyleSheet, Alert, Share } from "react-native";
+import { View, Text, ScrollView, Pressable, StyleSheet, Alert, Share, Linking } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRecipes } from "../../src/store/recipeStore";
+import AnimatedPressable from "../../src/components/AnimatedPressable";
 import { formatAmount } from "../../src/components/formatAmount";
-import { colors, typo, space, radius } from "../../src/theme";
+import { colors, typo, space, radius, size } from "../../src/theme";
 
 export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -65,7 +66,7 @@ export default function RecipeDetailScreen() {
           end={{ x: 1, y: 1 }}
           style={s.hero}
         >
-          <Text style={{ fontSize: 72 }}>{recipe.emoji}</Text>
+          <Text style={{ fontSize: size.heroEmoji }}>{recipe.emoji}</Text>
           <Pressable onPress={() => router.back()} style={[s.backBtn, { top: insets.top + 8 }]}>
             <Ionicons name="chevron-back" size={20} color={colors.white} />
           </Pressable>
@@ -95,7 +96,7 @@ export default function RecipeDetailScreen() {
             ))}
           </View>
           {recipe.sourceUrl && (
-            <Pressable style={s.sourceBtn}>
+            <Pressable onPress={() => Linking.openURL(recipe.sourceUrl!)} style={s.sourceBtn}>
               <Ionicons name="open-outline" size={14} color={colors.accent} />
               <Text style={[typo.caption1, { color: colors.accent, fontWeight: "600" }]}>
                 원본 보기 ({recipe.sourceLabel})
@@ -176,10 +177,10 @@ export default function RecipeDetailScreen() {
 
       {/* CTA */}
       <View style={[s.ctaWrap, { paddingBottom: insets.bottom + 12 }]}>
-        <Pressable onPress={() => router.push(`/recipe/cook/${id}`)} style={s.ctaBtn}>
+        <AnimatedPressable onPress={() => router.push(`/recipe/cook/${id}`)} style={s.ctaBtn}>
           <Ionicons name="play" size={20} color={colors.white} />
           <Text style={[typo.body1Bold, { color: colors.white }]}>요리 시작하기</Text>
-        </Pressable>
+        </AnimatedPressable>
       </View>
     </View>
   );

@@ -1,9 +1,11 @@
-import { View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
+import { View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform, StyleSheet, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, typo, space, radius } from "../../src/theme";
+import Spinner from "../../src/components/Spinner";
+import AnimatedPressable from "../../src/components/AnimatedPressable";
 
 export default function AddRecipeScreen() {
   const insets = useSafeAreaInsets();
@@ -36,7 +38,7 @@ export default function AddRecipeScreen() {
     return (
       <View style={s.parsingRoot}>
         <View style={s.spinnerWrap}>
-          <View style={s.spinner} />
+          <Spinner />
         </View>
         <Text style={[typo.heading2, { color: colors.textPrimary, marginBottom: space.sm, textAlign: "center" }]}>
           AI가 레시피를 분석하고 있어요
@@ -63,6 +65,9 @@ export default function AddRecipeScreen() {
             </View>
           ))}
         </View>
+        <Pressable onPress={() => setParsing(false)} style={{ marginTop: space.xl }}>
+          <Text style={[typo.body2, { color: colors.textTertiary }]}>취소</Text>
+        </Pressable>
       </View>
     );
   }
@@ -103,19 +108,19 @@ function ScrollViewContent({ url, setUrl, startParsing }: { url: string; setUrl:
             keyboardType="url"
           />
         </View>
-        <Pressable
+        <AnimatedPressable
           onPress={startParsing}
           style={[s.primaryBtn, !url.trim() && { backgroundColor: colors.gray200 }]}
         >
           <Text style={[s.primaryBtnText, !url.trim() && { color: colors.textDisabled }]}>
             AI 레시피 변환
           </Text>
-        </Pressable>
+        </AnimatedPressable>
       </View>
 
       {/* Other options */}
       <View style={s.card}>
-        <Pressable style={s.option} onPress={() => router.push("/recipe/create")}>
+        <AnimatedPressable style={s.option} onPress={() => router.push("/recipe/create")}>
           <View style={[s.optIcon, { backgroundColor: "#EBF2FE" }]}>
             <Ionicons name="create-outline" size={20} color={colors.accent} />
           </View>
@@ -126,11 +131,11 @@ function ScrollViewContent({ url, setUrl, startParsing }: { url: string; setUrl:
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
-        </Pressable>
+        </AnimatedPressable>
 
         <View style={s.optDivider} />
 
-        <Pressable style={s.option}>
+        <AnimatedPressable style={s.option} onPress={() => Alert.alert("준비 중", "다음 업데이트에서 만나요!")}>
           <View style={[s.optIcon, { backgroundColor: "#F3EEFF" }]}>
             <Ionicons name="camera-outline" size={20} color="#8B5CF6" />
           </View>
@@ -141,7 +146,7 @@ function ScrollViewContent({ url, setUrl, startParsing }: { url: string; setUrl:
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
-        </Pressable>
+        </AnimatedPressable>
       </View>
     </View>
   );
@@ -210,14 +215,6 @@ const s = StyleSheet.create({
     paddingHorizontal: space.x4,
   },
   spinnerWrap: { marginBottom: space.xxl },
-  spinner: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 2.5,
-    borderColor: colors.gray200,
-    borderTopColor: colors.accent,
-  },
   parseCard: {
     backgroundColor: colors.bgPrimary,
     borderRadius: radius.xxl,
