@@ -82,6 +82,7 @@ export default function AddRecipeScreen() {
 }
 
 function ScrollViewContent({ url, setUrl, startParsing }: { url: string; setUrl: (v: string) => void; startParsing: () => void }) {
+  const router = useRouter();
   return (
     <View style={s.content}>
       {/* URL Card */}
@@ -114,7 +115,7 @@ function ScrollViewContent({ url, setUrl, startParsing }: { url: string; setUrl:
 
       {/* Other options */}
       <View style={s.card}>
-        <Pressable style={s.option}>
+        <Pressable style={s.option} onPress={() => router.push("/recipe/create")}>
           <View style={[s.optIcon, { backgroundColor: "#EBF2FE" }]}>
             <Ionicons name="create-outline" size={20} color={colors.accent} />
           </View>

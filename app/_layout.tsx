@@ -20,6 +20,12 @@ export default function RootLayout() {
             gestureEnabled: false,
           }}
         />
+        <Stack.Screen
+          name="recipe/create/index"
+          options={{
+            animation: "slide_from_bottom",
+          }}
+        />
       </Stack>
     </>
   );

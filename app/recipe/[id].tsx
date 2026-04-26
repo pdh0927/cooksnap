@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
+import { View, Text, ScrollView, Pressable, StyleSheet, Alert, Share } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
@@ -12,8 +12,35 @@ export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { getRecipe } = useRecipes();
+  const { getRecipe, deleteRecipe } = useRecipes();
   const recipe = getRecipe(id);
+
+  function handleDelete() {
+    Alert.alert("레시피 삭제", `"${recipe?.title}"을(를) 삭제할까요?`, [
+      { text: "취소", style: "cancel" },
+      {
+        text: "삭제",
+        style: "destructive",
+        onPress: async () => {
+          await deleteRecipe(id);
+          router.back();
+        },
+      },
+    ]);
+  }
+
+  async function handleShare() {
+    if (!recipe) return;
+    const ingredients = recipe.ingredients
+      .map((i) => `- ${i.name} ${formatAmount(i.amount, i.unit)}`)
+      .join("\n");
+    const steps = recipe.steps
+      .map((s) => `${s.order}. ${s.instruction}`)
+      .join("\n");
+    await Share.share({
+      message: `${recipe.emoji} ${recipe.title}\n\n[재료]\n${ingredients}\n\n[조리 순서]\n${steps}`,
+    });
+  }
 
   const [tab, setTab] = useState<"ing" | "steps">("ing");
   const [mult, setMult] = useState(1);
@@ -42,6 +69,14 @@ export default function RecipeDetailScreen() {
           <Pressable onPress={() => router.back()} style={[s.backBtn, { top: insets.top + 8 }]}>
             <Ionicons name="chevron-back" size={20} color={colors.white} />
           </Pressable>
+          <View style={[s.actionRow, { top: insets.top + 8 }]}>
+            <Pressable onPress={handleShare} style={s.actionBtn}>
+              <Ionicons name="share-outline" size={18} color={colors.white} />
+            </Pressable>
+            <Pressable onPress={handleDelete} style={s.actionBtn}>
+              <Ionicons name="trash-outline" size={18} color={colors.white} />
+            </Pressable>
+          </View>
         </LinearGradient>
 
         {/* Info card */}
@@ -156,6 +191,20 @@ const s = StyleSheet.create({
   backBtn: {
     position: "absolute",
     left: space.gutter,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(0,0,0,0.25)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  actionRow: {
+    position: "absolute",
+    right: space.gutter,
+    flexDirection: "row",
+    gap: space.md,
+  },
+  actionBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
