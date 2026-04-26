@@ -82,7 +82,7 @@ export const darkColors = {
   bg: "#0C0C0E",
   card: "rgba(255,255,255,0.06)",
   border: "rgba(255,255,255,0.08)",
-  text: "rgba(255,255,255,0.5)",
-  textDim: "rgba(255,255,255,0.25)",
-  textFaint: "rgba(255,255,255,0.18)",
+  text: "rgba(255,255,255,0.65)",
+  textDim: "rgba(255,255,255,0.35)",
+  textFaint: "rgba(255,255,255,0.2)",
 };

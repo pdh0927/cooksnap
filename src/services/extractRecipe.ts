@@ -132,8 +132,10 @@ const SYSTEM_PROMPT = `당신은 10년 경력 한식/양식 셰프입니다. 주
     {"name": "재료명", "amount": 숫자, "unit": "단위", "scalable": true/false}
   ],
   "steps": [
-    {"order": 1, "instruction": "조리 설명", "timerSeconds": 숫자 또는 null}
-  ]
+    {"order": 1, "instruction": "조리 설명", "timerSeconds": 숫자 또는 null, "tip": "이 단계의 꿀팁 또는 null"}
+  ],
+  "tips": ["전체 요리 꿀팁1", "꿀팁2"],
+  "warnings": ["주의사항1", "주의사항2"]
 }
 
 ## 조리 순서 작성 규칙 (가장 중요)
@@ -151,6 +153,9 @@ const SYSTEM_PROMPT = `당신은 10년 경력 한식/양식 셰프입니다. 주
 - tags는 3~5개, 예: 가성비, 자취생, 매운맛, 다이어트, 초간단, 밥도둑, 브런치, 혼밥, 겨울, 여름 등
 - amount가 "약간", "적당량"이면 amount=0, unit="약간", scalable=false
 - timerSeconds는 시간이 명시된 경우만 초 단위 (예: 5분 → 300)
+- step.tip: 해당 단계에서 실수하기 쉬운 점이나 셰프 노하우 (없으면 null)
+- tips: 전체 요리에 대한 꿀팁 2~3개 (대체 재료, 맛 업그레이드 방법 등)
+- warnings: 실패하기 쉬운 주의사항 1~2개 (불 조절, 순서 주의 등)
 - 단위: g, ml, 큰술, 작은술, 컵, 개, 모, 대, 쪽 등
 - 콘텐츠에서 레시피를 추출할 수 없으면 제목 기반으로 정확한 레시피를 생성`;
 
@@ -257,11 +262,14 @@ export async function extractRecipeFromUrl(
       order: step.order || i + 1,
       instruction: step.instruction || "",
       timerSeconds: step.timerSeconds || null,
+      tip: step.tip || null,
     })),
     sourceUrl: url,
     sourceType: urlType === "youtube" ? "youtube" : "blog",
     sourceLabel: urlType === "youtube" ? "YouTube" : new URL(url).hostname.replace("www.", ""),
     tags: parsed.tags || [],
+    tips: parsed.tips || [],
+    warnings: parsed.warnings || [],
     gradientColors: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
     createdAt: new Date().toISOString(),
   };
@@ -321,11 +329,14 @@ export async function generateRecipeFromName(
       order: step.order || i + 1,
       instruction: step.instruction || "",
       timerSeconds: step.timerSeconds || null,
+      tip: step.tip || null,
     })),
     sourceUrl: null,
     sourceType: null,
     sourceLabel: "AI 생성",
     tags: parsed.tags || [],
+    tips: parsed.tips || [],
+    warnings: parsed.warnings || [],
     gradientColors: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
     createdAt: new Date().toISOString(),
   };

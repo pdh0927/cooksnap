@@ -9,6 +9,7 @@ import * as Haptics from "expo-haptics";
 import { useRecipes } from "../../../src/store/recipeStore";
 import StepText from "../../../src/components/StepText";
 import { colors, darkColors, typo, space, radius } from "../../../src/theme";
+import type { Ingredient } from "../../../src/types/recipe";
 
 export default function CookingModeScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -27,6 +28,11 @@ export default function CookingModeScreen() {
 
   const step = recipe?.steps[cur];
   const total = recipe?.steps.length ?? 0;
+
+  // Find relevant ingredients for current step by matching ingredient names in instruction
+  const stepIngredients: Ingredient[] = (recipe?.ingredients ?? []).filter(
+    (ing) => step?.instruction?.includes(ing.name)
+  ).slice(0, 3);
 
   useEffect(() => {
     if (ref.current) clearInterval(ref.current);
@@ -120,6 +126,18 @@ export default function CookingModeScreen() {
       {/* Step */}
       <View style={st.body}>
         <Text style={st.stepLabel}>STEP {cur + 1}</Text>
+
+        {/* Ingredient pills for current step */}
+        {stepIngredients.length > 0 && (
+          <View style={st.ingPillRow}>
+            {stepIngredients.map((ing) => (
+              <View key={ing.name} style={st.ingPill}>
+                <Text style={st.ingPillText}>{ing.name}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
         <StepText instruction={step.instruction} fontSize={24} dark />
 
         {step.timerSeconds != null && (
@@ -143,13 +161,21 @@ export default function CookingModeScreen() {
             </Pressable>
           </View>
         )}
+
+        {/* Step tip */}
+        {step.tip && (
+          <View style={st.tipCard}>
+            <Ionicons name="bulb-outline" size={16} color="#F59E0B" />
+            <Text style={st.tipText}>{step.tip}</Text>
+          </View>
+        )}
       </View>
 
       {/* Next */}
       {cur < total - 1 && (
         <View style={st.nextCard}>
-          <Text style={st.nextLabel}>다음 단계</Text>
-          <StepText instruction={recipe.steps[cur + 1].instruction} fontSize={14} dark />
+          <Text style={st.nextLabel}>STEP {cur + 2} · 다음 단계</Text>
+          <StepText instruction={recipe.steps[cur + 1].instruction} fontSize={15} dark />
         </View>
       )}
 
@@ -179,10 +205,23 @@ const st = StyleSheet.create({
   topBar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: space.gutter, paddingBottom: space.xl },
   iconBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: darkColors.card, alignItems: "center", justifyContent: "center" },
   progRow: { flexDirection: "row", alignItems: "center", gap: space.lg, paddingHorizontal: space.gutter, paddingBottom: space.xxl },
-  progBg: { flex: 1, height: 3, backgroundColor: darkColors.card, borderRadius: 2, overflow: "hidden" },
-  progFill: { height: 3, backgroundColor: colors.accent, borderRadius: 2 },
-  body: { flex: 1, paddingHorizontal: space.cardPad, justifyContent: "center" },
-  stepLabel: { ...typo.caption2, color: colors.accent, letterSpacing: 2, marginBottom: space.xl, fontWeight: "700" },
+  progBg: { flex: 1, height: 4, backgroundColor: darkColors.card, borderRadius: 2, overflow: "hidden" },
+  progFill: { height: 4, backgroundColor: colors.accent, borderRadius: 2 },
+  body: { flex: 1, paddingHorizontal: space.cardPad, paddingTop: space.xxxl },
+  stepLabel: { ...typo.caption2, color: colors.accent, letterSpacing: 2, marginBottom: space.lg, fontWeight: "700" },
+  ingPillRow: { flexDirection: "row", flexWrap: "wrap", gap: space.md, marginBottom: space.xl },
+  ingPill: { backgroundColor: "rgba(91,155,245,0.15)", paddingHorizontal: space.lg, paddingVertical: space.xs, borderRadius: radius.full },
+  ingPillText: { ...typo.caption2, color: colors.accent, fontWeight: "600" },
+  tipCard: {
+    flexDirection: "row",
+    gap: space.md,
+    backgroundColor: "rgba(245,158,11,0.12)",
+    padding: space.xl,
+    borderRadius: radius.lg,
+    marginTop: space.xl,
+    alignItems: "flex-start",
+  },
+  tipText: { ...typo.body2, color: "rgba(255,255,255,0.7)", flex: 1, lineHeight: 20 },
   stepInst: { fontSize: 24, fontWeight: "700", color: colors.white, lineHeight: 36 },
   timerCard: {
     backgroundColor: darkColors.card,
@@ -191,7 +230,7 @@ const st = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: space.xxxl,
+    marginTop: space.xxl,
   },
   timerLeft: { flexDirection: "row", alignItems: "center", gap: space.lg },
   timerIcon: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.accent, alignItems: "center", justifyContent: "center" },
@@ -200,11 +239,11 @@ const st = StyleSheet.create({
   nextCard: {
     marginHorizontal: space.cardPad,
     padding: space.xxl,
-    backgroundColor: darkColors.card,
+    backgroundColor: "rgba(255,255,255,0.09)",
     borderRadius: radius.xl,
-    marginBottom: space.xl,
+    marginBottom: space.lg,
   },
-  nextLabel: { ...typo.caption3, color: darkColors.textDim, letterSpacing: 1, marginBottom: space.md, textTransform: "uppercase", fontWeight: "700" },
+  nextLabel: { ...typo.caption2, color: "rgba(255,255,255,0.7)", letterSpacing: 1, marginBottom: space.md, textTransform: "uppercase", fontWeight: "700" },
   navRow: { flexDirection: "row", gap: space.lg, paddingHorizontal: space.cardPad, paddingTop: space.lg },
   navBtn: { flex: 1, height: 52, borderRadius: radius.lg, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: space.sm },
   navPrev: { backgroundColor: darkColors.card },

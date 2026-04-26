@@ -27,7 +27,14 @@ export function useRecipes() {
 
     AsyncStorage.getItem(STORAGE_KEY).then((data) => {
       if (data) {
-        recipesCache = JSON.parse(data);
+        // Migrate old recipes missing new fields
+        recipesCache = (JSON.parse(data) as Recipe[]).map((r) => ({
+          ...r,
+          tags: r.tags ?? [],
+          tips: r.tips ?? [],
+          warnings: r.warnings ?? [],
+          steps: r.steps.map((s) => ({ ...s, tip: s.tip ?? null })),
+        }));
       } else {
         recipesCache = sampleRecipes;
         AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(sampleRecipes));
@@ -55,9 +62,16 @@ export function useRecipes() {
     notifyListeners();
   }, []);
 
+  const updateRecipe = useCallback(async (id: string, updates: Partial<Recipe>) => {
+    if (!recipesCache) return;
+    recipesCache = recipesCache.map((r) => r.id === id ? { ...r, ...updates } : r);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(recipesCache));
+    notifyListeners();
+  }, []);
+
   const getRecipe = useCallback((id: string) => {
     return recipesCache?.find((r) => r.id === id) ?? null;
   }, []);
 
-  return { recipes, loading, addRecipe, deleteRecipe, getRecipe };
+  return { recipes, loading, addRecipe, deleteRecipe, updateRecipe, getRecipe };
 }

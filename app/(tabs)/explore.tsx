@@ -86,10 +86,10 @@ function RecipeHCard({ recipe, onPress }: { recipe: Recipe; onPress: () => void 
         end={{ x: 1, y: 1 }}
         style={s.hCardImg}
       >
-        <Text style={{ fontSize: 28 }}>{recipe.emoji}</Text>
+        <Text style={{ fontSize: 34 }}>{recipe.emoji}</Text>
       </LinearGradient>
-      <Text style={s.hCardTitle} numberOfLines={1}>{recipe.title}</Text>
-      <Text style={s.hCardMeta}>{recipe.cookTimeMinutes}분</Text>
+      <Text style={s.hCardTitle} numberOfLines={2}>{recipe.title}</Text>
+      <Text style={s.hCardMeta}>{recipe.cookTimeMinutes}분 · {recipe.difficulty}</Text>
     </AnimatedPressable>
   );
 }
@@ -114,7 +114,7 @@ export default function ExploreScreen() {
         {allTags.length > 0 && (
           <View style={s.card}>
             <View style={s.cardHeader}>
-              <Text style={{ fontSize: 18 }}>🔥</Text>
+              <View style={[s.accentBar, { backgroundColor: colors.orange }]} />
               <Text style={[typo.heading3, { color: colors.textPrimary }]}>인기 태그</Text>
             </View>
             <View style={s.tagWrap}>
@@ -137,21 +137,19 @@ export default function ExploreScreen() {
           if (matched.length === 0) return null;
 
           return (
-            <View key={theme.title} style={s.card}>
+            <View key={theme.title} style={[s.card, { backgroundColor: theme.bgColor }]}>
               {/* Theme header */}
               <View style={s.themeHeader}>
-                <View style={[s.themeIcon, { backgroundColor: theme.bgColor }]}>
-                  <Text style={{ fontSize: 20 }}>{theme.emoji}</Text>
-                </View>
+                <View style={[s.accentBar, { backgroundColor: theme.color }]} />
                 <View style={{ flex: 1 }}>
-                  <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>
+                  <Text style={[typo.heading3, { color: colors.textPrimary }]}>
                     {theme.title}
                   </Text>
-                  <Text style={[typo.caption1, { color: colors.textTertiary }]}>
+                  <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: 2 }]}>
                     {theme.subtitle}
                   </Text>
                 </View>
-                <View style={[s.countBadge, { backgroundColor: theme.bgColor }]}>
+                <View style={[s.countBadge, { backgroundColor: "rgba(255,255,255,0.7)" }]}>
                   <Text style={[typo.caption2, { color: theme.color }]}>{matched.length}</Text>
                 </View>
               </View>
@@ -177,7 +175,7 @@ export default function ExploreScreen() {
         {/* All recipes */}
         <View style={s.card}>
           <View style={s.cardHeader}>
-            <Text style={{ fontSize: 18 }}>📋</Text>
+            <View style={[s.accentBar, { backgroundColor: colors.accent }]} />
             <Text style={[typo.heading3, { color: colors.textPrimary }]}>전체 레시피</Text>
             <View style={[s.countBadge, { backgroundColor: colors.accentLight }]}>
               <Text style={[typo.caption2, { color: colors.accent }]}>{recipes.length}</Text>
@@ -264,12 +262,10 @@ const s = StyleSheet.create({
     gap: space.lg,
     marginBottom: space.xl,
   },
-  themeIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.md,
-    alignItems: "center",
-    justifyContent: "center",
+  accentBar: {
+    width: 3,
+    height: 32,
+    borderRadius: 2,
   },
   countBadge: {
     paddingHorizontal: space.md,
@@ -279,19 +275,18 @@ const s = StyleSheet.create({
   // Horizontal card
   hScroll: { gap: space.lg },
   hCard: {
-    width: 120,
-    alignItems: "center",
+    width: 140,
   },
   hCardImg: {
-    width: 100,
-    height: 100,
+    width: 140,
+    height: 120,
     borderRadius: radius.xl,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: space.md,
   },
-  hCardTitle: { ...typo.body2Bold, color: colors.textPrimary, textAlign: "center" },
-  hCardMeta: { ...typo.caption1, color: colors.textTertiary, marginTop: 2 },
+  hCardTitle: { ...typo.body2Bold, color: colors.textPrimary, lineHeight: 18 },
+  hCardMeta: { ...typo.caption1, color: colors.textTertiary, marginTop: 3 },
   // List item
   listItem: {
     flexDirection: "row",

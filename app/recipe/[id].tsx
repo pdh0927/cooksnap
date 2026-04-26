@@ -14,7 +14,7 @@ export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { getRecipe, deleteRecipe } = useRecipes();
+  const { getRecipe, deleteRecipe, updateRecipe } = useRecipes();
   const recipe = getRecipe(id);
 
   function handleDelete() {
@@ -47,6 +47,17 @@ export default function RecipeDetailScreen() {
   const [tab, setTab] = useState<"ing" | "steps">("ing");
   const [mult, setMult] = useState(1);
 
+  function showCategoryPicker() {
+    const categories = ["한식", "중식", "일식", "양식", "디저트", "간편식"] as const;
+    Alert.alert("카테고리 변경", undefined, [
+      ...categories.map((c) => ({
+        text: c + (c === recipe?.category ? " ✓" : ""),
+        onPress: () => updateRecipe(id, { category: c }),
+      })),
+      { text: "취소", style: "cancel" as const },
+    ]);
+  }
+
   if (!recipe) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.bgPage, alignItems: "center", justifyContent: "center" }}>
@@ -56,6 +67,9 @@ export default function RecipeDetailScreen() {
   }
 
   const servings = recipe.servings * mult;
+
+  const tips = recipe.tips ?? [];
+  const warnings = recipe.warnings ?? [];
 
   return (
     <View style={s.root}>
@@ -84,6 +98,11 @@ export default function RecipeDetailScreen() {
         {/* Info card */}
         <View style={s.infoCard}>
           <Text style={s.infoTitle}>{recipe.title}</Text>
+          {/* Category chip - tappable to change */}
+          <Pressable onPress={showCategoryPicker} style={s.categoryChip}>
+            <Text style={[typo.caption2, { color: colors.accent }]}>{recipe.category}</Text>
+            <Ionicons name="chevron-down" size={12} color={colors.accent} />
+          </Pressable>
           <View style={s.statsRow}>
             {[
               { icon: "time-outline" as const, t: `${recipe.cookTimeMinutes}분` },
@@ -180,6 +199,38 @@ export default function RecipeDetailScreen() {
           )}
         </View>
 
+        {/* Warnings */}
+        {warnings.length > 0 && (
+          <View style={s.warningsCard}>
+            <View style={s.tipsHeader}>
+              <Ionicons name="warning-outline" size={18} color={colors.red} />
+              <Text style={[typo.heading3, { color: colors.textPrimary }]}>주의사항</Text>
+            </View>
+            {warnings.map((w, i) => (
+              <View key={i} style={s.tipRow}>
+                <View style={[s.tipDot, { backgroundColor: colors.red }]} />
+                <Text style={[typo.body2, { color: colors.textSecondary, flex: 1 }]}>{w}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Tips */}
+        {tips.length > 0 && (
+          <View style={s.tipsCard}>
+            <View style={s.tipsHeader}>
+              <Ionicons name="bulb-outline" size={18} color="#F59E0B" />
+              <Text style={[typo.heading3, { color: colors.textPrimary }]}>꿀팁</Text>
+            </View>
+            {tips.map((tip, i) => (
+              <View key={i} style={s.tipRow}>
+                <View style={s.tipDot} />
+                <Text style={[typo.body2, { color: colors.textSecondary, flex: 1 }]}>{tip}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+
         <View style={{ height: 120 }} />
       </ScrollView>
 
@@ -229,24 +280,24 @@ const s = StyleSheet.create({
     padding: space.cardPad,
   },
   infoTitle: { ...typo.heading1, color: colors.textPrimary, marginBottom: space.lg },
-  statsRow: { flexDirection: "row", gap: space.md },
+  statsRow: { flexDirection: "row", gap: space.sm },
   statChip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: space.xs,
+    gap: 3,
     backgroundColor: colors.bgPage,
-    paddingHorizontal: space.lg,
-    paddingVertical: space.sm,
-    borderRadius: radius.full,
-  },
-  tagsRow: { flexDirection: "row", flexWrap: "wrap", gap: space.md, marginTop: space.xl },
-  tagChip: {
-    backgroundColor: colors.accentLight,
     paddingHorizontal: space.lg,
     paddingVertical: space.xs,
     borderRadius: radius.full,
   },
-  tagChipText: { ...typo.caption2, color: colors.accent, fontWeight: "600" },
+  tagsRow: { flexDirection: "row", flexWrap: "wrap", gap: space.md, marginTop: space.lg },
+  tagChip: {
+    backgroundColor: colors.gray100,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.sm,
+    borderRadius: radius.full,
+  },
+  tagChipText: { ...typo.caption2, color: colors.textSecondary, fontWeight: "500" },
   sourceBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -332,5 +383,49 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: space.md,
+  },
+  categoryChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.xs,
+    backgroundColor: colors.accentLight,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.sm,
+    borderRadius: radius.full,
+    alignSelf: "flex-start",
+    marginBottom: space.lg,
+  },
+  warningsCard: {
+    backgroundColor: "#FEF2F2",
+    marginHorizontal: space.gutter,
+    marginTop: space.cardGap,
+    borderRadius: radius.xxl,
+    padding: space.cardPad,
+  },
+  tipsCard: {
+    backgroundColor: "#FFFBEB",
+    marginHorizontal: space.gutter,
+    marginTop: space.cardGap,
+    borderRadius: radius.xxl,
+    padding: space.cardPad,
+  },
+  tipsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.md,
+    marginBottom: space.xl,
+  },
+  tipRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: space.lg,
+    marginBottom: space.lg,
+  },
+  tipDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 2.5,
+    backgroundColor: "#F59E0B",
+    marginTop: 7,
   },
 });

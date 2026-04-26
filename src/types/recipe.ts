@@ -9,6 +9,7 @@ export interface Step {
   order: number;
   instruction: string;
   timerSeconds: number | null;
+  tip: string | null;
 }
 
 export type Category = "한식" | "중식" | "일식" | "양식" | "디저트" | "간편식";
@@ -28,6 +29,8 @@ export interface Recipe {
   sourceType: "youtube" | "blog" | "manual" | "photo" | null;
   sourceLabel: string | null;
   tags: string[];
+  tips: string[];
+  warnings: string[];
   gradientColors: [string, string];
   createdAt: string;
 }
