@@ -95,6 +95,15 @@ export default function RecipeDetailScreen() {
               </View>
             ))}
           </View>
+          {(recipe.tags ?? []).length > 0 && (
+            <View style={s.tagsRow}>
+              {recipe.tags.map((t) => (
+                <View key={t} style={s.tagChip}>
+                  <Text style={s.tagChipText}>#{t}</Text>
+                </View>
+              ))}
+            </View>
+          )}
           {recipe.sourceUrl && (
             <Pressable onPress={() => Linking.openURL(recipe.sourceUrl!)} style={s.sourceBtn}>
               <Ionicons name="open-outline" size={14} color={colors.accent} />
@@ -231,6 +240,14 @@ const s = StyleSheet.create({
     paddingVertical: space.sm,
     borderRadius: radius.full,
   },
+  tagsRow: { flexDirection: "row", flexWrap: "wrap", gap: space.md, marginTop: space.xl },
+  tagChip: {
+    backgroundColor: colors.accentLight,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.xs,
+    borderRadius: radius.full,
+  },
+  tagChipText: { ...typo.caption2, color: colors.accent, fontWeight: "600" },
   sourceBtn: {
     flexDirection: "row",
     alignItems: "center",

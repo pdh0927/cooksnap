@@ -84,8 +84,12 @@ export default function MyRecipesScreen() {
                 <View style={s.dot} />
                 <Text style={s.recipeMetaText}>{recipe.difficulty}</Text>
               </View>
-              {recipe.sourceLabel && (
-                <Text style={s.recipeSource}>{recipe.sourceLabel}</Text>
+              {(recipe.tags ?? []).length > 0 && (
+                <View style={s.tagRow}>
+                  {recipe.tags.slice(0, 3).map((t) => (
+                    <Text key={t} style={s.tagText}>#{t}</Text>
+                  ))}
+                </View>
               )}
             </View>
             <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
@@ -159,7 +163,8 @@ const s = StyleSheet.create({
   recipeMeta: { flexDirection: "row", alignItems: "center", gap: space.sm },
   recipeMetaText: { ...typo.caption1, color: colors.textTertiary },
   dot: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: colors.textDisabled },
-  recipeSource: { ...typo.caption2, color: colors.accent, marginTop: space.xs },
+  tagRow: { flexDirection: "row", gap: space.sm, marginTop: space.xs },
+  tagText: { ...typo.caption3, color: colors.accent },
   // Empty
   emptyCard: {
     backgroundColor: colors.bgPrimary,

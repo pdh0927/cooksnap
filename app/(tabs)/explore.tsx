@@ -1,107 +1,225 @@
-import { View, Text, ScrollView, Pressable, TextInput, StyleSheet } from "react-native";
+import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRecipes } from "../../src/store/recipeStore";
 import { colors, typo, space, radius, size } from "../../src/theme";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
-import type { Category } from "../../src/types/recipe";
+import type { Recipe } from "../../src/types/recipe";
 
-const CATS: { label: string; filter: string | null }[] = [
-  { label: "전체", filter: null },
-  { label: "한식", filter: "한식" },
-  { label: "중식", filter: "중식" },
-  { label: "일식", filter: "일식" },
-  { label: "양식", filter: "양식" },
-  { label: "디저트", filter: "디저트" },
-  { label: "간편식", filter: "간편식" },
-  { label: "쉬운", filter: "__easy" },
+// Theme sections for curated explore
+interface ThemeSection {
+  title: string;
+  subtitle: string;
+  emoji: string;
+  color: string;
+  bgColor: string;
+  filter: (recipes: Recipe[]) => Recipe[];
+}
+
+const THEMES: ThemeSection[] = [
+  {
+    title: "10분 안에 뚝딱",
+    subtitle: "바쁜 날 빠르게 만들어요",
+    emoji: "⚡",
+    color: "#F59E0B",
+    bgColor: "#FFFBEB",
+    filter: (r) => r.filter((x) => x.cookTimeMinutes <= 15),
+  },
+  {
+    title: "재료 3개 이하",
+    subtitle: "심플하게, 맛있게",
+    emoji: "🧂",
+    color: "#10B981",
+    bgColor: "#ECFDF5",
+    filter: (r) => r.filter((x) => x.ingredients.filter((i) => i.scalable).length <= 3),
+  },
+  {
+    title: "가성비 레시피",
+    subtitle: "적은 재료로 든든하게",
+    emoji: "💰",
+    color: "#3B82F6",
+    bgColor: "#EFF6FF",
+    filter: (r) => r.filter((x) => x.tags?.includes("가성비")),
+  },
+  {
+    title: "혼밥 메뉴",
+    subtitle: "1인분 레시피 모음",
+    emoji: "🍽️",
+    color: "#8B5CF6",
+    bgColor: "#F5F3FF",
+    filter: (r) => r.filter((x) => x.servings === 1),
+  },
+  {
+    title: "초보도 OK",
+    subtitle: "누구나 쉽게 따라해요",
+    emoji: "👩‍🍳",
+    color: "#EC4899",
+    bgColor: "#FDF2F8",
+    filter: (r) => r.filter((x) => x.difficulty === "쉬움"),
+  },
+  {
+    title: "한식 모음",
+    subtitle: "익숙하고 따뜻한 맛",
+    emoji: "🇰🇷",
+    color: "#EF4444",
+    bgColor: "#FEF2F2",
+    filter: (r) => r.filter((x) => x.category === "한식"),
+  },
+  {
+    title: "양식 모음",
+    subtitle: "파스타, 샐러드, 스테이크",
+    emoji: "🍝",
+    color: "#F97316",
+    bgColor: "#FFF7ED",
+    filter: (r) => r.filter((x) => x.category === "양식"),
+  },
 ];
+
+function RecipeHCard({ recipe, onPress }: { recipe: Recipe; onPress: () => void }) {
+  return (
+    <AnimatedPressable onPress={onPress} style={s.hCard}>
+      <LinearGradient
+        colors={recipe.gradientColors as [string, string]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={s.hCardImg}
+      >
+        <Text style={{ fontSize: 28 }}>{recipe.emoji}</Text>
+      </LinearGradient>
+      <Text style={s.hCardTitle} numberOfLines={1}>{recipe.title}</Text>
+      <Text style={s.hCardMeta}>{recipe.cookTimeMinutes}분</Text>
+    </AnimatedPressable>
+  );
+}
 
 export default function ExploreScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { recipes } = useRecipes();
-  const [selected, setSelected] = useState<string | null>(null);
 
-  const filtered = selected === null
-    ? recipes
-    : selected === "__easy"
-    ? recipes.filter((r) => r.difficulty === "쉬움")
-    : recipes.filter((r) => r.category === selected);
+  // Collect all unique tags from recipes
+  const allTags = Array.from(new Set(recipes.flatMap((r) => r.tags ?? [])));
 
   return (
     <View style={[s.root, { paddingTop: insets.top }]}>
       <View style={s.header}>
-        <Text style={s.title}>탐색</Text>
-        <Text style={s.subtitle}>다른 사람들의 레시피를 구경해보세요</Text>
+        <Text style={s.headerTitle}>탐색</Text>
+        <Text style={s.headerSub}>테마별로 레시피를 찾아보세요</Text>
       </View>
+
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
-        {/* Search */}
-        <Pressable style={s.searchCard} onPress={() => router.push("/(tabs)/search")}>
-          <Ionicons name="search" size={18} color={colors.textDisabled} />
-          <Text style={[typo.body2, { color: colors.textDisabled }]}>레시피 검색...</Text>
-        </Pressable>
-
-        {/* Categories */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chips}>
-          {CATS.map((c) => {
-            const active = selected === c.filter;
-            return (
-              <Pressable
-                key={c.label}
-                onPress={() => setSelected(active ? null : c.filter)}
-                style={[s.chip, active && s.chipActive]}
-              >
-                <Text style={[s.chipText, active && { color: colors.white }]}>{c.label}</Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-
-        {/* Section */}
-        <View style={s.sectionRow}>
-          <Text style={[typo.heading3, { color: colors.textPrimary }]}>
-            {selected === null ? "전체 레시피" : selected === "__easy" ? "쉬운 레시피" : `${selected} 레시피`}
-          </Text>
-          <View style={s.badge}>
-            <Text style={[typo.caption2, { color: colors.accent }]}>총 {filtered.length}개</Text>
-          </View>
-        </View>
-
-        {/* Cards */}
-        {filtered.length > 0 ? (
-          filtered.map((r) => (
-            <AnimatedPressable key={r.id} onPress={() => router.push(`/recipe/${r.id}`)} style={s.recipeCard}>
-              <LinearGradient
-                colors={r.gradientColors as [string, string]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={s.recipeImg}
-              >
-                <Text style={{ fontSize: size.thumbEmoji }}>{r.emoji}</Text>
-              </LinearGradient>
-              <View style={{ flex: 1 }}>
-                <Text style={s.recipeName}>{r.title}</Text>
-                <View style={s.recipeMeta}>
-                  <Text style={s.recipeMetaText}>{r.cookTimeMinutes}분</Text>
-                  <View style={s.dot} />
-                  <Text style={s.recipeMetaText}>{r.servings}인분</Text>
-                  <View style={s.dot} />
-                  <Text style={s.recipeMetaText}>{r.difficulty}</Text>
-                </View>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
-            </AnimatedPressable>
-          ))
-        ) : (
-          <View style={s.emptyCard}>
-            <Text style={{ fontSize: 36, marginBottom: space.lg }}>📭</Text>
-            <Text style={[typo.body1Bold, { color: colors.textSecondary }]}>레시피가 없어요</Text>
+        {/* Trending tags */}
+        {allTags.length > 0 && (
+          <View style={s.card}>
+            <View style={s.cardHeader}>
+              <Text style={{ fontSize: 18 }}>🔥</Text>
+              <Text style={[typo.heading3, { color: colors.textPrimary }]}>인기 태그</Text>
+            </View>
+            <View style={s.tagWrap}>
+              {allTags.slice(0, 12).map((tag) => (
+                <Pressable
+                  key={tag}
+                  onPress={() => router.push({ pathname: "/(tabs)/search", params: { q: tag } })}
+                  style={s.tag}
+                >
+                  <Text style={s.tagText}>#{tag}</Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
         )}
+
+        {/* Theme sections */}
+        {THEMES.map((theme) => {
+          const matched = theme.filter(recipes);
+          if (matched.length === 0) return null;
+
+          return (
+            <View key={theme.title} style={s.card}>
+              {/* Theme header */}
+              <View style={s.themeHeader}>
+                <View style={[s.themeIcon, { backgroundColor: theme.bgColor }]}>
+                  <Text style={{ fontSize: 20 }}>{theme.emoji}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>
+                    {theme.title}
+                  </Text>
+                  <Text style={[typo.caption1, { color: colors.textTertiary }]}>
+                    {theme.subtitle}
+                  </Text>
+                </View>
+                <View style={[s.countBadge, { backgroundColor: theme.bgColor }]}>
+                  <Text style={[typo.caption2, { color: theme.color }]}>{matched.length}</Text>
+                </View>
+              </View>
+
+              {/* Horizontal recipe scroll */}
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={s.hScroll}
+              >
+                {matched.map((r) => (
+                  <RecipeHCard
+                    key={r.id}
+                    recipe={r}
+                    onPress={() => router.push(`/recipe/${r.id}`)}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+          );
+        })}
+
+        {/* All recipes */}
+        <View style={s.card}>
+          <View style={s.cardHeader}>
+            <Text style={{ fontSize: 18 }}>📋</Text>
+            <Text style={[typo.heading3, { color: colors.textPrimary }]}>전체 레시피</Text>
+            <View style={[s.countBadge, { backgroundColor: colors.accentLight }]}>
+              <Text style={[typo.caption2, { color: colors.accent }]}>{recipes.length}</Text>
+            </View>
+          </View>
+          {recipes.map((r, i) => (
+            <View key={r.id}>
+              <AnimatedPressable
+                onPress={() => router.push(`/recipe/${r.id}`)}
+                style={s.listItem}
+              >
+                <LinearGradient
+                  colors={r.gradientColors as [string, string]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={s.listImg}
+                >
+                  <Text style={{ fontSize: size.thumbEmoji }}>{r.emoji}</Text>
+                </LinearGradient>
+                <View style={{ flex: 1 }}>
+                  <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>{r.title}</Text>
+                  <View style={s.listMeta}>
+                    <Text style={s.listMetaText}>{r.cookTimeMinutes}분</Text>
+                    <View style={s.dot} />
+                    <Text style={s.listMetaText}>{r.servings}인분</Text>
+                    <View style={s.dot} />
+                    <Text style={s.listMetaText}>{r.difficulty}</Text>
+                  </View>
+                  {(r.tags ?? []).length > 0 && (
+                    <View style={s.listTags}>
+                      {r.tags.slice(0, 3).map((t) => (
+                        <Text key={t} style={s.listTagText}>#{t}</Text>
+                      ))}
+                    </View>
+                  )}
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
+              </AnimatedPressable>
+              {i < recipes.length - 1 && <View style={s.divider} />}
+            </View>
+          ))}
+        </View>
       </ScrollView>
     </View>
   );
@@ -109,42 +227,89 @@ export default function ExploreScreen() {
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bgPage },
-  header: { backgroundColor: colors.bgPrimary, paddingHorizontal: space.gutter, paddingTop: space.lg, paddingBottom: space.xxl },
-  title: { ...typo.screenTitle, color: colors.textPrimary },
-  subtitle: { ...typo.caption1, color: colors.textTertiary, marginTop: space.xs },
+  header: {
+    backgroundColor: colors.bgPrimary,
+    paddingHorizontal: space.gutter,
+    paddingTop: space.lg,
+    paddingBottom: space.xxl,
+  },
+  headerTitle: { ...typo.screenTitle, color: colors.textPrimary },
+  headerSub: { ...typo.caption1, color: colors.textTertiary, marginTop: space.xs },
   scroll: { padding: space.gutter, paddingBottom: 120, gap: space.cardGap },
-  searchCard: {
+  // Card
+  card: {
     backgroundColor: colors.bgPrimary,
     borderRadius: radius.xxl,
-    paddingHorizontal: space.xxl,
-    paddingVertical: space.xl,
+    padding: space.cardPad,
+  },
+  cardHeader: {
     flexDirection: "row",
     alignItems: "center",
     gap: space.md,
+    marginBottom: space.xl,
   },
-  chips: { gap: space.md, paddingVertical: space.xs },
-  chip: { height: 34, paddingHorizontal: space.xl, borderRadius: radius.full, backgroundColor: colors.bgPrimary, justifyContent: "center" },
-  chipActive: { backgroundColor: colors.accent },
-  chipText: { ...typo.body2Bold, color: colors.textTertiary },
-  sectionRow: { flexDirection: "row", alignItems: "center", gap: space.md, marginTop: space.md },
-  badge: { backgroundColor: colors.accentLight, paddingHorizontal: space.md, paddingVertical: space.xxs, borderRadius: radius.xs },
-  recipeCard: {
-    backgroundColor: colors.bgPrimary,
-    borderRadius: radius.xxl,
-    padding: space.xl,
+  // Tags
+  tagWrap: { flexDirection: "row", flexWrap: "wrap", gap: space.md },
+  tag: {
+    backgroundColor: colors.bgPage,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.sm,
+    borderRadius: radius.full,
+  },
+  tagText: { ...typo.caption1, color: colors.accent, fontWeight: "600" },
+  // Theme section
+  themeHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.lg,
+    marginBottom: space.xl,
+  },
+  themeIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  countBadge: {
+    paddingHorizontal: space.md,
+    paddingVertical: space.xxs,
+    borderRadius: radius.xs,
+  },
+  // Horizontal card
+  hScroll: { gap: space.lg },
+  hCard: {
+    width: 120,
+    alignItems: "center",
+  },
+  hCardImg: {
+    width: 100,
+    height: 100,
+    borderRadius: radius.xl,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: space.md,
+  },
+  hCardTitle: { ...typo.body2Bold, color: colors.textPrimary, textAlign: "center" },
+  hCardMeta: { ...typo.caption1, color: colors.textTertiary, marginTop: 2 },
+  // List item
+  listItem: {
     flexDirection: "row",
     alignItems: "center",
     gap: space.xl,
+    paddingVertical: space.lg,
   },
-  recipeImg: { width: size.thumb, height: size.thumb, borderRadius: radius.lg, alignItems: "center", justifyContent: "center" },
-  recipeName: { ...typo.body1Bold, color: colors.textPrimary, marginBottom: space.xs },
-  recipeMeta: { flexDirection: "row", alignItems: "center", gap: space.sm },
-  recipeMetaText: { ...typo.caption1, color: colors.textTertiary },
-  dot: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: colors.textDisabled },
-  emptyCard: {
-    backgroundColor: colors.bgPrimary,
-    borderRadius: radius.xxl,
-    padding: space.x4,
+  listImg: {
+    width: size.thumb,
+    height: size.thumb,
+    borderRadius: radius.lg,
     alignItems: "center",
+    justifyContent: "center",
   },
+  listMeta: { flexDirection: "row", alignItems: "center", gap: space.sm, marginTop: space.xs },
+  listMetaText: { ...typo.caption1, color: colors.textTertiary },
+  dot: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: colors.textDisabled },
+  listTags: { flexDirection: "row", gap: space.sm, marginTop: space.xs },
+  listTagText: { ...typo.caption3, color: colors.accent },
+  divider: { height: 0.5, backgroundColor: colors.divider, marginLeft: size.thumb + space.xl },
 });

@@ -133,6 +133,7 @@ export default function CreateRecipeScreen() {
       sourceUrl: null,
       sourceType: "manual",
       sourceLabel: "직접 작성",
+      tags: [],
       gradientColors: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
       createdAt: new Date().toISOString(),
     };

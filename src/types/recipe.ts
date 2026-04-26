@@ -27,6 +27,7 @@ export interface Recipe {
   sourceUrl: string | null;
   sourceType: "youtube" | "blog" | "manual" | "photo" | null;
   sourceLabel: string | null;
+  tags: string[];
   gradientColors: [string, string];
   createdAt: string;
 }
