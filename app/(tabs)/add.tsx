@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Pressable, KeyboardAvoidingView, Platform, StyleSheet, Alert } from "react-native";
+import { View, Text, TextInput, ScrollView, Pressable, KeyboardAvoidingView, Platform, StyleSheet, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
 import { useRouter } from "expo-router";
@@ -89,7 +89,7 @@ export default function AddRecipeScreen() {
 function ScrollViewContent({ url, setUrl, startParsing }: { url: string; setUrl: (v: string) => void; startParsing: () => void }) {
   const router = useRouter();
   return (
-    <View style={s.content}>
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
       {/* URL Card */}
       <View style={s.card}>
         <Text style={[typo.caption1, { color: colors.textTertiary, marginBottom: space.lg }]}>
@@ -148,11 +148,9 @@ function ScrollViewContent({ url, setUrl, startParsing }: { url: string; setUrl:
           <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
         </AnimatedPressable>
       </View>
-    </View>
+    </ScrollView>
   );
 }
-
-import { ScrollView } from "react-native";
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bgPage },
@@ -162,7 +160,7 @@ const s = StyleSheet.create({
     paddingTop: space.lg,
     paddingBottom: space.xl,
   },
-  content: { padding: space.gutter, gap: space.cardGap },
+  content: { padding: space.gutter, paddingBottom: 120, gap: space.cardGap },
   card: {
     backgroundColor: colors.bgPrimary,
     borderRadius: radius.xxl,

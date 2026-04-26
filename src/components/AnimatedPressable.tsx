@@ -28,8 +28,8 @@ export default function AnimatedPressable({ style, scaleValue = 0.97, children, 
   };
 
   return (
-    <Animated.View style={[{ transform: [{ scale }] }, style]}>
-      <Pressable {...rest} onPressIn={onPressIn} onPressOut={onPressOut}>
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <Pressable style={style} {...rest} onPressIn={onPressIn} onPressOut={onPressOut}>
         {children}
       </Pressable>
     </Animated.View>
