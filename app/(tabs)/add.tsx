@@ -33,7 +33,14 @@ export default function AddRecipeScreen() {
 
   async function startParsing() {
     const trimmed = input.trim();
-    if (!trimmed) return;
+    if (!trimmed) {
+      Alert.alert("입력 없음", "URL이나 요리명을 입력해주세요");
+      return;
+    }
+
+    // 디버깅: 실제 전달되는 입력값 확인
+    console.log("[CookSnap] 입력값:", trimmed);
+    console.log("[CookSnap] URL여부:", inputIsUrl);
 
     setParsing(true);
     setParseStep(0);

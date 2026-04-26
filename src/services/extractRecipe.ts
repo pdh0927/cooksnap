@@ -116,7 +116,7 @@ async function fetchBlogContent(url: string): Promise<string> {
 // 2) Claude API로 레시피 구조화
 // ============================================================
 
-const SYSTEM_PROMPT = `당신은 요리 레시피 전문가입니다. 주어진 콘텐츠에서 레시피 정보를 추출하여 정확한 JSON 형식으로 반환하세요.
+const SYSTEM_PROMPT = `당신은 10년 경력 한식/양식 셰프입니다. 주어진 콘텐츠에서 레시피를 추출하여 JSON으로 반환하세요.
 
 반드시 아래 JSON 형식으로만 응답하세요. 다른 텍스트는 포함하지 마세요.
 
@@ -136,13 +136,23 @@ const SYSTEM_PROMPT = `당신은 요리 레시피 전문가입니다. 주어진 
   ]
 }
 
-규칙:
+## 조리 순서 작성 규칙 (가장 중요)
+- 각 단계는 요리 초보가 읽고 바로 따라할 수 있을 만큼 구체적이어야 합니다
+- 불 세기를 반드시 명시: "중불", "약불", "센불" 등 (예: "약불에서 버터를 녹여주세요")
+- 썰기는 크기/모양 명시: "2cm 크기로 깍둑썰기", "송송 썰기(0.5cm)", "어슷썰기" 등
+- 양념 넣는 타이밍 구체적으로: "고기가 80% 익으면", "양파가 투명해지면", "가장자리가 노릇해지면"
+- 시간이 있으면 반드시 포함: "중불에서 3분간 볶아주세요"
+- 온도가 중요하면 명시: "180도로 예열한 오븐", "팔팔 끓는 물"
+- 완성 판단 기준 제시: "국물이 반으로 줄어들 때까지", "젓가락으로 찔러서 맑은 즙이 나올 때까지"
+- 소스 콘텐츠에 디테일이 있으면 반드시 그대로 살려서 작성
+- 소스에 없는 디테일도 셰프 지식으로 보충 (불 세기, 썰기 크기 등)
+
+## 기타 규칙
 - tags는 3~5개, 예: 가성비, 자취생, 매운맛, 다이어트, 초간단, 밥도둑, 브런치, 혼밥, 겨울, 여름 등
 - amount가 "약간", "적당량"이면 amount=0, unit="약간", scalable=false
-- timerSeconds는 조리 단계에 시간이 명시된 경우만 초 단위로 (예: 5분 → 300)
+- timerSeconds는 시간이 명시된 경우만 초 단위 (예: 5분 → 300)
 - 단위: g, ml, 큰술, 작은술, 컵, 개, 모, 대, 쪽 등
-- 조리 순서는 구체적이고 실용적으로, 한국어로 작성
-- 콘텐츠에서 레시피를 명확히 추출할 수 없으면 제목을 기반으로 일반적인 레시피를 생성`;
+- 콘텐츠에서 레시피를 추출할 수 없으면 제목 기반으로 정확한 레시피를 생성`;
 
 async function callAI(content: string): Promise<string> {
   if (!API_KEY) throw new Error("API 키가 설정되지 않았습니다");
@@ -188,16 +198,20 @@ export async function extractRecipeFromUrl(
   onProgress: (p: ExtractProgress) => void
 ): Promise<Recipe> {
   // Step 1: 콘텐츠 가져오기
+  console.log("[CookSnap] extractRecipeFromUrl 호출:", url);
   onProgress({ step: "fetch", message: "페이지 내용 가져오는 중..." });
 
   const urlType = detectUrlType(url);
   let content: string;
 
   if (urlType === "youtube") {
+    console.log("[CookSnap] YouTube 추출 시작");
     content = await fetchYoutubeContent(url);
   } else {
+    console.log("[CookSnap] 블로그 추출 시작");
     content = await fetchBlogContent(url);
   }
+  console.log("[CookSnap] 추출된 콘텐츠:", content.slice(0, 200));
 
   // Step 2: AI 추출
   onProgress({ step: "extract", message: "재료 목록 추출 중..." });
