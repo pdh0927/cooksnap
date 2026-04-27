@@ -9,18 +9,22 @@ import { colors, typo, space, radius, size } from "../../src/theme";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
 import type { Category } from "../../src/types/recipe";
 
-const CATEGORIES: (Category | "전체")[] = [
-  "전체", "한식", "중식", "일식", "양식", "디저트", "간편식",
+const CATEGORIES: (Category | "전체" | "즐겨찾기")[] = [
+  "전체", "즐겨찾기", "한식", "중식", "일식", "양식", "디저트", "간편식",
 ];
 
 export default function MyRecipesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { recipes, loading } = useRecipes();
-  const [selected, setSelected] = useState<Category | "전체">("전체");
+  const [selected, setSelected] = useState<Category | "전체" | "즐겨찾기">("전체");
 
   const filtered =
-    selected === "전체" ? recipes : recipes.filter((r) => r.category === selected);
+    selected === "전체"
+      ? recipes
+      : selected === "즐겨찾기"
+      ? recipes.filter((r) => r.isFavorite)
+      : recipes.filter((r) => r.category === selected);
 
   return (
     <View style={[s.root, { paddingTop: insets.top }]}>

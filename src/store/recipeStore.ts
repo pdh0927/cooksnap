@@ -34,6 +34,7 @@ export function useRecipes() {
           tips: r.tips ?? [],
           warnings: r.warnings ?? [],
           steps: r.steps.map((s) => ({ ...s, tip: s.tip ?? null })),
+          isFavorite: r.isFavorite ?? false,
         }));
       } else {
         recipesCache = sampleRecipes;
@@ -69,9 +70,18 @@ export function useRecipes() {
     notifyListeners();
   }, []);
 
+  const toggleFavorite = useCallback(async (id: string) => {
+    if (!recipesCache) return;
+    recipesCache = recipesCache.map((r) =>
+      r.id === id ? { ...r, isFavorite: !r.isFavorite } : r
+    );
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(recipesCache));
+    notifyListeners();
+  }, []);
+
   const getRecipe = useCallback((id: string) => {
     return recipesCache?.find((r) => r.id === id) ?? null;
   }, []);
 
-  return { recipes, loading, addRecipe, deleteRecipe, updateRecipe, getRecipe };
+  return { recipes, loading, addRecipe, deleteRecipe, updateRecipe, toggleFavorite, getRecipe };
 }

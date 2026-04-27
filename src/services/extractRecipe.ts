@@ -270,6 +270,7 @@ export async function extractRecipeFromUrl(
     tags: parsed.tags || [],
     tips: parsed.tips || [],
     warnings: parsed.warnings || [],
+    isFavorite: false,
     gradientColors: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
     createdAt: new Date().toISOString(),
   };
@@ -337,6 +338,7 @@ export async function generateRecipeFromName(
     tags: parsed.tags || [],
     tips: parsed.tips || [],
     warnings: parsed.warnings || [],
+    isFavorite: false,
     gradientColors: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
     createdAt: new Date().toISOString(),
   };

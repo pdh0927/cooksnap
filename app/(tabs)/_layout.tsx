@@ -82,9 +82,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "내 정보",
+          title: "장보기",
           tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? "person" : "person-outline"} size={24} color={color} />
+            <Ionicons name={focused ? "cart" : "cart-outline"} size={24} color={color} />
           ),
         }}
       />

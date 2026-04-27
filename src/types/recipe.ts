@@ -32,5 +32,6 @@ export interface Recipe {
   tips: string[];
   warnings: string[];
   gradientColors: [string, string];
+  isFavorite: boolean;
   createdAt: string;
 }

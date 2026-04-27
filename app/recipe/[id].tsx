@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRecipes } from "../../src/store/recipeStore";
+import { useShoppingList } from "../../src/store/shoppingStore";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
 import StepText from "../../src/components/StepText";
 import { formatAmount } from "../../src/components/formatAmount";
@@ -14,7 +15,8 @@ export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { getRecipe, deleteRecipe, updateRecipe } = useRecipes();
+  const { getRecipe, deleteRecipe, updateRecipe, toggleFavorite } = useRecipes();
+  const { addItems } = useShoppingList();
   const recipe = getRecipe(id);
 
   function handleDelete() {
@@ -86,6 +88,13 @@ export default function RecipeDetailScreen() {
             <Ionicons name="chevron-back" size={20} color={colors.white} />
           </Pressable>
           <View style={[s.actionRow, { top: insets.top + 8 }]}>
+            <Pressable onPress={() => toggleFavorite(id)} style={s.actionBtn}>
+              <Ionicons
+                name={recipe.isFavorite ? "heart" : "heart-outline"}
+                size={18}
+                color={recipe.isFavorite ? colors.red : colors.white}
+              />
+            </Pressable>
             <Pressable onPress={handleShare} style={s.actionBtn}>
               <Ionicons name="share-outline" size={18} color={colors.white} />
             </Pressable>
@@ -174,6 +183,26 @@ export default function RecipeDetailScreen() {
                   </View>
                 );
               })}
+
+              <Pressable
+                onPress={() => {
+                  const shoppingItems = recipe.ingredients.map((ing) => ({
+                    name: ing.name,
+                    amount: ing.scalable ? ing.amount * mult : ing.amount,
+                    unit: ing.unit,
+                    recipeTitle: recipe.title,
+                  }));
+                  addItems(shoppingItems);
+                  Alert.alert(
+                    "장보기 목록에 추가",
+                    `${recipe.ingredients.length}개 재료가 장보기 목록에 추가됐어요`
+                  );
+                }}
+                style={s.shoppingBtn}
+              >
+                <Ionicons name="cart-outline" size={18} color={colors.accent} />
+                <Text style={[typo.body2Bold, { color: colors.accent }]}>장보기 목록에 추가</Text>
+              </Pressable>
             </View>
           ) : (
             <View style={{ gap: space.xxl, marginTop: space.md }}>
@@ -427,5 +456,15 @@ const s = StyleSheet.create({
     borderRadius: 2.5,
     backgroundColor: "#F59E0B",
     marginTop: 7,
+  },
+  shoppingBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.md,
+    backgroundColor: colors.accentLight,
+    borderRadius: radius.md,
+    paddingVertical: space.lg,
+    marginTop: space.xxl,
   },
 });

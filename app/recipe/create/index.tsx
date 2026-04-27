@@ -137,6 +137,7 @@ export default function CreateRecipeScreen() {
       tags: [],
       tips: [],
       warnings: [],
+      isFavorite: false,
       gradientColors: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
       createdAt: new Date().toISOString(),
     };
