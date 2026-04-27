@@ -5,11 +5,25 @@ export interface Ingredient {
   scalable: boolean; // false for "약간", "적당량" etc.
 }
 
+export interface StepHighlight {
+  text: string;
+  type: "fire" | "time" | "cut" | "temp";
+}
+
+export interface StepDetails {
+  tip: string | null;
+  warning: string | null;
+  highlights: StepHighlight[];
+  ingredientRefs: number[];
+  imageUrl?: string | null;
+}
+
 export interface Step {
   order: number;
   instruction: string;
   timerSeconds: number | null;
-  tip: string | null;
+  tip: string | null;      // backward compat (from details.tip)
+  details: StepDetails;
 }
 
 export type Category = "한식" | "중식" | "일식" | "양식" | "디저트" | "간편식";
