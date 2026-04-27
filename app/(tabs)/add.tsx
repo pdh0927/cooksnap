@@ -179,8 +179,8 @@ export default function AddRecipeScreen() {
           <View style={s.optDivider} />
 
           <AnimatedPressable style={s.option} onPress={() => Alert.alert("준비 중", "다음 업데이트에서 만나요!")}>
-            <View style={[s.optIcon, { backgroundColor: "#F3EEFF" }]}>
-              <Ionicons name="camera-outline" size={20} color="#8B5CF6" />
+            <View style={[s.optIcon, { backgroundColor: colors.gray100 }]}>
+              <Ionicons name="camera-outline" size={20} color={colors.gray600} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>사진으로 추가</Text>
@@ -203,6 +203,8 @@ const s = StyleSheet.create({
     paddingHorizontal: space.gutter,
     paddingTop: space.lg,
     paddingBottom: space.xl,
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.divider,
   },
   content: { padding: space.gutter, paddingBottom: 120, gap: space.cardGap },
   card: {

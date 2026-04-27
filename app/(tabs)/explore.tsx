@@ -6,6 +6,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useRecipes } from "../../src/store/recipeStore";
 import { colors, typo, space, radius, size } from "../../src/theme";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
+import Spinner from "../../src/components/Spinner";
 import type { Recipe } from "../../src/types/recipe";
 
 // Theme sections for curated explore
@@ -31,8 +32,8 @@ const THEMES: ThemeSection[] = [
     title: "재료 3개 이하",
     subtitle: "심플하게, 맛있게",
     emoji: "🧂",
-    color: "#10B981",
-    bgColor: "#ECFDF5",
+    color: colors.green,
+    bgColor: colors.greenLight,
     filter: (r) => r.filter((x) => x.ingredients.filter((i) => i.scalable).length <= 3),
   },
   {
@@ -47,8 +48,8 @@ const THEMES: ThemeSection[] = [
     title: "혼밥 메뉴",
     subtitle: "1인분 레시피 모음",
     emoji: "🍽️",
-    color: "#8B5CF6",
-    bgColor: "#F5F3FF",
+    color: colors.purple,
+    bgColor: colors.purpleLight,
     filter: (r) => r.filter((x) => x.servings === 1),
   },
   {
@@ -229,7 +230,9 @@ const s = StyleSheet.create({
     backgroundColor: colors.bgPrimary,
     paddingHorizontal: space.gutter,
     paddingTop: space.lg,
-    paddingBottom: space.xxl,
+    paddingBottom: space.xl,
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.divider,
   },
   headerTitle: { ...typo.screenTitle, color: colors.textPrimary },
   headerSub: { ...typo.caption1, color: colors.textTertiary, marginTop: space.xs },

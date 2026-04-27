@@ -33,6 +33,10 @@ export const colors = {
   greenLight: "#E8FAF0",
   yellow: "#F59E0B",
   yellowLight: "#FFFBEB",
+  purple: "#8B5CF6",
+  purpleLight: "#F3EEFF",
+  pink: "#EC4899",
+  pinkLight: "#FDF2F8",
 
   // Grays (Toss scale)
   gray50: "#F9FAFB",

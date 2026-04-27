@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert } from "react-native";
+import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -8,6 +8,7 @@ import { useRecipes } from "../../src/store/recipeStore";
 import { useFolders } from "../../src/store/folderStore";
 import { colors, typo, space, radius, size } from "../../src/theme";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
+import Spinner from "../../src/components/Spinner";
 
 type ViewMode = "all" | "favorites" | "folder";
 
@@ -204,6 +205,13 @@ export default function MyRecipesScreen() {
           </View>
         )}
 
+        {/* Loading state */}
+        {loading && recipes.length === 0 && (
+          <View style={s.loadingWrap}>
+            <Spinner size={36} />
+          </View>
+        )}
+
         {/* Recipe cards */}
         {filtered.map((recipe) => (
           <AnimatedPressable
@@ -290,6 +298,8 @@ const s = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "baseline",
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.divider,
   },
   title: { ...typo.screenTitle, color: colors.textPrimary },
   scroll: { padding: space.gutter, paddingBottom: 120, gap: space.cardGap },
@@ -406,6 +416,12 @@ const s = StyleSheet.create({
   dot: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: colors.textDisabled },
   tagRow: { flexDirection: "row", gap: space.sm, marginTop: space.xs },
   tagText: { ...typo.caption3, color: colors.accent },
+  // Loading
+  loadingWrap: {
+    paddingVertical: space.x5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   // Empty
   emptyCard: {
     backgroundColor: colors.bgPrimary,

@@ -1,6 +1,21 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { colors, typo, space, radius } from "../../src/theme";
+
+interface SettingsRow {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value?: string;
+}
+
+const MENU_ITEMS: SettingsRow[] = [
+  { icon: "information-circle-outline", label: "버전 정보", value: "1.0.0" },
+  { icon: "document-text-outline", label: "오픈소스 라이선스" },
+  { icon: "chatbubble-outline", label: "문의하기" },
+  { icon: "star-outline", label: "앱 평가하기" },
+  { icon: "shield-checkmark-outline", label: "개인정보 처리방침" },
+];
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
@@ -11,20 +26,40 @@ export default function SettingsScreen() {
         <Text style={[typo.screenTitle, { color: colors.textPrimary }]}>설정</Text>
       </View>
 
-      <View style={s.content}>
+      <ScrollView contentContainerStyle={s.scroll}>
+        {/* App info card */}
         <View style={s.card}>
-          <Text style={[typo.heading3, { color: colors.textPrimary, marginBottom: space.md }]}>
-            CookSnap
-          </Text>
-          <Text style={[typo.body2, { color: colors.textTertiary, marginBottom: space.xxl }]}>
-            버전 1.0.0
-          </Text>
-          <View style={s.divider} />
-          <Text style={[typo.body1, { color: colors.textSecondary, marginTop: space.xxl, textAlign: "center", lineHeight: 24 }]}>
-            추후 업데이트 예정
-          </Text>
+          <View style={s.appInfo}>
+            <View style={s.appIcon}>
+              <Text style={{ fontSize: 28 }}>🍳</Text>
+            </View>
+            <View>
+              <Text style={[typo.heading2, { color: colors.textPrimary }]}>CookSnap</Text>
+              <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: space.xxs }]}>
+                레시피를 쉽고 정확하게
+              </Text>
+            </View>
+          </View>
         </View>
-      </View>
+
+        {/* Menu items */}
+        <View style={s.card}>
+          {MENU_ITEMS.map((item, i) => (
+            <View key={item.label}>
+              <Pressable style={s.menuRow}>
+                <Ionicons name={item.icon} size={20} color={colors.textTertiary} />
+                <Text style={[typo.body1, { color: colors.textPrimary, flex: 1 }]}>{item.label}</Text>
+                {item.value ? (
+                  <Text style={[typo.body2, { color: colors.textTertiary }]}>{item.value}</Text>
+                ) : (
+                  <Ionicons name="chevron-forward" size={16} color={colors.textDisabled} />
+                )}
+              </Pressable>
+              {i < MENU_ITEMS.length - 1 && <View style={s.menuDivider} />}
+            </View>
+          ))}
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -36,17 +71,37 @@ const s = StyleSheet.create({
     paddingHorizontal: space.gutter,
     paddingTop: space.lg,
     paddingBottom: space.xl,
+    borderBottomWidth: 0.5,
+    borderBottomColor: colors.divider,
   },
-  content: { padding: space.gutter, marginTop: space.cardGap },
+  scroll: { padding: space.gutter, paddingBottom: 120, gap: space.cardGap },
   card: {
     backgroundColor: colors.bgPrimary,
     borderRadius: radius.xxl,
     padding: space.cardPad,
-    alignItems: "center",
   },
-  divider: {
-    width: "100%",
+  appInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.xl,
+  },
+  appIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: radius.lg,
+    backgroundColor: colors.orangeLight,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  menuRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.xl,
+    paddingVertical: space.lg,
+  },
+  menuDivider: {
     height: 0.5,
     backgroundColor: colors.divider,
+    marginLeft: 36,
   },
 });

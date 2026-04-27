@@ -359,7 +359,7 @@ export default function SearchScreen() {
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bgPage },
-  header: { backgroundColor: colors.bgPrimary, paddingHorizontal: space.gutter, paddingTop: space.lg, paddingBottom: space.xl },
+  header: { backgroundColor: colors.bgPrimary, paddingHorizontal: space.gutter, paddingTop: space.lg, paddingBottom: space.xl, borderBottomWidth: 0.5, borderBottomColor: colors.divider },
   scroll: { padding: space.gutter, paddingBottom: 120, gap: space.cardGap },
   modeToggle: {
     flexDirection: "row",

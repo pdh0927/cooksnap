@@ -17,23 +17,23 @@ interface BadgeStyle {
 
 const badgeStyles: Record<BadgeKind, BadgeStyle> = {
   fire: {
-    bg: "#FFF3E0",
+    bg: colors.orangeLight,
     bgDark: "rgba(249,115,22,0.18)",
-    fg: "#E65100",
+    fg: colors.orange,
     fgDark: "#FFA726",
     icon: "\uD83D\uDD25", // fire emoji
   },
   time: {
-    bg: "#E3F2FD",
-    bgDark: "rgba(91,155,245,0.18)",
-    fg: "#1565C0",
+    bg: colors.accentLight,
+    bgDark: "rgba(49,130,246,0.18)",
+    fg: colors.accent,
     fgDark: "#90CAF9",
     icon: "\u23F1", // stopwatch
   },
   cut: {
-    bg: "#E8F5E9",
-    bgDark: "rgba(52,199,89,0.18)",
-    fg: "#2E7D32",
+    bg: colors.greenLight,
+    bgDark: "rgba(3,178,108,0.18)",
+    fg: colors.green,
     fgDark: "#81C784",
     icon: "\uD83D\uDD2A", // knife
   },
