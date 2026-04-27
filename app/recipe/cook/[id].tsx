@@ -165,7 +165,7 @@ export default function CookingModeScreen() {
         {/* Step tip */}
         {step.tip && (
           <View style={st.tipCard}>
-            <Ionicons name="bulb-outline" size={16} color="#F59E0B" />
+            <Ionicons name="bulb-outline" size={16} color={colors.yellow} />
             <Text style={st.tipText}>{step.tip}</Text>
           </View>
         )}
@@ -219,10 +219,10 @@ const st = StyleSheet.create({
   progBg: { flex: 1, height: 4, backgroundColor: darkColors.card, borderRadius: 2, overflow: "hidden" },
   progFill: { height: 4, backgroundColor: colors.accent, borderRadius: 2 },
   body: { flex: 1, paddingHorizontal: space.cardPad, paddingTop: space.xxxl },
-  stepLabel: { ...typo.caption2, color: colors.accent, letterSpacing: 2, marginBottom: space.lg, fontWeight: "700" },
+  stepLabel: { ...typo.caption2, color: colors.orange, letterSpacing: 2, marginBottom: space.lg, fontWeight: "700" },
   ingPillRow: { flexDirection: "row", flexWrap: "wrap", gap: space.md, marginBottom: space.xl },
-  ingPill: { backgroundColor: "rgba(91,155,245,0.15)", paddingHorizontal: space.lg, paddingVertical: space.xs, borderRadius: radius.full },
-  ingPillText: { ...typo.caption2, color: colors.accent, fontWeight: "600" },
+  ingPill: { backgroundColor: "rgba(249,115,22,0.15)", paddingHorizontal: space.lg, paddingVertical: space.xs, borderRadius: radius.full },
+  ingPillText: { ...typo.caption2, color: colors.orange, fontWeight: "600" },
   tipCard: {
     flexDirection: "row",
     gap: space.md,
@@ -244,9 +244,9 @@ const st = StyleSheet.create({
     marginTop: space.xxl,
   },
   timerLeft: { flexDirection: "row", alignItems: "center", gap: space.lg },
-  timerIcon: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.accent, alignItems: "center", justifyContent: "center" },
+  timerIcon: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.orange, alignItems: "center", justifyContent: "center" },
   timerVal: { fontSize: 28, fontWeight: "800", color: colors.white, letterSpacing: -1 },
-  timerBtn: { backgroundColor: colors.accent, paddingHorizontal: space.xxl, paddingVertical: space.lg, borderRadius: radius.md },
+  timerBtn: { backgroundColor: colors.orange, paddingHorizontal: space.xxl, paddingVertical: space.lg, borderRadius: radius.lg },
   nextCard: {
     marginHorizontal: space.cardPad,
     padding: space.xxl,
@@ -256,12 +256,12 @@ const st = StyleSheet.create({
   },
   nextLabel: { ...typo.caption2, color: "rgba(255,255,255,0.7)", letterSpacing: 1, marginBottom: space.md, textTransform: "uppercase", fontWeight: "700" },
   navRow: { flexDirection: "row", gap: space.lg, paddingHorizontal: space.cardPad, paddingTop: space.lg },
-  navBtn: { flex: 1, height: 52, borderRadius: radius.lg, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: space.sm },
+  navBtn: { flex: 1, height: 52, borderRadius: radius.xl, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: space.sm },
   navPrev: { backgroundColor: darkColors.card },
   navNext: { backgroundColor: colors.accent },
   // All steps
   allRow: { flexDirection: "row", gap: space.lg, paddingVertical: space.xl, borderBottomWidth: 0.5, borderBottomColor: darkColors.card },
-  allRowActive: { backgroundColor: "rgba(91,155,245,0.08)", marginHorizontal: -space.gutter, paddingHorizontal: space.gutter, borderRadius: radius.lg, borderBottomWidth: 0 },
+  allRowActive: { backgroundColor: "rgba(49,130,246,0.08)", marginHorizontal: -space.gutter, paddingHorizontal: space.gutter, borderRadius: radius.lg, borderBottomWidth: 0 },
   allDot: { width: 24, height: 24, borderRadius: 12, backgroundColor: darkColors.card, alignItems: "center", justifyContent: "center", marginTop: 2 },
   allDotText: { ...typo.caption2, color: darkColors.textDim, fontWeight: "700" },
   allText: { flex: 1, ...typo.body2, color: darkColors.textDim, lineHeight: 20 },

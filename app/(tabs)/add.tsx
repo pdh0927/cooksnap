@@ -212,7 +212,7 @@ const s = StyleSheet.create({
   },
   inputBox: {
     backgroundColor: colors.bgPage,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     paddingHorizontal: space.xl,
     paddingVertical: space.lg,
     flexDirection: "row",
@@ -221,8 +221,8 @@ const s = StyleSheet.create({
   },
   input: { flex: 1, ...typo.body2, color: colors.textPrimary },
   primaryBtn: {
-    backgroundColor: colors.accent,
-    borderRadius: radius.md,
+    backgroundColor: colors.orange,
+    borderRadius: radius.lg,
     height: 52,
     flexDirection: "row",
     alignItems: "center",
@@ -240,7 +240,7 @@ const s = StyleSheet.create({
   optIcon: {
     width: 44,
     height: 44,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     alignItems: "center",
     justifyContent: "center",
   },

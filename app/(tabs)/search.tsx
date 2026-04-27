@@ -28,8 +28,8 @@ function getMatchColor(percent: number): string {
 }
 
 function getMatchBgColor(percent: number): string {
-  if (percent >= 80) return "#E8F8ED";
-  if (percent >= 50) return "#FEF3E2";
+  if (percent >= 80) return colors.greenLight;
+  if (percent >= 50) return colors.orangeLight;
   return colors.gray100;
 }
 
@@ -382,7 +382,7 @@ const s = StyleSheet.create({
   },
   searchCard: {
     backgroundColor: colors.bgPrimary,
-    borderRadius: radius.xxl,
+    borderRadius: radius.lg,
     paddingHorizontal: space.xxl,
     paddingVertical: space.xl,
     flexDirection: "row",

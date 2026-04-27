@@ -36,12 +36,12 @@ src/
 - **Type everything** — no `any`, define interfaces in src/types/
 
 ### Design System (커버링/토스 Style)
-- **Background**: `colors.bgPage` (#F5F6F8) — 회색 배경 위에 흰색 카드
-- **Cards**: `colors.bgPrimary` (#FFFFFF), `radius.xxl` (24px), `space.cardPad` (24px)
+- **Background**: `colors.bgPage` (#F4F5F7) — 회색 배경 위에 흰색 카드
+- **Cards**: `colors.bgPrimary` (#FFFFFF), `radius.xxl` (20px), `space.cardPad` (20px)
 - **No shadows, no borders** — 색상 대비로만 구분
 - **Typography hierarchy**: screenTitle(22) > heading1(20) > body1(15) > caption1(13)
 - **Spacing**: 4px grid (space.xs=4, space.md=8, space.lg=12, space.xl=16)
-- **Accent**: soft blue (#5B9BF5)
+- **Accent**: Toss blue (#3182F6)
 
 ### Styling Rules
 ```typescript

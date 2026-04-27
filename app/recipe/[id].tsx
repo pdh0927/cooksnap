@@ -279,7 +279,7 @@ export default function RecipeDetailScreen() {
         {tips.length > 0 && (
           <View style={s.tipsCard}>
             <View style={s.tipsHeader}>
-              <Ionicons name="bulb-outline" size={18} color="#F59E0B" />
+              <Ionicons name="bulb-outline" size={18} color={colors.yellow} />
               <Text style={[typo.heading3, { color: colors.textPrimary }]}>꿀팁</Text>
             </View>
             {tips.map((tip, i) => (
@@ -368,7 +368,7 @@ const s = StyleSheet.create({
     backgroundColor: colors.accentLight,
     paddingHorizontal: space.lg,
     paddingVertical: space.md,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     alignSelf: "flex-start",
     marginTop: space.xl,
   },
@@ -379,8 +379,8 @@ const s = StyleSheet.create({
     borderRadius: radius.xxl,
     padding: space.cardPad,
   },
-  tabRow: { flexDirection: "row", backgroundColor: colors.bgPage, borderRadius: radius.md, padding: space.xs },
-  tabBtn: { flex: 1, paddingVertical: space.lg, borderRadius: radius.sm, alignItems: "center" },
+  tabRow: { flexDirection: "row", backgroundColor: colors.bgPage, borderRadius: radius.lg, padding: space.xs },
+  tabBtn: { flex: 1, paddingVertical: space.lg, borderRadius: radius.md, alignItems: "center" },
   tabBtnActive: { backgroundColor: colors.bgPrimary },
   tabText: { ...typo.body2Bold, color: colors.textTertiary },
   tabTextActive: { color: colors.textPrimary },
@@ -425,7 +425,7 @@ const s = StyleSheet.create({
     backgroundColor: colors.accentLight,
     paddingHorizontal: space.md,
     paddingVertical: space.xs,
-    borderRadius: radius.xs,
+    borderRadius: radius.sm,
     alignSelf: "flex-start",
     marginTop: space.md,
   },
@@ -438,7 +438,7 @@ const s = StyleSheet.create({
     paddingTop: space.x4,
   },
   ctaBtn: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.orange,
     borderRadius: radius.lg,
     height: 56,
     flexDirection: "row",
@@ -458,14 +458,14 @@ const s = StyleSheet.create({
     marginBottom: space.lg,
   },
   warningsCard: {
-    backgroundColor: "#FEF2F2",
+    backgroundColor: colors.redLight,
     marginHorizontal: space.gutter,
     marginTop: space.cardGap,
     borderRadius: radius.xxl,
     padding: space.cardPad,
   },
   tipsCard: {
-    backgroundColor: "#FFFBEB",
+    backgroundColor: colors.yellowLight,
     marginHorizontal: space.gutter,
     marginTop: space.cardGap,
     borderRadius: radius.xxl,
@@ -487,7 +487,7 @@ const s = StyleSheet.create({
     width: 5,
     height: 5,
     borderRadius: 2.5,
-    backgroundColor: "#F59E0B",
+    backgroundColor: colors.yellow,
     marginTop: 7,
   },
   shoppingBtn: {
@@ -496,7 +496,7 @@ const s = StyleSheet.create({
     justifyContent: "center",
     gap: space.md,
     backgroundColor: colors.accentLight,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     paddingVertical: space.lg,
     marginTop: space.xxl,
   },

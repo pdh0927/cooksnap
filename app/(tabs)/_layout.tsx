@@ -15,7 +15,7 @@ function AddButton(props: BottomTabBarButtonProps) {
           width: 54,
           height: 54,
           borderRadius: 18,
-          backgroundColor: colors.accent,
+          backgroundColor: colors.orange,
           alignItems: "center",
           justifyContent: "center",
         }}
@@ -31,7 +31,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.textPrimary,
+        tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textDisabled,
         tabBarStyle: {
           backgroundColor: colors.bgPrimary,
@@ -49,6 +49,15 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
+        name="index"
+        options={{
+          title: "내 레시피",
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? "book" : "book-outline"} size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="explore"
         options={{
           title: "탐색",
@@ -56,6 +65,10 @@ export default function TabLayout() {
             <Ionicons name={focused ? "compass" : "compass-outline"} size={24} color={color} />
           ),
         }}
+      />
+      <Tabs.Screen
+        name="add"
+        options={{ title: "", tabBarButton: AddButton }}
       />
       <Tabs.Screen
         name="search"
@@ -67,24 +80,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="add"
-        options={{ title: "", tabBarButton: AddButton }}
-      />
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "내 레시피",
-          tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? "book" : "book-outline"} size={24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
-          title: "장보기",
+          title: "설정",
           tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? "cart" : "cart-outline"} size={24} color={color} />
+            <Ionicons name={focused ? "settings" : "settings-outline"} size={24} color={color} />
           ),
         }}
       />

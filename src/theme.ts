@@ -1,83 +1,89 @@
-// Design tokens — 커버링/토스 스타일
+// Design tokens — 토스/커버링 스타일
 // 넉넉한 여백, 큰 라운딩, 그림자 없음, 배경색 대비
 
 export const colors = {
+  // Backgrounds
   white: "#FFFFFF",
-  gray50: "#F5F6F8",   // 앱 배경
-  gray100: "#ECEDF0",
-  gray200: "#E5E6EA",
-  gray300: "#D5D7DC",
-  gray400: "#B5B8BF",
-  gray500: "#8E929A",
-  gray600: "#6B7078",
-  gray700: "#4A4F57",
-  gray800: "#2D3137",
-  gray900: "#1B1D21",
+  bgPrimary: "#FFFFFF",      // cards, surfaces
+  bgPage: "#F4F5F7",         // page background (slightly cooler gray)
 
-  accent: "#5B9BF5",    // 커버링 스타일 소프트 블루
-  accentLight: "#EBF2FE",
-  accentDark: "#3A7FE8",
+  // Text hierarchy (Toss style - very clear contrast)
+  textPrimary: "#191F28",    // titles, headings
+  textSecondary: "#4E5968",  // body text
+  textTertiary: "#8B95A1",   // captions, meta
+  textDisabled: "#B0B8C1",   // placeholder, disabled
+
+  // Borders & Dividers
+  divider: "#E5E8EB",        // 0.5px dividers
+  border: "#D1D6DB",         // input borders
+
+  // Brand
+  accent: "#3182F6",         // Toss blue (primary action)
+  accentLight: "#EBF3FE",    // light blue bg
+  accentDark: "#1B64DA",
+
+  // Secondary accent (warm, for food-related actions)
   orange: "#F97316",
+  orangeLight: "#FFF7ED",
 
-  green: "#34C759",
-  red: "#FF3B30",
+  // Semantic
+  red: "#F04452",
+  redLight: "#FFF0F1",
+  green: "#03B26C",
+  greenLight: "#E8FAF0",
+  yellow: "#F59E0B",
+  yellowLight: "#FFFBEB",
 
-  textPrimary: "#1B1D21",
-  textSecondary: "#6B7078",
-  textTertiary: "#8E929A",
-  textDisabled: "#B5B8BF",
-  bgPrimary: "#FFFFFF",
-  bgPage: "#F5F6F8",
-  divider: "#ECEDF0",
+  // Grays (Toss scale)
+  gray50: "#F9FAFB",
+  gray100: "#F2F4F6",
+  gray200: "#E5E8EB",
+  gray300: "#D1D6DB",
+  gray400: "#B0B8C1",
+  gray500: "#8B95A1",
+  gray600: "#6B7684",
+  gray700: "#4E5968",
+  gray800: "#333D4B",
+  gray900: "#191F28",
 };
 
+// Typography - match Toss's clean hierarchy
 export const typo = {
-  screenTitle: { fontSize: 22, lineHeight: 30, fontWeight: "700" as const },
-  heading1: { fontSize: 20, lineHeight: 28, fontWeight: "700" as const },
-  heading2: { fontSize: 18, lineHeight: 25, fontWeight: "700" as const },
-  heading3: { fontSize: 16, lineHeight: 22, fontWeight: "600" as const },
+  screenTitle: { fontSize: 22, lineHeight: 28, fontWeight: "700" as const, letterSpacing: -0.4 },
+  heading1: { fontSize: 20, lineHeight: 26, fontWeight: "700" as const, letterSpacing: -0.4 },
+  heading2: { fontSize: 18, lineHeight: 24, fontWeight: "600" as const, letterSpacing: -0.3 },
+  heading3: { fontSize: 16, lineHeight: 22, fontWeight: "600" as const, letterSpacing: -0.2 },
   body1: { fontSize: 15, lineHeight: 22, fontWeight: "400" as const },
   body1Bold: { fontSize: 15, lineHeight: 22, fontWeight: "600" as const },
   body2: { fontSize: 14, lineHeight: 20, fontWeight: "400" as const },
   body2Bold: { fontSize: 14, lineHeight: 20, fontWeight: "600" as const },
   caption1: { fontSize: 13, lineHeight: 18, fontWeight: "400" as const },
   caption2: { fontSize: 12, lineHeight: 16, fontWeight: "500" as const },
-  caption3: { fontSize: 11, lineHeight: 15, fontWeight: "400" as const },
+  caption3: { fontSize: 11, lineHeight: 14, fontWeight: "400" as const },
 };
 
+// Spacing - strict 4px grid
 export const space = {
-  xxs: 2,
-  xs: 4,
-  sm: 6,
-  md: 8,
-  lg: 12,
-  xl: 16,
-  xxl: 20,
-  xxxl: 24,
-  x4: 32,
-  x5: 40,
-  gutter: 20,       // 커버링 스타일 넉넉한 좌우 패딩
-  cardPad: 24,      // 카드 내부 패딩
-  cardGap: 12,      // 카드 사이 간격
-  sectionGap: 28,   // 섹션 간 간격
+  xxs: 2, xs: 4, sm: 6, md: 8, lg: 12, xl: 16, xxl: 20, xxxl: 24, x4: 32, x5: 40, x6: 48,
+  gutter: 20,      // screen horizontal padding
+  cardPad: 20,     // card internal padding
+  cardGap: 10,     // gap between cards
+  sectionGap: 28,  // gap between sections
 };
 
+// Border radius
 export const radius = {
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 20,
-  xxl: 24,
-  full: 9999,
+  xs: 4, sm: 6, md: 8, lg: 12, xl: 16, xxl: 20, full: 9999,
 };
 
+// Sizes
 export const size = {
-  thumb: 64,       // 레시피 리스트 썸네일
-  thumbEmoji: 36,  // 썸네일 내 이모지 크기
-  heroEmoji: 72,   // 상세 히어로 이모지
+  thumb: 56,       // recipe list thumbnail (slightly smaller, cleaner)
+  thumbEmoji: 28,  // emoji inside thumbnail
+  heroEmoji: 64,   // detail hero emoji
 };
 
+// Dark mode tokens (cooking mode)
 export const darkColors = {
   bg: "#0C0C0E",
   card: "rgba(255,255,255,0.06)",
