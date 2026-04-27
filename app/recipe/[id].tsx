@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRecipes } from "../../src/store/recipeStore";
 import { useShoppingList } from "../../src/store/shoppingStore";
+import { useFolders } from "../../src/store/folderStore";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
 import StepText from "../../src/components/StepText";
 import { formatAmount } from "../../src/components/formatAmount";
@@ -17,7 +18,9 @@ export default function RecipeDetailScreen() {
   const insets = useSafeAreaInsets();
   const { getRecipe, deleteRecipe, updateRecipe, toggleFavorite } = useRecipes();
   const { addItems } = useShoppingList();
+  const { folders, addRecipeToFolder, removeRecipeFromFolder, getFoldersForRecipe } = useFolders();
   const recipe = getRecipe(id);
+  const recipeFolders = getFoldersForRecipe(id);
 
   function handleDelete() {
     Alert.alert("레시피 삭제", `"${recipe?.title}"을(를) 삭제할까요?`, [
@@ -48,6 +51,27 @@ export default function RecipeDetailScreen() {
 
   const [tab, setTab] = useState<"ing" | "steps">("ing");
   const [mult, setMult] = useState(1);
+
+  function showFolderPicker() {
+    if (folders.length === 0) {
+      Alert.alert("폴더 없음", "내 레시피 탭에서 폴더를 먼저 만들어주세요");
+      return;
+    }
+    const inFolderIds = recipeFolders.map((f) => f.id);
+    Alert.alert("폴더에 추가/제거", undefined, [
+      ...folders.map((f) => ({
+        text: `${f.emoji} ${f.name}${inFolderIds.includes(f.id) ? " ✓" : ""}`,
+        onPress: () => {
+          if (inFolderIds.includes(f.id)) {
+            removeRecipeFromFolder(f.id, id);
+          } else {
+            addRecipeToFolder(f.id, id);
+          }
+        },
+      })),
+      { text: "닫기", style: "cancel" as const },
+    ]);
+  }
 
   function showCategoryPicker() {
     const categories = ["한식", "중식", "일식", "양식", "디저트", "간편식"] as const;
@@ -94,6 +118,9 @@ export default function RecipeDetailScreen() {
                 size={18}
                 color={recipe.isFavorite ? colors.red : colors.white}
               />
+            </Pressable>
+            <Pressable onPress={showFolderPicker} style={s.actionBtn}>
+              <Ionicons name="folder-outline" size={18} color={colors.white} />
             </Pressable>
             <Pressable onPress={handleShare} style={s.actionBtn}>
               <Ionicons name="share-outline" size={18} color={colors.white} />
