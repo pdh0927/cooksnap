@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { api } from "./api";
 
 export interface Folder {
   id: string;
@@ -8,8 +8,6 @@ export interface Folder {
   recipeIds: string[];
   createdAt: string;
 }
-
-const STORAGE_KEY = "cooksnap_folders";
 
 let foldersCache: Folder[] | null = null;
 let listeners: Set<() => void> = new Set();
@@ -23,73 +21,67 @@ export function useFolders() {
   const [loading, setLoading] = useState(foldersCache === null);
 
   useEffect(() => {
-    if (foldersCache !== null) {
-      setFolders(foldersCache);
-      setLoading(false);
-    } else {
-      AsyncStorage.getItem(STORAGE_KEY).then((data) => {
-        foldersCache = data ? JSON.parse(data) : [];
-        setFolders(foldersCache!);
-        setLoading(false);
-      });
-    }
     const listener = () => setFolders([...(foldersCache ?? [])]);
     listeners.add(listener);
+
+    if (foldersCache === null) {
+      api.getFolders()
+        .then((data: Folder[]) => {
+          foldersCache = data;
+          setFolders(data);
+          setLoading(false);
+        })
+        .catch(() => {
+          foldersCache = [];
+          setFolders([]);
+          setLoading(false);
+        });
+    } else {
+      setFolders(foldersCache);
+      setLoading(false);
+    }
+
     return () => { listeners.delete(listener); };
   }, []);
 
-  const persist = useCallback(async () => {
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(foldersCache));
+  const createFolder = useCallback(async (name: string, emoji: string) => {
+    const folder = await api.createFolder(name, emoji);
+    foldersCache = [...(foldersCache ?? []), folder];
+    notify();
+    return folder;
+  }, []);
+
+  const deleteFolder = useCallback(async (id: string) => {
+    await api.deleteFolder(id);
+    foldersCache = (foldersCache ?? []).filter((f) => f.id !== id);
     notify();
   }, []);
 
-  const createFolder = useCallback(async (name: string, emoji: string) => {
-    if (!foldersCache) return;
-    const folder: Folder = {
-      id: Date.now().toString(),
-      name,
-      emoji,
-      recipeIds: [],
-      createdAt: new Date().toISOString(),
-    };
-    foldersCache = [...foldersCache, folder];
-    await persist();
-    return folder;
-  }, [persist]);
-
-  const deleteFolder = useCallback(async (id: string) => {
-    if (!foldersCache) return;
-    foldersCache = foldersCache.filter((f) => f.id !== id);
-    await persist();
-  }, [persist]);
-
   const renameFolder = useCallback(async (id: string, name: string, emoji: string) => {
-    if (!foldersCache) return;
-    foldersCache = foldersCache.map((f) =>
-      f.id === id ? { ...f, name, emoji } : f
-    );
-    await persist();
-  }, [persist]);
+    await api.createFolder(name, emoji); // TODO: use PATCH
+    foldersCache = (foldersCache ?? []).map((f) => f.id === id ? { ...f, name, emoji } : f);
+    notify();
+  }, []);
 
   const addRecipeToFolder = useCallback(async (folderId: string, recipeId: string) => {
-    if (!foldersCache) return;
-    foldersCache = foldersCache.map((f) =>
+    await api.addRecipeToFolder(folderId, recipeId);
+    foldersCache = (foldersCache ?? []).map((f) =>
       f.id === folderId && !f.recipeIds.includes(recipeId)
         ? { ...f, recipeIds: [...f.recipeIds, recipeId] }
         : f
     );
-    await persist();
-  }, [persist]);
+    notify();
+  }, []);
 
   const removeRecipeFromFolder = useCallback(async (folderId: string, recipeId: string) => {
-    if (!foldersCache) return;
-    foldersCache = foldersCache.map((f) =>
+    await api.removeRecipeFromFolder(folderId, recipeId);
+    foldersCache = (foldersCache ?? []).map((f) =>
       f.id === folderId
         ? { ...f, recipeIds: f.recipeIds.filter((id) => id !== recipeId) }
         : f
     );
-    await persist();
-  }, [persist]);
+    notify();
+  }, []);
 
   const getFoldersForRecipe = useCallback((recipeId: string) => {
     return (foldersCache ?? []).filter((f) => f.recipeIds.includes(recipeId));

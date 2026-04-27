@@ -1,9 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Recipe } from "../types/recipe";
-import { sampleRecipes } from "../data/samples";
-
-const STORAGE_KEY = "cooksnap_recipes";
+import { api } from "./api";
 
 let recipesCache: Recipe[] | null = null;
 let listeners: Set<() => void> = new Set();
@@ -17,65 +14,56 @@ export function useRecipes() {
   const [loading, setLoading] = useState(recipesCache === null);
 
   useEffect(() => {
-    if (recipesCache !== null) {
-      setRecipes(recipesCache);
-      setLoading(false);
-      const listener = () => setRecipes([...(recipesCache ?? [])]);
-      listeners.add(listener);
-      return () => { listeners.delete(listener); };
-    }
-
-    AsyncStorage.getItem(STORAGE_KEY).then((data) => {
-      if (data) {
-        // Migrate old recipes missing new fields
-        recipesCache = (JSON.parse(data) as Recipe[]).map((r) => ({
-          ...r,
-          tags: r.tags ?? [],
-          tips: r.tips ?? [],
-          warnings: r.warnings ?? [],
-          steps: r.steps.map((s) => ({ ...s, tip: s.tip ?? null })),
-          isFavorite: r.isFavorite ?? false,
-        }));
-      } else {
-        recipesCache = sampleRecipes;
-        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(sampleRecipes));
-      }
-      setRecipes(recipesCache!);
-      setLoading(false);
-    });
-
     const listener = () => setRecipes([...(recipesCache ?? [])]);
     listeners.add(listener);
+
+    if (recipesCache === null) {
+      api.getRecipes()
+        .then((data: Recipe[]) => {
+          recipesCache = data;
+          setRecipes(data);
+          setLoading(false);
+        })
+        .catch(() => {
+          recipesCache = [];
+          setRecipes([]);
+          setLoading(false);
+        });
+    } else {
+      setRecipes(recipesCache);
+      setLoading(false);
+    }
+
     return () => { listeners.delete(listener); };
   }, []);
 
+  const refresh = useCallback(async () => {
+    const data = await api.getRecipes();
+    recipesCache = data;
+    notifyListeners();
+  }, []);
+
   const addRecipe = useCallback(async (recipe: Recipe) => {
-    if (!recipesCache) return;
-    recipesCache = [recipe, ...recipesCache];
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(recipesCache));
+    const created = await api.createRecipe(recipe);
+    recipesCache = [created, ...(recipesCache ?? [])];
     notifyListeners();
   }, []);
 
   const deleteRecipe = useCallback(async (id: string) => {
-    if (!recipesCache) return;
-    recipesCache = recipesCache.filter((r) => r.id !== id);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(recipesCache));
+    await api.deleteRecipe(id);
+    recipesCache = (recipesCache ?? []).filter((r) => r.id !== id);
     notifyListeners();
   }, []);
 
   const updateRecipe = useCallback(async (id: string, updates: Partial<Recipe>) => {
-    if (!recipesCache) return;
-    recipesCache = recipesCache.map((r) => r.id === id ? { ...r, ...updates } : r);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(recipesCache));
+    const updated = await api.updateRecipe(id, updates);
+    recipesCache = (recipesCache ?? []).map((r) => r.id === id ? updated : r);
     notifyListeners();
   }, []);
 
   const toggleFavorite = useCallback(async (id: string) => {
-    if (!recipesCache) return;
-    recipesCache = recipesCache.map((r) =>
-      r.id === id ? { ...r, isFavorite: !r.isFavorite } : r
-    );
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(recipesCache));
+    const updated = await api.toggleFavorite(id);
+    recipesCache = (recipesCache ?? []).map((r) => r.id === id ? updated : r);
     notifyListeners();
   }, []);
 
@@ -83,5 +71,5 @@ export function useRecipes() {
     return recipesCache?.find((r) => r.id === id) ?? null;
   }, []);
 
-  return { recipes, loading, addRecipe, deleteRecipe, updateRecipe, toggleFavorite, getRecipe };
+  return { recipes, loading, refresh, addRecipe, deleteRecipe, updateRecipe, toggleFavorite, getRecipe };
 }
