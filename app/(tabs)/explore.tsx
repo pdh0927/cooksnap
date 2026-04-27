@@ -91,6 +91,7 @@ function RecipeHCard({ recipe, onPress }: { recipe: Recipe; onPress: () => void 
       </LinearGradient>
       <Text style={s.hCardTitle} numberOfLines={2}>{recipe.title}</Text>
       <Text style={s.hCardMeta}>{recipe.cookTimeMinutes}분 · {recipe.difficulty}</Text>
+      <Text style={s.hCardDifficulty}>{recipe.difficulty === "쉬움" ? "초보 가능" : recipe.difficulty === "보통" ? "약간의 경험" : "숙련자"}</Text>
     </AnimatedPressable>
   );
 }
@@ -135,10 +136,10 @@ export default function ExploreScreen() {
         {/* Theme sections */}
         {THEMES.map((theme) => {
           const matched = theme.filter(recipes);
-          if (matched.length === 0) return null;
+          if (matched.length < 2) return null;
 
           return (
-            <View key={theme.title} style={[s.card, { backgroundColor: theme.bgColor }]}>
+            <View key={theme.title} style={s.card}>
               {/* Theme header */}
               <View style={s.themeHeader}>
                 <View style={[s.accentBar, { backgroundColor: theme.color }]} />
@@ -150,7 +151,7 @@ export default function ExploreScreen() {
                     {theme.subtitle}
                   </Text>
                 </View>
-                <View style={[s.countBadge, { backgroundColor: "rgba(255,255,255,0.7)" }]}>
+                <View style={[s.countBadge, { backgroundColor: colors.bgPage }]}>
                   <Text style={[typo.caption2, { color: theme.color }]}>{matched.length}</Text>
                 </View>
               </View>
@@ -252,12 +253,13 @@ const s = StyleSheet.create({
   // Tags
   tagWrap: { flexDirection: "row", flexWrap: "wrap", gap: space.md },
   tag: {
+    height: 30,
     backgroundColor: colors.bgPage,
     paddingHorizontal: space.lg,
-    paddingVertical: space.sm,
     borderRadius: radius.full,
+    justifyContent: "center" as const,
   },
-  tagText: { ...typo.caption1, color: colors.accent, fontWeight: "600" },
+  tagText: { ...typo.caption1, color: colors.accent },
   // Theme section
   themeHeader: {
     flexDirection: "row",
@@ -278,11 +280,11 @@ const s = StyleSheet.create({
   // Horizontal card
   hScroll: { gap: space.lg },
   hCard: {
-    width: 140,
+    width: 150,
   },
   hCardImg: {
-    width: 140,
-    height: 120,
+    width: 150,
+    height: 110,
     borderRadius: radius.lg,
     alignItems: "center",
     justifyContent: "center",
@@ -290,6 +292,7 @@ const s = StyleSheet.create({
   },
   hCardTitle: { ...typo.body2Bold, color: colors.textPrimary, lineHeight: 18 },
   hCardMeta: { ...typo.caption1, color: colors.textTertiary, marginTop: 3 },
+  hCardDifficulty: { ...typo.caption3, color: colors.textDisabled, marginTop: 2 },
   // List item
   listItem: {
     flexDirection: "row",
@@ -309,5 +312,5 @@ const s = StyleSheet.create({
   dot: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: colors.textDisabled },
   listTags: { flexDirection: "row", gap: space.sm, marginTop: space.xs },
   listTagText: { ...typo.caption3, color: colors.accent },
-  divider: { height: 0.5, backgroundColor: colors.divider, marginLeft: size.thumb + space.xl },
+  divider: { height: space.xs, marginLeft: size.thumb + space.xl },
 });

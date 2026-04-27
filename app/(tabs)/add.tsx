@@ -120,6 +120,7 @@ export default function AddRecipeScreen() {
     >
       <View style={s.header}>
         <Text style={[typo.screenTitle, { color: colors.textPrimary }]}>레시피 추가</Text>
+        <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: space.xs }]}>URL이나 요리명을 입력하세요</Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
@@ -132,7 +133,7 @@ export default function AddRecipeScreen() {
             <Ionicons name={inputIsUrl ? "link-outline" : "restaurant-outline"} size={18} color={colors.textDisabled} />
             <TextInput
               style={s.input}
-              placeholder={'"김치찌개" 또는 YouTube 링크'}
+              placeholder="파스타, 김치찌개, YouTube 링크..."
               placeholderTextColor={colors.textDisabled}
               value={input}
               onChangeText={setInput}
@@ -157,7 +158,7 @@ export default function AddRecipeScreen() {
             </Text>
           </AnimatedPressable>
           <Text style={[typo.caption3, { color: colors.textTertiary, textAlign: "center", marginTop: space.md }]}>
-            {inputIsUrl ? "YouTube, 네이버 블로그, 티스토리 등 지원" : "요리 이름을 입력하면 AI가 레시피를 만들어줘요"}
+            지원: YouTube, 네이버 블로그, 티스토리, 요리명
           </Text>
         </View>
 

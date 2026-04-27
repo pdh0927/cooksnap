@@ -122,15 +122,15 @@ export default function SearchScreen() {
             onPress={() => setMode("search")}
             style={[s.modeBtn, mode === "search" && s.modeBtnActive]}
           >
-            <Ionicons name="search" size={16} color={mode === "search" ? colors.white : colors.textTertiary} />
-            <Text style={[typo.body2Bold, { color: mode === "search" ? colors.white : colors.textTertiary }]}>레시피 검색</Text>
+            <Ionicons name="search" size={16} color={mode === "search" ? colors.textPrimary : colors.textTertiary} />
+            <Text style={[typo.body2Bold, { color: mode === "search" ? colors.textPrimary : colors.textTertiary }]}>레시피 검색</Text>
           </Pressable>
           <Pressable
             onPress={() => setMode("fridge")}
             style={[s.modeBtn, mode === "fridge" && s.modeBtnActive]}
           >
             <Text style={{ fontSize: 16 }}>🧊</Text>
-            <Text style={[typo.body2Bold, { color: mode === "fridge" ? colors.white : colors.textTertiary }]}>냉장고 파먹기</Text>
+            <Text style={[typo.body2Bold, { color: mode === "fridge" ? colors.textPrimary : colors.textTertiary }]}>냉장고 파먹기</Text>
           </Pressable>
         </View>
 
@@ -215,35 +215,15 @@ export default function SearchScreen() {
                 )}
               </>
             ) : (
-              <>
-                <View style={[s.sectionRow, { marginTop: space.xxl }]}>
-                  <Text style={[typo.heading3, { color: colors.textPrimary }]}>전체 레시피</Text>
-                  <View style={s.badge}>
-                    <Text style={[typo.caption2, { color: colors.accent }]}>{recipes.length}개</Text>
-                  </View>
-                </View>
-                {recipes.map((r) => (
-                  <AnimatedPressable key={r.id} onPress={() => router.push(`/recipe/${r.id}`)} style={s.resultCard}>
-                    <LinearGradient
-                      colors={r.gradientColors as [string, string]}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 1 }}
-                      style={s.resultImg}
-                    >
-                      <Text style={{ fontSize: size.thumbEmoji }}>{r.emoji}</Text>
-                    </LinearGradient>
-                    <View style={{ flex: 1 }}>
-                      <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>{r.title}</Text>
-                      <View style={s.meta}>
-                        <Text style={s.metaText}>{r.cookTimeMinutes}분</Text>
-                        <View style={s.dot} />
-                        <Text style={s.metaText}>{r.servings}인분</Text>
-                      </View>
-                    </View>
-                    <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
-                  </AnimatedPressable>
-                ))}
-              </>
+              <View style={[s.emptyCard, { marginTop: space.xxl }]}>
+                <Text style={{ fontSize: 36, marginBottom: space.lg }}>🔍</Text>
+                <Text style={[typo.body1Bold, { color: colors.textSecondary }]}>
+                  레시피를 검색해보세요
+                </Text>
+                <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: space.xs, textAlign: "center" }]}>
+                  요리 이름이나 재료로 검색하거나{"\n"}위 태그를 눌러보세요
+                </Text>
+              </View>
             )}
           </>
         ) : (
@@ -363,10 +343,10 @@ const s = StyleSheet.create({
   scroll: { padding: space.gutter, paddingBottom: 120, gap: space.cardGap },
   modeToggle: {
     flexDirection: "row",
-    backgroundColor: colors.bgPrimary,
-    borderRadius: radius.xxl,
-    padding: space.xs,
-    gap: space.xs,
+    backgroundColor: colors.bgPage,
+    borderRadius: radius.lg,
+    padding: space.xxs,
+    gap: space.xxs,
   },
   modeBtn: {
     flex: 1,
@@ -374,11 +354,16 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: space.sm,
-    paddingVertical: space.lg,
-    borderRadius: radius.xl,
+    paddingVertical: space.md,
+    borderRadius: radius.md,
   },
   modeBtnActive: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.bgPrimary,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
   },
   searchCard: {
     backgroundColor: colors.bgPrimary,
@@ -425,9 +410,9 @@ const s = StyleSheet.create({
   sectionRow: { flexDirection: "row", alignItems: "center", gap: space.md, marginTop: space.lg },
   badge: { backgroundColor: colors.accentLight, paddingHorizontal: space.md, paddingVertical: space.xxs, borderRadius: radius.xs },
   chips: { gap: space.md, marginTop: space.xs },
-  chip: { height: 34, paddingHorizontal: space.xl, borderRadius: radius.full, backgroundColor: colors.bgPrimary, justifyContent: "center" },
+  chip: { height: 30, paddingHorizontal: space.lg, borderRadius: radius.full, backgroundColor: colors.bgPrimary, justifyContent: "center" },
   chipActive: { backgroundColor: colors.accent },
-  chipText: { ...typo.body2Bold, color: colors.textTertiary },
+  chipText: { ...typo.caption1, color: colors.textTertiary, fontWeight: "600" as const },
   resultCard: {
     backgroundColor: colors.bgPrimary,
     borderRadius: radius.xxl,
