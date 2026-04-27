@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet, Alert } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -189,7 +189,18 @@ export default function CookingModeScreen() {
           <Text style={[typo.body2Bold, { color: darkColors.text }]}>이전</Text>
         </Pressable>
         <Pressable
-          onPress={() => cur === total - 1 ? router.back() : nav(1)}
+          onPress={() => {
+            if (cur === total - 1) {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              Alert.alert(
+                `${recipe.emoji} 요리 완성!`,
+                `"${recipe.title}" 맛있게 드세요!`,
+                [{ text: "확인", onPress: () => router.back() }]
+              );
+            } else {
+              nav(1);
+            }
+          }}
           style={[st.navBtn, st.navNext]}
         >
           <Text style={[typo.body2Bold, { color: colors.white }]}>{cur === total - 1 ? "완성!" : "다음"}</Text>

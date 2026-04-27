@@ -102,13 +102,39 @@ export default function MyRecipesScreen() {
 
         {filtered.length === 0 && !loading && (
           <View style={s.emptyCard}>
-            <Text style={{ fontSize: 44, marginBottom: space.xl }}>📖</Text>
+            <Text style={{ fontSize: 44, marginBottom: space.xl }}>
+              {selected === "즐겨찾기" ? "💝" : "📖"}
+            </Text>
             <Text style={[typo.heading3, { color: colors.textPrimary, marginBottom: space.md }]}>
-              레시피가 없어요
+              {selected === "즐겨찾기"
+                ? "즐겨찾기한 레시피가 없어요"
+                : selected !== "전체"
+                ? `${selected} 레시피가 없어요`
+                : "레시피가 없어요"}
             </Text>
             <Text style={[typo.body2, { color: colors.textTertiary, textAlign: "center" }]}>
-              + 버튼을 눌러 레시피를 추가해보세요
+              {selected === "즐겨찾기"
+                ? "레시피 상세에서 ♥를 눌러 추가해보세요"
+                : "아래 + 버튼을 눌러 레시피를 추가해보세요"}
             </Text>
+            {selected === "전체" && (
+              <AnimatedPressable
+                onPress={() => router.push("/(tabs)/add")}
+                style={{
+                  backgroundColor: colors.accent,
+                  borderRadius: radius.md,
+                  paddingHorizontal: space.xxl,
+                  paddingVertical: space.lg,
+                  marginTop: space.xxl,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: space.md,
+                }}
+              >
+                <Ionicons name="add" size={18} color={colors.white} />
+                <Text style={[typo.body2Bold, { color: colors.white }]}>레시피 추가하기</Text>
+              </AnimatedPressable>
+            )}
           </View>
         )}
       </ScrollView>

@@ -195,7 +195,11 @@ export default function RecipeDetailScreen() {
                   addItems(shoppingItems);
                   Alert.alert(
                     "장보기 목록에 추가",
-                    `${recipe.ingredients.length}개 재료가 장보기 목록에 추가됐어요`
+                    `${recipe.ingredients.length}개 재료가 장보기 목록에 추가됐어요`,
+                    [
+                      { text: "확인", style: "cancel" },
+                      { text: "목록 보기", onPress: () => router.push("/(tabs)/profile") },
+                    ]
                   );
                 }}
                 style={s.shoppingBtn}
@@ -264,12 +268,15 @@ export default function RecipeDetailScreen() {
       </ScrollView>
 
       {/* CTA */}
-      <View style={[s.ctaWrap, { paddingBottom: insets.bottom + 12 }]}>
+      <LinearGradient
+        colors={["rgba(245,246,248,0)", colors.bgPage]}
+        style={[s.ctaWrap, { paddingBottom: insets.bottom + 12 }]}
+      >
         <AnimatedPressable onPress={() => router.push(`/recipe/cook/${id}`)} style={s.ctaBtn}>
           <Ionicons name="play" size={20} color={colors.white} />
           <Text style={[typo.body1Bold, { color: colors.white }]}>요리 시작하기</Text>
         </AnimatedPressable>
-      </View>
+      </LinearGradient>
     </View>
   );
 }
@@ -401,8 +408,7 @@ const s = StyleSheet.create({
     left: 0,
     right: 0,
     paddingHorizontal: space.gutter,
-    paddingTop: space.lg,
-    backgroundColor: colors.bgPage,
+    paddingTop: space.x4,
   },
   ctaBtn: {
     backgroundColor: colors.accent,
