@@ -150,7 +150,7 @@ interface StepTextProps {
 
 export default function StepText({ instruction, fontSize, dark = false }: StepTextProps) {
   const segments = parseInstruction(instruction);
-  const lineHeight = Math.round(fontSize * 1.6);
+  const lineHeight = Math.round(fontSize * 1.5);
   const badgeFontSize = fontSize - 1;
 
   return (

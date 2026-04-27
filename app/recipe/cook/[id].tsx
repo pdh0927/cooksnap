@@ -89,7 +89,7 @@ export default function CookingModeScreen() {
               onPress={() => { setCur(i); setAllSteps(false); }}
               style={[st.allRow, i === cur && st.allRowActive]}
             >
-              <View style={[st.allDot, i === cur && { backgroundColor: colors.accent }]}>
+              <View style={[st.allDot, i === cur && { backgroundColor: colors.orange }]}>
                 <Text style={[st.allDotText, i === cur && { color: colors.white }]}>{i + 1}</Text>
               </View>
               <Text style={[st.allText, i === cur && { color: colors.white, fontWeight: "600" }]}>
@@ -217,7 +217,7 @@ const st = StyleSheet.create({
   iconBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: darkColors.card, alignItems: "center", justifyContent: "center" },
   progRow: { flexDirection: "row", alignItems: "center", gap: space.lg, paddingHorizontal: space.gutter, paddingBottom: space.xxl },
   progBg: { flex: 1, height: 4, backgroundColor: darkColors.card, borderRadius: 2, overflow: "hidden" },
-  progFill: { height: 4, backgroundColor: colors.accent, borderRadius: 2 },
+  progFill: { height: 4, backgroundColor: colors.orange, borderRadius: 2 },
   body: { flex: 1, paddingHorizontal: space.cardPad, paddingTop: space.xxxl },
   stepLabel: { ...typo.caption2, color: colors.orange, letterSpacing: 2, marginBottom: space.lg, fontWeight: "700" },
   ingPillRow: { flexDirection: "row", flexWrap: "wrap", gap: space.md, marginBottom: space.xl },
@@ -256,12 +256,12 @@ const st = StyleSheet.create({
   },
   nextLabel: { ...typo.caption2, color: "rgba(255,255,255,0.7)", letterSpacing: 1, marginBottom: space.md, textTransform: "uppercase", fontWeight: "700" },
   navRow: { flexDirection: "row", gap: space.lg, paddingHorizontal: space.cardPad, paddingTop: space.lg },
-  navBtn: { flex: 1, height: 52, borderRadius: radius.xl, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: space.sm },
+  navBtn: { flex: 1, height: 48, borderRadius: radius.xl, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: space.sm },
   navPrev: { backgroundColor: darkColors.card },
-  navNext: { backgroundColor: colors.accent },
+  navNext: { backgroundColor: colors.orange },
   // All steps
   allRow: { flexDirection: "row", gap: space.lg, paddingVertical: space.xl, borderBottomWidth: 0.5, borderBottomColor: darkColors.card },
-  allRowActive: { backgroundColor: "rgba(49,130,246,0.08)", marginHorizontal: -space.gutter, paddingHorizontal: space.gutter, borderRadius: radius.lg, borderBottomWidth: 0 },
+  allRowActive: { backgroundColor: "rgba(249,115,22,0.08)", marginHorizontal: -space.gutter, paddingHorizontal: space.gutter, borderRadius: radius.lg, borderBottomWidth: 0 },
   allDot: { width: 24, height: 24, borderRadius: 12, backgroundColor: darkColors.card, alignItems: "center", justifyContent: "center", marginTop: 2 },
   allDotText: { ...typo.caption2, color: darkColors.textDim, fontWeight: "700" },
   allText: { flex: 1, ...typo.body2, color: darkColors.textDim, lineHeight: 20 },

@@ -205,8 +205,8 @@ export default function RecipeDetailScreen() {
                 const scaled = ing.scalable ? ing.amount * mult : ing.amount;
                 return (
                   <View key={i} style={[s.ingRow, i === recipe.ingredients.length - 1 && { borderBottomWidth: 0 }]}>
-                    <Text style={[typo.body1, { color: colors.textPrimary }]}>{ing.name}</Text>
-                    <Text style={[typo.body2Bold, { color: colors.textTertiary }]}>{formatAmount(scaled, ing.unit)}</Text>
+                    <Text style={[typo.body1, { color: colors.textPrimary, fontWeight: "400" }]}>{ing.name}</Text>
+                    <Text style={[typo.body2Bold, { color: colors.accent }]}>{formatAmount(scaled, ing.unit)}</Text>
                   </View>
                 );
               })}
@@ -231,8 +231,8 @@ export default function RecipeDetailScreen() {
                 }}
                 style={s.shoppingBtn}
               >
-                <Ionicons name="cart-outline" size={18} color={colors.accent} />
-                <Text style={[typo.body2Bold, { color: colors.accent }]}>장보기 목록에 추가</Text>
+                <Ionicons name="cart-outline" size={18} color={colors.textTertiary} />
+                <Text style={[typo.body2Bold, { color: colors.textTertiary }]}>장보기 목록에 추가</Text>
               </Pressable>
             </View>
           ) : (
@@ -310,7 +310,7 @@ export default function RecipeDetailScreen() {
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bgPage },
-  hero: { height: 240, alignItems: "center", justifyContent: "center" },
+  hero: { height: 220, alignItems: "center", justifyContent: "center" },
   backBtn: {
     position: "absolute",
     left: space.gutter,
@@ -379,9 +379,16 @@ const s = StyleSheet.create({
     borderRadius: radius.xxl,
     padding: space.cardPad,
   },
-  tabRow: { flexDirection: "row", backgroundColor: colors.bgPage, borderRadius: radius.lg, padding: space.xs },
-  tabBtn: { flex: 1, paddingVertical: space.lg, borderRadius: radius.md, alignItems: "center" },
-  tabBtnActive: { backgroundColor: colors.bgPrimary },
+  tabRow: { flexDirection: "row", backgroundColor: colors.bgPage, borderRadius: radius.lg, padding: space.xxs, gap: space.xxs },
+  tabBtn: { flex: 1, paddingVertical: space.md, borderRadius: radius.md, alignItems: "center" },
+  tabBtnActive: {
+    backgroundColor: colors.bgPrimary,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
   tabText: { ...typo.body2Bold, color: colors.textTertiary },
   tabTextActive: { color: colors.textPrimary },
   servRow: {
@@ -412,7 +419,7 @@ const s = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: colors.gray900,
+    backgroundColor: colors.accent,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 2,
@@ -440,7 +447,7 @@ const s = StyleSheet.create({
   ctaBtn: {
     backgroundColor: colors.orange,
     borderRadius: radius.lg,
-    height: 56,
+    height: 52,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -495,7 +502,9 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: space.md,
-    backgroundColor: colors.accentLight,
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: radius.lg,
     paddingVertical: space.lg,
     marginTop: space.xxl,

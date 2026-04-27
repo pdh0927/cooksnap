@@ -252,7 +252,7 @@ export default function CreateRecipeScreen() {
           <View style={s.sectionHeader}>
             <Text style={[typo.heading3, { color: colors.textPrimary }]}>재료</Text>
             <Pressable onPress={addIngredient} style={s.addBtn}>
-              <Ionicons name="add" size={18} color={colors.accent} />
+              <Ionicons name="add" size={18} color={colors.orange} />
               <Text style={[typo.body2Bold, { color: colors.accent }]}>추가</Text>
             </Pressable>
           </View>
@@ -286,13 +286,16 @@ export default function CreateRecipeScreen() {
           <View style={s.sectionHeader}>
             <Text style={[typo.heading3, { color: colors.textPrimary }]}>조리 순서</Text>
             <Pressable onPress={addStep} style={s.addBtn}>
-              <Ionicons name="add" size={18} color={colors.accent} />
+              <Ionicons name="add" size={18} color={colors.orange} />
               <Text style={[typo.body2Bold, { color: colors.accent }]}>추가</Text>
             </Pressable>
           </View>
-          <Text style={[typo.caption1, { color: colors.textTertiary, marginBottom: space.xl }]}>
-            시간을 포함하면 타이머가 자동 생성돼요 (예: "5분간 볶아주세요")
-          </Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm, backgroundColor: colors.orangeLight, padding: space.lg, borderRadius: radius.lg, marginBottom: space.xl }}>
+            <Ionicons name="time-outline" size={14} color={colors.orange} />
+            <Text style={[typo.caption1, { color: colors.orange, fontWeight: "500", flex: 1 }]}>
+              시간을 포함하면 타이머가 자동 생성돼요 (예: "5분간 볶아주세요")
+            </Text>
+          </View>
           {steps.map((step, i) => (
             <View key={i} style={s.stepRow}>
               <View style={s.stepNum}>
@@ -354,11 +357,13 @@ const s = StyleSheet.create({
     backgroundColor: colors.bgPage,
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "transparent",
   },
-  emojiBtnActive: { backgroundColor: colors.accentLight },
+  emojiBtnActive: { backgroundColor: colors.orangeLight, borderWidth: 2, borderColor: colors.orange },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: space.md },
   chip: { height: 34, paddingHorizontal: space.xl, borderRadius: radius.full, backgroundColor: colors.bgPage, justifyContent: "center" },
-  chipActive: { backgroundColor: colors.accent },
+  chipActive: { backgroundColor: colors.orange },
   chipText: { ...typo.body2Bold, color: colors.textTertiary },
   chipTextActive: { color: colors.white },
   row: { flexDirection: "row", gap: space.lg },
@@ -367,6 +372,6 @@ const s = StyleSheet.create({
   ingRow: { flexDirection: "row", gap: space.md, marginBottom: space.md, alignItems: "center" },
   removeBtn: { padding: space.xs },
   stepRow: { flexDirection: "row", gap: space.md, marginBottom: space.lg, alignItems: "flex-start" },
-  stepNum: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.gray900, alignItems: "center", justifyContent: "center", marginTop: space.lg },
+  stepNum: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.orange, alignItems: "center", justifyContent: "center", marginTop: space.lg },
   stepNumText: { ...typo.caption2, color: colors.white, fontWeight: "700" },
 });
