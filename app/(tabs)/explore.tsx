@@ -222,13 +222,17 @@ export default function ExploreScreen() {
                     <Text style={{ fontSize: size.thumbEmoji }}>{r.emoji}</Text>
                   </LinearGradient>
                   <View style={{ flex: 1 }}>
-                    <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>{r.title}</Text>
+                    <Text style={[typo.body1Bold, { color: colors.textPrimary }]} numberOfLines={1}>{r.title}</Text>
                     <View style={s.listMeta}>
                       <Text style={s.listMetaText}>{r.cookTimeMinutes}분</Text>
                       <View style={s.dot} />
                       <Text style={s.listMetaText}>{r.servings}인분</Text>
-                      <View style={s.dot} />
-                      <Text style={s.listMetaText}>{r.difficulty}</Text>
+                      {r.sourceLabel && r.sourceLabel !== "직접 작성" && (
+                        <>
+                          <View style={s.dot} />
+                          <Text style={s.listMetaText}>{r.sourceLabel}</Text>
+                        </>
+                      )}
                     </View>
                     {(r.tags ?? []).length > 0 && (
                       <View style={s.listTags}>
