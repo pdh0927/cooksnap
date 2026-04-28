@@ -67,9 +67,7 @@ export function useRecipes() {
     notifyListeners();
   }, []);
 
-  const getRecipe = useCallback((id: string) => {
-    return recipesCache?.find((r) => r.id === id) ?? null;
-  }, []);
+  const getRecipe = (id: string) => recipesCache?.find((r) => r.id === id) ?? null;
 
   return { recipes, loading, refresh, addRecipe, deleteRecipe, updateRecipe, toggleFavorite, getRecipe };
 }

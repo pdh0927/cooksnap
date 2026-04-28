@@ -99,7 +99,7 @@ function RecipeHCard({ recipe, onPress }: { recipe: Recipe; onPress: () => void 
 export default function ExploreScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { recipes } = useRecipes();
+  const { recipes, loading } = useRecipes();
 
   // Collect all unique tags from recipes
   const allTags = Array.from(new Set(recipes.flatMap((r) => r.tags ?? [])));
@@ -112,6 +112,29 @@ export default function ExploreScreen() {
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
+        {/* Loading state */}
+        {loading && recipes.length === 0 && (
+          <View style={s.emptyWrap}>
+            <Spinner size={32} color={colors.accent} />
+            <Text style={[typo.body1, { color: colors.textTertiary, marginTop: space.xl }]}>
+              레시피를 불러오는 중...
+            </Text>
+          </View>
+        )}
+
+        {/* Empty state */}
+        {recipes.length === 0 && !loading && (
+          <View style={s.emptyWrap}>
+            <Text style={{ fontSize: 48 }}>🍳</Text>
+            <Text style={[typo.heading2, { color: colors.textPrimary, marginTop: space.xl }]}>
+              아직 레시피가 없어요
+            </Text>
+            <Text style={[typo.body2, { color: colors.textTertiary, marginTop: space.md, textAlign: "center" }]}>
+              레시피를 추가하면 테마별로{"\n"}탐색할 수 있어요
+            </Text>
+          </View>
+        )}
+
         {/* Trending tags */}
         {allTags.length > 0 && (
           <View style={s.card}>
@@ -175,51 +198,53 @@ export default function ExploreScreen() {
         })}
 
         {/* All recipes */}
-        <View style={s.card}>
-          <View style={s.cardHeader}>
-            <View style={[s.accentBar, { backgroundColor: colors.accent }]} />
-            <Text style={[typo.heading3, { color: colors.textPrimary }]}>전체 레시피</Text>
-            <View style={[s.countBadge, { backgroundColor: colors.accentLight }]}>
-              <Text style={[typo.caption2, { color: colors.accent }]}>{recipes.length}</Text>
+        {recipes.length > 0 && (
+          <View style={s.card}>
+            <View style={s.cardHeader}>
+              <View style={[s.accentBar, { backgroundColor: colors.accent }]} />
+              <Text style={[typo.heading3, { color: colors.textPrimary }]}>전체 레시피</Text>
+              <View style={[s.countBadge, { backgroundColor: colors.accentLight }]}>
+                <Text style={[typo.caption2, { color: colors.accent }]}>{recipes.length}</Text>
+              </View>
             </View>
-          </View>
-          {recipes.map((r, i) => (
-            <View key={r.id}>
-              <AnimatedPressable
-                onPress={() => router.push(`/recipe/${r.id}`)}
-                style={s.listItem}
-              >
-                <LinearGradient
-                  colors={r.gradientColors as [string, string]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={s.listImg}
+            {recipes.map((r, i) => (
+              <View key={r.id}>
+                <AnimatedPressable
+                  onPress={() => router.push(`/recipe/${r.id}`)}
+                  style={s.listItem}
                 >
-                  <Text style={{ fontSize: size.thumbEmoji }}>{r.emoji}</Text>
-                </LinearGradient>
-                <View style={{ flex: 1 }}>
-                  <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>{r.title}</Text>
-                  <View style={s.listMeta}>
-                    <Text style={s.listMetaText}>{r.cookTimeMinutes}분</Text>
-                    <View style={s.dot} />
-                    <Text style={s.listMetaText}>{r.servings}인분</Text>
-                    <View style={s.dot} />
-                    <Text style={s.listMetaText}>{r.difficulty}</Text>
-                  </View>
-                  {(r.tags ?? []).length > 0 && (
-                    <View style={s.listTags}>
-                      {r.tags.slice(0, 3).map((t) => (
-                        <Text key={t} style={s.listTagText}>#{t}</Text>
-                      ))}
+                  <LinearGradient
+                    colors={r.gradientColors as [string, string]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={s.listImg}
+                  >
+                    <Text style={{ fontSize: size.thumbEmoji }}>{r.emoji}</Text>
+                  </LinearGradient>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>{r.title}</Text>
+                    <View style={s.listMeta}>
+                      <Text style={s.listMetaText}>{r.cookTimeMinutes}분</Text>
+                      <View style={s.dot} />
+                      <Text style={s.listMetaText}>{r.servings}인분</Text>
+                      <View style={s.dot} />
+                      <Text style={s.listMetaText}>{r.difficulty}</Text>
                     </View>
-                  )}
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
-              </AnimatedPressable>
-              {i < recipes.length - 1 && <View style={s.divider} />}
-            </View>
-          ))}
-        </View>
+                    {(r.tags ?? []).length > 0 && (
+                      <View style={s.listTags}>
+                        {r.tags.slice(0, 3).map((t) => (
+                          <Text key={t} style={s.listTagText}>#{t}</Text>
+                        ))}
+                      </View>
+                    )}
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
+                </AnimatedPressable>
+                {i < recipes.length - 1 && <View style={s.divider} />}
+              </View>
+            ))}
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -313,4 +338,9 @@ const s = StyleSheet.create({
   listTags: { flexDirection: "row", gap: space.sm, marginTop: space.xs },
   listTagText: { ...typo.caption3, color: colors.accent },
   divider: { height: space.xs, marginLeft: size.thumb + space.xl },
+  emptyWrap: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: space.x6,
+  },
 });

@@ -1,30 +1,26 @@
 import {
   View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, KeyboardAvoidingView, Platform,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, typo, space, radius } from "../../../src/theme";
 import { useRecipes } from "../../../src/store/recipeStore";
-import type { Recipe, Category, Difficulty, Ingredient, Step } from "../../../src/types/recipe";
+import { formatAmount } from "../../../src/components/formatAmount";
+import type { Recipe, Category, Difficulty } from "../../../src/types/recipe";
 
 const CATEGORIES: Category[] = ["한식", "중식", "일식", "양식", "디저트", "간편식"];
 const DIFFICULTIES: Difficulty[] = ["쉬움", "보통", "어려움"];
 const EMOJIS = ["🍲", "🍝", "🥗", "🍖", "🍛", "🍜", "🥘", "🍕", "🍰", "🍣"];
-const GRADIENTS: [string, string][] = [
-  ["#DC2626", "#F97316"],
-  ["#F59E0B", "#EF4444"],
-  ["#10B981", "#3B82F6"],
-  ["#7C3AED", "#EC4899"],
-  ["#0EA5E9", "#6366F1"],
-  ["#F97316", "#FBBF24"],
-];
 
-export default function CreateRecipeScreen() {
+export default function EditRecipeScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { addRecipe } = useRecipes();
+  const { getRecipe, updateRecipe } = useRecipes();
+
+  const recipe = getRecipe(id);
 
   const [title, setTitle] = useState("");
   const [emoji, setEmoji] = useState("🍲");
@@ -37,6 +33,23 @@ export default function CreateRecipeScreen() {
   ]);
   const [steps, setSteps] = useState<string[]>([""]);
 
+  useEffect(() => {
+    if (!recipe) return;
+    setTitle(recipe.title);
+    setEmoji(recipe.emoji);
+    setCategory(recipe.category);
+    setDifficulty(recipe.difficulty);
+    setCookTime(String(recipe.cookTimeMinutes));
+    setServings(String(recipe.servings));
+    setIngredients(
+      recipe.ingredients.map((ing) => ({
+        name: ing.name,
+        amount: formatAmount(ing.amount, ing.unit),
+      }))
+    );
+    setSteps(recipe.steps.map((s) => s.instruction));
+  }, [recipe?.id]);
+
   function addIngredient() {
     setIngredients([...ingredients, { name: "", amount: "" }]);
   }
@@ -46,7 +59,7 @@ export default function CreateRecipeScreen() {
     setIngredients(ingredients.filter((_, idx) => idx !== i));
   }
 
-  function updateIngredient(i: number, field: "name" | "amount", val: string) {
+  function updateIngredientField(i: number, field: "name" | "amount", val: string) {
     const copy = [...ingredients];
     copy[i] = { ...copy[i], [field]: val };
     setIngredients(copy);
@@ -108,8 +121,7 @@ export default function CreateRecipeScreen() {
       return;
     }
 
-    const recipe: Recipe = {
-      id: Date.now().toString(),
+    const updates: Partial<Recipe> = {
       title: title.trim(),
       emoji,
       category,
@@ -132,19 +144,18 @@ export default function CreateRecipeScreen() {
         tip: null,
         details: { tip: null, warning: null, highlights: [], ingredientRefs: [] },
       })),
-      sourceUrl: null,
-      sourceType: "manual",
-      sourceLabel: "직접 작성",
-      tags: [],
-      tips: [],
-      warnings: [],
-      isFavorite: false,
-      gradientColors: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
-      createdAt: new Date().toISOString(),
     };
 
-    await addRecipe(recipe);
-    router.replace(`/recipe/${recipe.id}`);
+    await updateRecipe(id, updates);
+    router.back();
+  }
+
+  if (!recipe) {
+    return (
+      <View style={[s.root, { paddingTop: insets.top, alignItems: "center", justifyContent: "center" }]}>
+        <Text style={[typo.body1, { color: colors.textTertiary }]}>레시피를 찾을 수 없어요</Text>
+      </View>
+    );
   }
 
   return (
@@ -157,7 +168,7 @@ export default function CreateRecipeScreen() {
         <Pressable onPress={() => router.back()} style={s.headerBtn}>
           <Ionicons name="close" size={20} color={colors.textSecondary} />
         </Pressable>
-        <Text style={[typo.heading3, { color: colors.textPrimary }]}>레시피 작성</Text>
+        <Text style={[typo.heading3, { color: colors.textPrimary }]}>레시피 편집</Text>
         <Pressable onPress={save} style={s.saveBtn}>
           <Text style={[typo.body2Bold, { color: colors.white }]}>저장</Text>
         </Pressable>
@@ -264,14 +275,14 @@ export default function CreateRecipeScreen() {
                 placeholder="재료명"
                 placeholderTextColor={colors.textDisabled}
                 value={ing.name}
-                onChangeText={(v) => updateIngredient(i, "name", v)}
+                onChangeText={(v) => updateIngredientField(i, "name", v)}
               />
               <TextInput
                 style={[s.input, { flex: 1 }]}
                 placeholder="200g"
                 placeholderTextColor={colors.textDisabled}
                 value={ing.amount}
-                onChangeText={(v) => updateIngredient(i, "amount", v)}
+                onChangeText={(v) => updateIngredientField(i, "amount", v)}
               />
               {ingredients.length > 1 && (
                 <Pressable onPress={() => removeIngredient(i)} style={s.removeBtn}>

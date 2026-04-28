@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, typo, space, radius } from "../../src/theme";
@@ -46,7 +46,16 @@ export default function SettingsScreen() {
         <View style={s.card}>
           {MENU_ITEMS.map((item, i) => (
             <View key={item.label}>
-              <Pressable style={s.menuRow}>
+              <Pressable
+                style={s.menuRow}
+                onPress={() => {
+                  if (item.label === "버전 정보") {
+                    Alert.alert("버전 정보", "CookSnap v1.0.0\nExpo SDK 54\nReact Native 0.81");
+                  } else {
+                    Alert.alert("준비 중", "다음 업데이트에서 만나요!");
+                  }
+                }}
+              >
                 <Ionicons name={item.icon} size={20} color={colors.textTertiary} />
                 <Text style={[typo.body1, { color: colors.textPrimary, flex: 1 }]}>{item.label}</Text>
                 {item.value ? (

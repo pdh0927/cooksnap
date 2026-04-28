@@ -119,6 +119,9 @@ export default function RecipeDetailScreen() {
                 color={recipe.isFavorite ? colors.red : colors.white}
               />
             </Pressable>
+            <Pressable onPress={() => router.push(`/recipe/edit/${id}`)} style={s.actionBtn}>
+              <Ionicons name="pencil-outline" size={18} color={colors.white} />
+            </Pressable>
             <Pressable onPress={showFolderPicker} style={s.actionBtn}>
               <Ionicons name="folder-outline" size={18} color={colors.white} />
             </Pressable>
@@ -223,10 +226,7 @@ export default function RecipeDetailScreen() {
                   Alert.alert(
                     "장보기 목록에 추가",
                     `${recipe.ingredients.length}개 재료가 장보기 목록에 추가됐어요`,
-                    [
-                      { text: "확인", style: "cancel" },
-                      { text: "목록 보기", onPress: () => router.push("/(tabs)/profile") },
-                    ]
+                    [{ text: "확인", style: "cancel" }]
                   );
                 }}
                 style={s.shoppingBtn}
