@@ -159,7 +159,7 @@ export default function ExploreScreen() {
         {/* Theme sections */}
         {THEMES.map((theme) => {
           const matched = theme.filter(recipes);
-          if (matched.length < 2) return null;
+          if (matched.length < 1) return null;
 
           return (
             <View key={theme.title} style={s.card}>

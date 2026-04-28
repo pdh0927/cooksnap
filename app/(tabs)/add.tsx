@@ -179,7 +179,7 @@ export default function AddRecipeScreen() {
 
           <View style={s.optDivider} />
 
-          <AnimatedPressable style={s.option} onPress={() => Alert.alert("준비 중", "다음 업데이트에서 만나요!")}>
+          <View style={[s.option, { opacity: 0.4 }]}>
             <View style={[s.optIcon, { backgroundColor: colors.gray100 }]}>
               <Ionicons name="camera-outline" size={20} color={colors.gray600} />
             </View>
@@ -189,8 +189,10 @@ export default function AddRecipeScreen() {
                 레시피 사진을 찍으면 AI가 텍스트로 변환해요
               </Text>
             </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
-          </AnimatedPressable>
+            <View style={s.comingSoonBadge}>
+              <Text style={[typo.caption3, { color: colors.white }]}>Coming Soon</Text>
+            </View>
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -246,6 +248,12 @@ const s = StyleSheet.create({
     borderRadius: radius.lg,
     alignItems: "center",
     justifyContent: "center",
+  },
+  comingSoonBadge: {
+    backgroundColor: colors.gray400,
+    borderRadius: radius.xs,
+    paddingHorizontal: space.md,
+    paddingVertical: space.xxs,
   },
   optDivider: {
     height: 0.5,

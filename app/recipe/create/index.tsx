@@ -36,6 +36,20 @@ export default function CreateRecipeScreen() {
     { name: "", amount: "" },
   ]);
   const [steps, setSteps] = useState<string[]>([""]);
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
+
+  function addTag() {
+    const t = tagInput.trim();
+    if (t && !tags.includes(t)) {
+      setTags([...tags, t]);
+    }
+    setTagInput("");
+  }
+
+  function removeTag(tag: string) {
+    setTags(tags.filter((t) => t !== tag));
+  }
 
   function addIngredient() {
     setIngredients([...ingredients, { name: "", amount: "" }]);
@@ -135,7 +149,7 @@ export default function CreateRecipeScreen() {
       sourceUrl: null,
       sourceType: "manual",
       sourceLabel: "직접 작성",
-      tags: [],
+      tags,
       tips: [],
       warnings: [],
       isFavorite: false,
@@ -246,6 +260,33 @@ export default function CreateRecipeScreen() {
               />
             </View>
           </View>
+
+          {/* Tags */}
+          <Text style={[s.label, { marginTop: space.xxl }]}>태그</Text>
+          <View style={{ flexDirection: "row", gap: space.md }}>
+            <TextInput
+              style={[s.input, { flex: 1 }]}
+              placeholder="태그 입력"
+              placeholderTextColor={colors.textDisabled}
+              value={tagInput}
+              onChangeText={setTagInput}
+              returnKeyType="done"
+              onSubmitEditing={addTag}
+            />
+            <Pressable onPress={addTag} style={s.tagAddBtn}>
+              <Text style={[typo.body2Bold, { color: colors.white }]}>추가</Text>
+            </Pressable>
+          </View>
+          {tags.length > 0 && (
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: space.md, marginTop: space.md }}>
+              {tags.map((tag) => (
+                <Pressable key={tag} onPress={() => removeTag(tag)} style={s.tagChip}>
+                  <Text style={[typo.caption1, { color: colors.accent }]}>#{tag}</Text>
+                  <Ionicons name="close" size={14} color={colors.textDisabled} />
+                </Pressable>
+              ))}
+            </View>
+          )}
         </View>
 
         {/* Ingredients */}
@@ -375,4 +416,19 @@ const s = StyleSheet.create({
   stepRow: { flexDirection: "row", gap: space.md, marginBottom: space.lg, alignItems: "flex-start" },
   stepNum: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.orange, alignItems: "center", justifyContent: "center", marginTop: space.lg },
   stepNumText: { ...typo.caption2, color: colors.white, fontWeight: "700" },
+  tagAddBtn: {
+    backgroundColor: colors.accent,
+    borderRadius: radius.lg,
+    paddingHorizontal: space.xl,
+    justifyContent: "center",
+  },
+  tagChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.xs,
+    height: 30,
+    backgroundColor: colors.accentLight,
+    paddingHorizontal: space.lg,
+    borderRadius: radius.full,
+  },
 });

@@ -24,6 +24,7 @@ export const api = {
   // Folders
   getFolders: () => request("/api/folders"),
   createFolder: (name: string, emoji: string) => request("/api/folders", { method: "POST", body: JSON.stringify({ name, emoji }) }),
+  updateFolder: (id: string, name: string, emoji: string) => request(`/api/folders/${id}`, { method: "PATCH", body: JSON.stringify({ name, emoji }) }),
   deleteFolder: (id: string) => request(`/api/folders/${id}`, { method: "DELETE" }),
   addRecipeToFolder: (folderId: string, recipeId: string) => request(`/api/folders/${folderId}/recipes/${recipeId}`, { method: "POST" }),
   removeRecipeFromFolder: (folderId: string, recipeId: string) => request(`/api/folders/${folderId}/recipes/${recipeId}`, { method: "DELETE" }),

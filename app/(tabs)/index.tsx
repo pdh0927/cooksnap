@@ -24,6 +24,12 @@ export default function MyRecipesScreen() {
   const [showNewFolder, setShowNewFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [newFolderEmoji, setNewFolderEmoji] = useState("📁");
+  const [sortBy, setSortBy] = useState<"newest" | "name" | "time">("newest");
+
+  const sortLabel = sortBy === "newest" ? "최신순" : sortBy === "name" ? "이름순" : "조리시간순";
+  function cycleSortBy() {
+    setSortBy((prev) => (prev === "newest" ? "name" : prev === "name" ? "time" : "newest"));
+  }
 
   // Filter logic
   const filtered =
@@ -35,6 +41,12 @@ export default function MyRecipesScreen() {
           return folder?.recipeIds.includes(r.id) ?? false;
         })
       : recipes;
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === "name") return a.title.localeCompare(b.title, "ko");
+    if (sortBy === "time") return a.cookTimeMinutes - b.cookTimeMinutes;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   const selectedFolder = folders.find((f) => f.id === selectedFolderId);
 
@@ -196,6 +208,10 @@ export default function MyRecipesScreen() {
             <Text style={[typo.heading3, { color: colors.textPrimary }]}>
               {mode === "all" ? "모든 레시피" : ""}
             </Text>
+            <Pressable onPress={cycleSortBy} style={s.sortBtn} hitSlop={8}>
+              <Ionicons name="swap-vertical" size={16} color={colors.accent} />
+              <Text style={[typo.caption1, { color: colors.accent }]}>{sortLabel}</Text>
+            </Pressable>
           </View>
         )}
 
@@ -213,7 +229,7 @@ export default function MyRecipesScreen() {
         )}
 
         {/* Recipe cards */}
-        {filtered.map((recipe) => (
+        {sorted.map((recipe) => (
           <AnimatedPressable
             key={recipe.id}
             onPress={() => router.push(`/recipe/${recipe.id}`)}
@@ -253,7 +269,7 @@ export default function MyRecipesScreen() {
         ))}
 
         {/* Empty state */}
-        {filtered.length === 0 && !loading && (
+        {sorted.length === 0 && !loading && (
           <View style={s.emptyCard}>
             <Text style={{ fontSize: 44, marginBottom: space.xl }}>
               {mode === "favorites" ? "💝" : mode === "folder" ? "📂" : "📖"}
@@ -324,6 +340,11 @@ const s = StyleSheet.create({
     alignItems: "center",
     marginTop: space.lg,
     marginBottom: space.xs,
+  },
+  sortBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.xs,
   },
   // Folders
   folderGrid: {

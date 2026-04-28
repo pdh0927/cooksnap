@@ -58,7 +58,7 @@ export function useFolders() {
   }, []);
 
   const renameFolder = useCallback(async (id: string, name: string, emoji: string) => {
-    await api.createFolder(name, emoji); // TODO: use PATCH
+    await api.updateFolder(id, name, emoji);
     foldersCache = (foldersCache ?? []).map((f) => f.id === id ? { ...f, name, emoji } : f);
     notify();
   }, []);
