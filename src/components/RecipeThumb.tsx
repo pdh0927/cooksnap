@@ -20,12 +20,14 @@ export default function RecipeThumb({
   height = size.thumb,
   borderRadius = radius.xl,
 }: Props) {
+  const sizeStyle = width ? { width, height } : { height, width: "100%" as const };
+
   if (thumbnailUrl) {
     return (
-      <View style={[s.container, { width, height, borderRadius }]}>
+      <View style={[s.container, sizeStyle, { borderRadius }]}>
         <Image
           source={{ uri: thumbnailUrl }}
-          style={[s.image, { width, height, borderRadius }]}
+          style={[s.image, sizeStyle, { borderRadius }]}
           resizeMode="cover"
         />
         <View style={s.playBadge}>
@@ -40,9 +42,9 @@ export default function RecipeThumb({
       colors={gradientColors}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={{ width, height, borderRadius, alignItems: "center", justifyContent: "center" }}
+      style={[sizeStyle, { borderRadius, alignItems: "center", justifyContent: "center" }]}
     >
-      <Text style={{ fontSize: Math.round(width * 0.4) }}>{emoji}</Text>
+      <Text style={{ fontSize: Math.round((width || 100) * 0.4) }}>{emoji}</Text>
     </LinearGradient>
   );
 }

@@ -82,25 +82,32 @@ export default function MyRecipesScreen() {
       onPress={() => router.push(`/recipe/${recipe.id}`)}
       style={s.recipeCard}
     >
-      <RecipeThumb thumbnailUrl={recipe.thumbnailUrl} gradientColors={recipe.gradientColors as [string, string]} emoji={recipe.emoji} />
+      <RecipeThumb
+        thumbnailUrl={recipe.thumbnailUrl}
+        gradientColors={recipe.gradientColors as [string, string]}
+        emoji={recipe.emoji}
+        width={undefined}
+        height={160}
+        borderRadius={radius.xl}
+      />
       <View style={s.recipeInfo}>
-        <Text style={s.recipeName} numberOfLines={1}>{recipe.title}</Text>
+        <View style={s.recipeTopRow}>
+          <Text style={s.recipeName} numberOfLines={2}>{recipe.title}</Text>
+          {recipe.isFavorite && (
+            <Ionicons name="heart" size={14} color={colors.red} />
+          )}
+        </View>
         <View style={s.recipeMeta}>
           <Text style={s.recipeMetaText}>{recipe.cookTimeMinutes}분</Text>
           <View style={s.dot} />
           <Text style={s.recipeMetaText}>{recipe.servings}인분</Text>
-          {recipe.isFavorite && (
-            <>
-              <View style={s.dot} />
-              <Ionicons name="heart" size={11} color={colors.red} />
-            </>
-          )}
+          <View style={s.dot} />
+          <Text style={s.recipeMetaText}>{recipe.difficulty}</Text>
         </View>
         {recipe.sourceLabel && recipe.sourceLabel !== "직접 작성" && (
           <Text style={s.sourceText} numberOfLines={1}>{recipe.sourceLabel}</Text>
         )}
       </View>
-      <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
     </AnimatedPressable>
   ), [router]);
 
@@ -407,21 +414,19 @@ const s = StyleSheet.create({
     paddingHorizontal: space.xxl,
     justifyContent: "center",
   },
-  // Recipe cards
+  // Recipe cards — vertical layout (thumbnail on top)
   recipeCard: {
     backgroundColor: colors.bgPrimary,
     borderRadius: radius.xxl,
-    padding: space.xl,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.xl,
+    overflow: "hidden",
   },
-  recipeInfo: { flex: 1 },
-  recipeName: { ...typo.body1Bold, color: colors.textPrimary, marginBottom: space.xs },
-  recipeMeta: { flexDirection: "row", alignItems: "center", gap: space.sm },
+  recipeInfo: { padding: space.xl },
+  recipeTopRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: space.md },
+  recipeName: { ...typo.heading3, color: colors.textPrimary, flex: 1 },
+  recipeMeta: { flexDirection: "row", alignItems: "center", gap: space.sm, marginTop: space.md },
   recipeMetaText: { ...typo.caption1, color: colors.textTertiary },
   dot: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: colors.textDisabled },
-  sourceText: { ...typo.caption2, color: colors.textTertiary, marginTop: space.xs },
+  sourceText: { ...typo.caption2, color: colors.textTertiary, marginTop: space.sm },
   tagRow: { flexDirection: "row", gap: space.sm, marginTop: space.xs },
   tagText: { ...typo.caption3, color: colors.accent },
   // Loading
