@@ -73,6 +73,15 @@ export default function RecipeDetailScreen() {
     ]);
   }
 
+  function showMoreMenu() {
+    Alert.alert("메뉴", undefined, [
+      { text: "✏️ 편집", onPress: () => router.push(`/recipe/edit/${id}`) },
+      { text: "📁 폴더에 추가", onPress: showFolderPicker },
+      { text: "🗑️ 삭제", style: "destructive", onPress: handleDelete },
+      { text: "닫기", style: "cancel" },
+    ]);
+  }
+
   function showCategoryPicker() {
     const categories = ["한식", "중식", "일식", "양식", "디저트", "간편식"] as const;
     Alert.alert("카테고리 변경", undefined, [
@@ -119,17 +128,11 @@ export default function RecipeDetailScreen() {
                 color={recipe.isFavorite ? colors.red : colors.white}
               />
             </Pressable>
-            <Pressable onPress={() => router.push(`/recipe/edit/${id}`)} style={s.actionBtn}>
-              <Ionicons name="pencil-outline" size={18} color={colors.white} />
-            </Pressable>
-            <Pressable onPress={showFolderPicker} style={s.actionBtn}>
-              <Ionicons name="folder-outline" size={18} color={colors.white} />
-            </Pressable>
             <Pressable onPress={handleShare} style={s.actionBtn}>
               <Ionicons name="share-outline" size={18} color={colors.white} />
             </Pressable>
-            <Pressable onPress={handleDelete} style={s.actionBtn}>
-              <Ionicons name="trash-outline" size={18} color={colors.white} />
+            <Pressable onPress={showMoreMenu} style={s.actionBtn}>
+              <Ionicons name="ellipsis-horizontal" size={18} color={colors.white} />
             </Pressable>
           </View>
         </LinearGradient>

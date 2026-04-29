@@ -9,7 +9,6 @@ import { colors, typo, space, radius, size } from "../../src/theme";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
 import type { Recipe } from "../../src/types/recipe";
 
-const TAGS = ["돼지고기", "닭고기", "소고기", "해산물", "두부", "감자", "계란", "김치", "파스타", "아보카도"];
 
 type SearchMode = "search" | "fridge";
 
@@ -37,6 +36,23 @@ export default function SearchScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { recipes } = useRecipes();
+
+  const dynamicTags = useMemo(() => {
+    const freq: Record<string, number> = {};
+    for (const r of recipes) {
+      for (const ing of r.ingredients) {
+        // Use main ingredient name (remove parenthetical notes)
+        const name = ing.name.replace(/\s*\(.*\)/, '').trim();
+        if (name.length <= 1 || !ing.scalable) continue; // skip "약간" type
+        freq[name] = (freq[name] || 0) + 1;
+      }
+    }
+    return Object.entries(freq)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 15)
+      .map(([name]) => name);
+  }, [recipes]);
+
   const [query, setQuery] = useState("");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [mode, setMode] = useState<SearchMode>("search");
@@ -159,7 +175,7 @@ export default function SearchScreen() {
               <Text style={[typo.heading3, { color: colors.textPrimary }]}>재료로 찾기</Text>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chips}>
-              {TAGS.map((t) => (
+              {dynamicTags.map((t) => (
                 <Pressable
                   key={t}
                   onPress={() => { setSelectedTag(selectedTag === t ? null : t); setQuery(""); }}

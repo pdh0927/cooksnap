@@ -207,7 +207,7 @@ export default function ExploreScreen() {
                 <Text style={[typo.caption2, { color: colors.accent }]}>{recipes.length}</Text>
               </View>
             </View>
-            {recipes.map((r, i) => (
+            {recipes.slice(0, 10).map((r, i) => (
               <View key={r.id}>
                 <AnimatedPressable
                   onPress={() => router.push(`/recipe/${r.id}`)}
@@ -244,9 +244,19 @@ export default function ExploreScreen() {
                   </View>
                   <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
                 </AnimatedPressable>
-                {i < recipes.length - 1 && <View style={s.divider} />}
+                {i < Math.min(recipes.length, 10) - 1 && <View style={s.divider} />}
               </View>
             ))}
+            {recipes.length > 10 && (
+              <Pressable
+                onPress={() => router.push("/(tabs)/search")}
+                style={s.showMoreBtn}
+              >
+                <Text style={[typo.body2Bold, { color: colors.accent }]}>
+                  전체 {recipes.length}개 보기 →
+                </Text>
+              </Pressable>
+            )}
           </View>
         )}
       </ScrollView>
@@ -342,6 +352,11 @@ const s = StyleSheet.create({
   listTags: { flexDirection: "row", gap: space.sm, marginTop: space.xs },
   listTagText: { ...typo.caption3, color: colors.accent },
   divider: { height: space.xs, marginLeft: size.thumb + space.xl },
+  showMoreBtn: {
+    alignItems: "center",
+    paddingVertical: space.xl,
+    marginTop: space.md,
+  },
   emptyWrap: {
     alignItems: "center",
     justifyContent: "center",

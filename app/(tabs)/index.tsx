@@ -1,8 +1,8 @@
-import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, FlatList, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRecipes } from "../../src/store/recipeStore";
 import { useFolders } from "../../src/store/folderStore";
@@ -74,6 +74,213 @@ export default function MyRecipesScreen() {
     ]);
   }
 
+  const sectionTitle =
+    mode === "all" ? "모든 레시피" : mode === "favorites" ? "즐겨찾기" : selectedFolder?.name ?? "";
+
+  const renderRecipeCard = useCallback(({ item: recipe }: { item: typeof sorted[number] }) => (
+    <AnimatedPressable
+      onPress={() => router.push(`/recipe/${recipe.id}`)}
+      style={s.recipeCard}
+    >
+      <LinearGradient
+        colors={recipe.gradientColors as [string, string]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={s.recipeImg}
+      >
+        <Text style={{ fontSize: size.thumbEmoji }}>{recipe.emoji}</Text>
+      </LinearGradient>
+      <View style={s.recipeInfo}>
+        <Text style={s.recipeName} numberOfLines={1}>{recipe.title}</Text>
+        <View style={s.recipeMeta}>
+          <Text style={s.recipeMetaText}>{recipe.cookTimeMinutes}분</Text>
+          <View style={s.dot} />
+          <Text style={s.recipeMetaText}>{recipe.servings}인분</Text>
+          {recipe.isFavorite && (
+            <>
+              <View style={s.dot} />
+              <Ionicons name="heart" size={11} color={colors.red} />
+            </>
+          )}
+        </View>
+        {recipe.sourceLabel && recipe.sourceLabel !== "직접 작성" && (
+          <Text style={s.sourceText} numberOfLines={1}>{recipe.sourceLabel}</Text>
+        )}
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
+    </AnimatedPressable>
+  ), [router]);
+
+  const listHeader = (
+    <View style={{ gap: space.cardGap }}>
+      {/* Filter chips: 전체, 즐겨찾기 */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={s.chipScroll}
+      >
+        <Pressable
+          onPress={() => { setMode("all"); setSelectedFolderId(null); }}
+          style={[s.chip, mode === "all" && s.chipActive]}
+        >
+          <Text style={[s.chipText, mode === "all" && s.chipTextActive]}>전체</Text>
+        </Pressable>
+        <Pressable
+          onPress={() => { setMode("favorites"); setSelectedFolderId(null); }}
+          style={[s.chip, mode === "favorites" && s.chipActive]}
+        >
+          <Ionicons
+            name="heart"
+            size={12}
+            color={mode === "favorites" ? colors.white : colors.red}
+            style={{ marginRight: 4 }}
+          />
+          <Text style={[s.chipText, mode === "favorites" && s.chipTextActive]}>즐겨찾기</Text>
+        </Pressable>
+      </ScrollView>
+
+      {/* Folders section */}
+      <View style={s.sectionHeader}>
+        <Text style={[typo.heading3, { color: colors.textPrimary }]}>내 폴더</Text>
+        <Pressable onPress={() => setShowNewFolder(true)} hitSlop={8}>
+          <Ionicons name="add-circle-outline" size={22} color={colors.accent} />
+        </Pressable>
+      </View>
+
+      {/* New folder input */}
+      {showNewFolder && (
+        <View style={s.newFolderCard}>
+          {/* Emoji picker */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.sm, marginBottom: space.lg }}>
+            {FOLDER_EMOJIS.map((e) => (
+              <Pressable
+                key={e}
+                onPress={() => setNewFolderEmoji(e)}
+                style={[s.emojiBtn, newFolderEmoji === e && s.emojiBtnActive]}
+              >
+                <Text style={{ fontSize: 20 }}>{e}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+          <View style={s.newFolderRow}>
+            <TextInput
+              style={s.newFolderInput}
+              placeholder="폴더 이름 (예: 주말 브런치)"
+              placeholderTextColor={colors.textDisabled}
+              value={newFolderName}
+              onChangeText={setNewFolderName}
+              autoFocus
+              returnKeyType="done"
+              onSubmitEditing={handleCreateFolder}
+            />
+            <Pressable onPress={handleCreateFolder} style={s.newFolderBtn}>
+              <Text style={[typo.body2Bold, { color: colors.white }]}>만들기</Text>
+            </Pressable>
+          </View>
+          <Pressable onPress={() => setShowNewFolder(false)} style={{ alignSelf: "center", marginTop: space.md }}>
+            <Text style={[typo.caption1, { color: colors.textTertiary }]}>취소</Text>
+          </Pressable>
+        </View>
+      )}
+
+      {/* Folder grid */}
+      {folders.length > 0 ? (
+        <View style={s.folderGrid}>
+          {folders.map((folder) => {
+            const count = folder.recipeIds.length;
+            const isSelected = mode === "folder" && selectedFolderId === folder.id;
+            return (
+              <AnimatedPressable
+                key={folder.id}
+                onPress={() => {
+                  setMode("folder");
+                  setSelectedFolderId(folder.id);
+                }}
+                onLongPress={() => handleDeleteFolder(folder.id, folder.name)}
+                style={[s.folderCard, isSelected && s.folderCardActive]}
+              >
+                <Text style={s.folderEmoji}>{folder.emoji}</Text>
+                <Text style={[s.folderName, isSelected && { color: colors.accent }]} numberOfLines={1}>
+                  {folder.name}
+                </Text>
+                <Text style={s.folderCount}>{count}개</Text>
+              </AnimatedPressable>
+            );
+          })}
+        </View>
+      ) : !showNewFolder ? (
+        <Pressable onPress={() => setShowNewFolder(true)} style={s.folderEmpty}>
+          <Ionicons name="folder-open-outline" size={24} color={colors.textDisabled} />
+          <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: space.md }]}>
+            폴더를 만들어 레시피를 정리해보세요
+          </Text>
+        </Pressable>
+      ) : null}
+
+      {/* Selected folder header */}
+      {mode === "folder" && selectedFolder && (
+        <View style={s.folderHeader}>
+          <Text style={{ fontSize: 20 }}>{selectedFolder.emoji}</Text>
+          <Text style={[typo.heading3, { color: colors.textPrimary, flex: 1 }]}>
+            {selectedFolder.name}
+          </Text>
+          <Text style={[typo.caption2, { color: colors.textTertiary }]}>
+            {filtered.length}개
+          </Text>
+        </View>
+      )}
+
+      {/* Unified recipe list header with sort button */}
+      <View style={s.sectionHeader}>
+        <Text style={[typo.heading3, { color: colors.textPrimary }]}>
+          {sectionTitle}
+        </Text>
+        <Pressable onPress={cycleSortBy} style={s.sortBtn} hitSlop={8}>
+          <Ionicons name="swap-vertical" size={16} color={colors.accent} />
+          <Text style={[typo.caption1, { color: colors.accent }]}>{sortLabel}</Text>
+        </Pressable>
+      </View>
+
+      {/* Loading state */}
+      {loading && recipes.length === 0 && (
+        <View style={s.loadingWrap}>
+          <Spinner size={36} />
+        </View>
+      )}
+    </View>
+  );
+
+  const listEmpty = !loading ? (
+    <View style={s.emptyCard}>
+      <Text style={{ fontSize: 44, marginBottom: space.xl }}>
+        {mode === "favorites" ? "💝" : mode === "folder" ? "📂" : "📖"}
+      </Text>
+      <Text style={[typo.heading3, { color: colors.textPrimary, marginBottom: space.md }]}>
+        {mode === "favorites"
+          ? "즐겨찾기한 레시피가 없어요"
+          : mode === "folder"
+          ? "이 폴더가 비어있어요"
+          : "레시피가 없어요"}
+      </Text>
+      <Text style={[typo.body2, { color: colors.textTertiary, textAlign: "center" }]}>
+        {mode === "favorites"
+          ? "레시피 상세에서 ♥를 눌러 추가해보세요"
+          : mode === "folder"
+          ? "레시피 상세에서 폴더에 추가할 수 있어요"
+          : "아래 + 버튼을 눌러 레시피를 추가해보세요"}
+      </Text>
+      {mode === "all" && (
+        <AnimatedPressable
+          onPress={() => router.push("/(tabs)/add")}
+          style={s.ctaBtn}
+        >
+          <Ionicons name="add" size={18} color={colors.white} />
+          <Text style={[typo.body2Bold, { color: colors.white }]}>레시피 추가하기</Text>
+        </AnimatedPressable>
+      )}
+    </View>
+  ) : null;
+
   return (
     <View style={[s.root, { paddingTop: insets.top }]}>
       {/* Header */}
@@ -84,218 +291,15 @@ export default function MyRecipesScreen() {
         </Text>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll}>
-        {/* Filter chips: 전체, 즐겨찾기 */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={s.chipScroll}
-        >
-          <Pressable
-            onPress={() => { setMode("all"); setSelectedFolderId(null); }}
-            style={[s.chip, mode === "all" && s.chipActive]}
-          >
-            <Text style={[s.chipText, mode === "all" && s.chipTextActive]}>전체</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => { setMode("favorites"); setSelectedFolderId(null); }}
-            style={[s.chip, mode === "favorites" && s.chipActive]}
-          >
-            <Ionicons
-              name="heart"
-              size={12}
-              color={mode === "favorites" ? colors.white : colors.red}
-              style={{ marginRight: 4 }}
-            />
-            <Text style={[s.chipText, mode === "favorites" && s.chipTextActive]}>즐겨찾기</Text>
-          </Pressable>
-        </ScrollView>
-
-        {/* Folders section */}
-        <View style={s.sectionHeader}>
-          <Text style={[typo.heading3, { color: colors.textPrimary }]}>내 폴더</Text>
-          <Pressable onPress={() => setShowNewFolder(true)} hitSlop={8}>
-            <Ionicons name="add-circle-outline" size={22} color={colors.accent} />
-          </Pressable>
-        </View>
-
-        {/* New folder input */}
-        {showNewFolder && (
-          <View style={s.newFolderCard}>
-            {/* Emoji picker */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.sm, marginBottom: space.lg }}>
-              {FOLDER_EMOJIS.map((e) => (
-                <Pressable
-                  key={e}
-                  onPress={() => setNewFolderEmoji(e)}
-                  style={[s.emojiBtn, newFolderEmoji === e && s.emojiBtnActive]}
-                >
-                  <Text style={{ fontSize: 20 }}>{e}</Text>
-                </Pressable>
-              ))}
-            </ScrollView>
-            <View style={s.newFolderRow}>
-              <TextInput
-                style={s.newFolderInput}
-                placeholder="폴더 이름 (예: 주말 브런치)"
-                placeholderTextColor={colors.textDisabled}
-                value={newFolderName}
-                onChangeText={setNewFolderName}
-                autoFocus
-                returnKeyType="done"
-                onSubmitEditing={handleCreateFolder}
-              />
-              <Pressable onPress={handleCreateFolder} style={s.newFolderBtn}>
-                <Text style={[typo.body2Bold, { color: colors.white }]}>만들기</Text>
-              </Pressable>
-            </View>
-            <Pressable onPress={() => setShowNewFolder(false)} style={{ alignSelf: "center", marginTop: space.md }}>
-              <Text style={[typo.caption1, { color: colors.textTertiary }]}>취소</Text>
-            </Pressable>
-          </View>
-        )}
-
-        {/* Folder grid */}
-        {folders.length > 0 ? (
-          <View style={s.folderGrid}>
-            {folders.map((folder) => {
-              const count = folder.recipeIds.length;
-              const isSelected = mode === "folder" && selectedFolderId === folder.id;
-              return (
-                <AnimatedPressable
-                  key={folder.id}
-                  onPress={() => {
-                    setMode("folder");
-                    setSelectedFolderId(folder.id);
-                  }}
-                  onLongPress={() => handleDeleteFolder(folder.id, folder.name)}
-                  style={[s.folderCard, isSelected && s.folderCardActive]}
-                >
-                  <Text style={s.folderEmoji}>{folder.emoji}</Text>
-                  <Text style={[s.folderName, isSelected && { color: colors.accent }]} numberOfLines={1}>
-                    {folder.name}
-                  </Text>
-                  <Text style={s.folderCount}>{count}개</Text>
-                </AnimatedPressable>
-              );
-            })}
-          </View>
-        ) : !showNewFolder ? (
-          <Pressable onPress={() => setShowNewFolder(true)} style={s.folderEmpty}>
-            <Ionicons name="folder-open-outline" size={24} color={colors.textDisabled} />
-            <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: space.md }]}>
-              폴더를 만들어 레시피를 정리해보세요
-            </Text>
-          </Pressable>
-        ) : null}
-
-        {/* Selected folder header */}
-        {mode === "folder" && selectedFolder && (
-          <View style={s.folderHeader}>
-            <Text style={{ fontSize: 20 }}>{selectedFolder.emoji}</Text>
-            <Text style={[typo.heading3, { color: colors.textPrimary, flex: 1 }]}>
-              {selectedFolder.name}
-            </Text>
-            <Text style={[typo.caption2, { color: colors.textTertiary }]}>
-              {filtered.length}개
-            </Text>
-          </View>
-        )}
-
-        {/* Recipe list header */}
-        {mode === "all" && (
-          <View style={s.sectionHeader}>
-            <Text style={[typo.heading3, { color: colors.textPrimary }]}>
-              {mode === "all" ? "모든 레시피" : ""}
-            </Text>
-            <Pressable onPress={cycleSortBy} style={s.sortBtn} hitSlop={8}>
-              <Ionicons name="swap-vertical" size={16} color={colors.accent} />
-              <Text style={[typo.caption1, { color: colors.accent }]}>{sortLabel}</Text>
-            </Pressable>
-          </View>
-        )}
-
-        {mode === "favorites" && (
-          <View style={s.sectionHeader}>
-            <Text style={[typo.heading3, { color: colors.textPrimary }]}>즐겨찾기</Text>
-          </View>
-        )}
-
-        {/* Loading state */}
-        {loading && recipes.length === 0 && (
-          <View style={s.loadingWrap}>
-            <Spinner size={36} />
-          </View>
-        )}
-
-        {/* Recipe cards */}
-        {sorted.map((recipe) => (
-          <AnimatedPressable
-            key={recipe.id}
-            onPress={() => router.push(`/recipe/${recipe.id}`)}
-            style={s.recipeCard}
-          >
-            <LinearGradient
-              colors={recipe.gradientColors as [string, string]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={s.recipeImg}
-            >
-              <Text style={{ fontSize: size.thumbEmoji }}>{recipe.emoji}</Text>
-            </LinearGradient>
-            <View style={s.recipeInfo}>
-              <Text style={s.recipeName} numberOfLines={1}>{recipe.title}</Text>
-              <View style={s.recipeMeta}>
-                <Text style={s.recipeMetaText}>{recipe.cookTimeMinutes}분</Text>
-                <View style={s.dot} />
-                <Text style={s.recipeMetaText}>{recipe.servings}인분</Text>
-                {recipe.isFavorite && (
-                  <>
-                    <View style={s.dot} />
-                    <Ionicons name="heart" size={11} color={colors.red} />
-                  </>
-                )}
-              </View>
-              {recipe.sourceLabel && recipe.sourceLabel !== "직접 작성" && (
-                <Text style={s.sourceText} numberOfLines={1}>{recipe.sourceLabel}</Text>
-              )}
-            </View>
-            <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
-          </AnimatedPressable>
-        ))}
-
-        {/* Empty state */}
-        {sorted.length === 0 && !loading && (
-          <View style={s.emptyCard}>
-            <Text style={{ fontSize: 44, marginBottom: space.xl }}>
-              {mode === "favorites" ? "💝" : mode === "folder" ? "📂" : "📖"}
-            </Text>
-            <Text style={[typo.heading3, { color: colors.textPrimary, marginBottom: space.md }]}>
-              {mode === "favorites"
-                ? "즐겨찾기한 레시피가 없어요"
-                : mode === "folder"
-                ? "이 폴더가 비어있어요"
-                : "레시피가 없어요"}
-            </Text>
-            <Text style={[typo.body2, { color: colors.textTertiary, textAlign: "center" }]}>
-              {mode === "favorites"
-                ? "레시피 상세에서 ♥를 눌러 추가해보세요"
-                : mode === "folder"
-                ? "레시피 상세에서 폴더에 추가할 수 있어요"
-                : "아래 + 버튼을 눌러 레시피를 추가해보세요"}
-            </Text>
-            {mode === "all" && (
-              <AnimatedPressable
-                onPress={() => router.push("/(tabs)/add")}
-                style={s.ctaBtn}
-              >
-                <Ionicons name="add" size={18} color={colors.white} />
-                <Text style={[typo.body2Bold, { color: colors.white }]}>레시피 추가하기</Text>
-              </AnimatedPressable>
-            )}
-          </View>
-        )}
-      </ScrollView>
+      <FlatList
+        data={sorted}
+        keyExtractor={(item) => item.id}
+        renderItem={renderRecipeCard}
+        ListHeaderComponent={listHeader}
+        ListEmptyComponent={listEmpty}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={s.scroll}
+      />
     </View>
   );
 }
