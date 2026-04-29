@@ -35,6 +35,39 @@ export default function EditRecipeScreen() {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
 
+  function handleClose() {
+    if (!recipe) { router.back(); return; }
+    const hasChanges =
+      title !== recipe.title ||
+      emoji !== recipe.emoji ||
+      category !== recipe.category ||
+      difficulty !== recipe.difficulty ||
+      cookTime !== String(recipe.cookTimeMinutes) ||
+      servings !== String(recipe.servings) ||
+      ingredients.some((ing, i) => {
+        const orig = recipe.ingredients[i];
+        if (!orig) return ing.name.trim() !== "";
+        return ing.name !== orig.name || ing.amount !== formatAmount(orig.amount, orig.unit);
+      }) ||
+      ingredients.length !== recipe.ingredients.length ||
+      steps.some((s, i) => s !== (recipe.steps[i]?.instruction ?? "")) ||
+      steps.length !== recipe.steps.length ||
+      JSON.stringify(tags) !== JSON.stringify(recipe.tags ?? []);
+
+    if (hasChanges) {
+      Alert.alert(
+        "수정 중인 내용이 있어요",
+        "지금 나가면 변경사항이 사라져요",
+        [
+          { text: "계속 편집", style: "cancel" },
+          { text: "나가기", style: "destructive", onPress: () => router.back() },
+        ]
+      );
+    } else {
+      router.back();
+    }
+  }
+
   function addTag() {
     const t = tagInput.trim();
     if (t && !tags.includes(t)) {
@@ -181,7 +214,7 @@ export default function EditRecipeScreen() {
     >
       {/* Header */}
       <View style={s.header}>
-        <Pressable onPress={() => router.back()} style={s.headerBtn}>
+        <Pressable onPress={handleClose} style={s.headerBtn}>
           <Ionicons name="close" size={20} color={colors.textSecondary} />
         </Pressable>
         <Text style={[typo.heading3, { color: colors.textPrimary }]}>레시피 편집</Text>

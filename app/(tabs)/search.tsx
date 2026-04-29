@@ -135,14 +135,14 @@ export default function SearchScreen() {
         {/* Mode toggle */}
         <View style={s.modeToggle}>
           <Pressable
-            onPress={() => setMode("search")}
+            onPress={() => { setMode("search"); setFridgeItems([]); setFridgeInput(""); }}
             style={[s.modeBtn, mode === "search" && s.modeBtnActive]}
           >
             <Ionicons name="search" size={16} color={mode === "search" ? colors.textPrimary : colors.textTertiary} />
             <Text style={[typo.body2Bold, { color: mode === "search" ? colors.textPrimary : colors.textTertiary }]}>레시피 검색</Text>
           </Pressable>
           <Pressable
-            onPress={() => setMode("fridge")}
+            onPress={() => { setMode("fridge"); setQuery(""); setSelectedTag(null); }}
             style={[s.modeBtn, mode === "fridge" && s.modeBtnActive]}
           >
             <Text style={{ fontSize: 16 }}>🧊</Text>
@@ -197,27 +197,36 @@ export default function SearchScreen() {
                 </View>
 
                 {filtered.length > 0 ? (
-                  filtered.map((r) => (
-                    <AnimatedPressable key={r.id} onPress={() => router.push(`/recipe/${r.id}`)} style={s.resultCard}>
-                      <LinearGradient
-                        colors={r.gradientColors as [string, string]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={s.resultImg}
-                      >
-                        <Text style={{ fontSize: size.thumbEmoji }}>{r.emoji}</Text>
-                      </LinearGradient>
-                      <View style={{ flex: 1 }}>
-                        <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>{r.title}</Text>
-                        <View style={s.meta}>
-                          <Text style={s.metaText}>{r.cookTimeMinutes}분</Text>
-                          <View style={s.dot} />
-                          <Text style={s.metaText}>{r.servings}인분</Text>
+                  <>
+                    {filtered.slice(0, 20).map((r) => (
+                      <AnimatedPressable key={r.id} onPress={() => router.push(`/recipe/${r.id}`)} style={s.resultCard}>
+                        <LinearGradient
+                          colors={r.gradientColors as [string, string]}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          style={s.resultImg}
+                        >
+                          <Text style={{ fontSize: size.thumbEmoji }}>{r.emoji}</Text>
+                        </LinearGradient>
+                        <View style={{ flex: 1 }}>
+                          <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>{r.title}</Text>
+                          <View style={s.meta}>
+                            <Text style={s.metaText}>{r.cookTimeMinutes}분</Text>
+                            <View style={s.dot} />
+                            <Text style={s.metaText}>{r.servings}인분</Text>
+                          </View>
                         </View>
+                        <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
+                      </AnimatedPressable>
+                    ))}
+                    {filtered.length > 20 && (
+                      <View style={s.limitMsg}>
+                        <Text style={[typo.caption1, { color: colors.textTertiary, textAlign: "center" }]}>
+                          더 많은 결과가 있어요. 검색어를 구체적으로 입력해보세요
+                        </Text>
                       </View>
-                      <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
-                    </AnimatedPressable>
-                  ))
+                    )}
+                  </>
                 ) : (
                   <View style={s.emptyCard}>
                     <Text style={{ fontSize: 36, marginBottom: space.lg }}>🔍</Text>
@@ -441,6 +450,7 @@ const s = StyleSheet.create({
   meta: { flexDirection: "row", alignItems: "center", gap: space.sm, marginTop: space.xs },
   metaText: { ...typo.caption1, color: colors.textTertiary },
   dot: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: colors.textDisabled },
+  limitMsg: { paddingVertical: space.xl, paddingHorizontal: space.lg },
   emptyCard: {
     backgroundColor: colors.bgPrimary,
     borderRadius: radius.xxl,

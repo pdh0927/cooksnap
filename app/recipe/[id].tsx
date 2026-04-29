@@ -12,6 +12,13 @@ import StepText from "../../src/components/StepText";
 import { formatAmount } from "../../src/components/formatAmount";
 import { colors, typo, space, radius, size } from "../../src/theme";
 
+function formatDuration(seconds: number): string {
+  if (seconds < 60) return `${seconds}초`;
+  const min = Math.floor(seconds / 60);
+  const sec = seconds % 60;
+  return sec > 0 ? `${min}분 ${sec}초` : `${min}분`;
+}
+
 export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -251,7 +258,7 @@ export default function RecipeDetailScreen() {
                       <View style={s.timerTag}>
                         <Ionicons name="time-outline" size={12} color={colors.accent} />
                         <Text style={[typo.caption2, { color: colors.accent, fontWeight: "600" }]}>
-                          {Math.floor(step.timerSeconds / 60)}분
+                          {formatDuration(step.timerSeconds)}
                         </Text>
                       </View>
                     )}

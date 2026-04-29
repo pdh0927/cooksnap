@@ -11,6 +11,13 @@ import StepText from "../../../src/components/StepText";
 import { colors, darkColors, typo, space, radius } from "../../../src/theme";
 import type { Ingredient } from "../../../src/types/recipe";
 
+function formatDuration(seconds: number): string {
+  if (seconds < 60) return `${seconds}초`;
+  const min = Math.floor(seconds / 60);
+  const sec = seconds % 60;
+  return sec > 0 ? `${min}분 ${sec}초` : `${min}분`;
+}
+
 export default function CookingModeScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -22,7 +29,9 @@ export default function CookingModeScreen() {
   const [sec, setSec] = useState(0);
   const [running, setRunning] = useState(false);
   const [allSteps, setAllSteps] = useState(false);
+  const [timerDone, setTimerDone] = useState(false);
   const ref = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pulseRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useKeepAwake();
 
@@ -37,7 +46,10 @@ export default function CookingModeScreen() {
   useEffect(() => {
     if (ref.current) clearInterval(ref.current);
     ref.current = null;
+    if (pulseRef.current) clearInterval(pulseRef.current);
+    pulseRef.current = null;
     setRunning(false);
+    setTimerDone(false);
     setSec(step?.timerSeconds ?? 0);
   }, [cur, step?.timerSeconds]);
 
@@ -49,7 +61,11 @@ export default function CookingModeScreen() {
           clearInterval(ref.current!);
           ref.current = null;
           setRunning(false);
+          setTimerDone(true);
+          // Vibrate 3 times on completion
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          setTimeout(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning), 500);
+          setTimeout(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success), 1000);
           return 0;
         }
         return p - 1;
@@ -93,7 +109,7 @@ export default function CookingModeScreen() {
                 <Text style={[st.allDotText, i === cur && { color: colors.white }]}>{i + 1}</Text>
               </View>
               <Text style={[st.allText, i === cur && { color: colors.white, fontWeight: "600" }]}>
-                {s.instruction}{s.timerSeconds ? ` (${Math.floor(s.timerSeconds / 60)}분)` : ""}
+                {s.instruction}{s.timerSeconds ? ` (${formatDuration(s.timerSeconds)})` : ""}
               </Text>
             </Pressable>
           ))}
@@ -147,7 +163,7 @@ export default function CookingModeScreen() {
                 <Ionicons name="time" size={18} color={colors.white} />
               </View>
               <View>
-                <Text style={st.timerVal}>{fmt(sec)}</Text>
+                <Text style={[st.timerVal, timerDone && { color: colors.green }]}>{fmt(sec)}</Text>
                 <Text style={[typo.caption3, { color: darkColors.textDim }]}>이 단계 타이머</Text>
               </View>
             </View>

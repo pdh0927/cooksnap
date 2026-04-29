@@ -39,6 +39,22 @@ export default function CreateRecipeScreen() {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
 
+  function handleClose() {
+    const hasContent = title.trim() || ingredients.some(i => i.name.trim()) || steps.some(s => s.trim());
+    if (hasContent) {
+      Alert.alert(
+        "작성 중인 내용이 있어요",
+        "지금 나가면 내용이 사라져요",
+        [
+          { text: "계속 작성", style: "cancel" },
+          { text: "나가기", style: "destructive", onPress: () => router.back() },
+        ]
+      );
+    } else {
+      router.back();
+    }
+  }
+
   function addTag() {
     const t = tagInput.trim();
     if (t && !tags.includes(t)) {
@@ -168,7 +184,7 @@ export default function CreateRecipeScreen() {
     >
       {/* Header */}
       <View style={s.header}>
-        <Pressable onPress={() => router.back()} style={s.headerBtn}>
+        <Pressable onPress={handleClose} style={s.headerBtn}>
           <Ionicons name="close" size={20} color={colors.textSecondary} />
         </Pressable>
         <Text style={[typo.heading3, { color: colors.textPrimary }]}>레시피 작성</Text>
