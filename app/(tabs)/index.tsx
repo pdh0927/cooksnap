@@ -1,14 +1,14 @@
 import { View, Text, ScrollView, FlatList, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCallback, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRecipes } from "../../src/store/recipeStore";
 import { useFolders } from "../../src/store/folderStore";
-import { colors, typo, space, radius, size } from "../../src/theme";
+import { colors, typo, space, radius } from "../../src/theme";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
 import Spinner from "../../src/components/Spinner";
+import RecipeThumb from "../../src/components/RecipeThumb";
 
 type ViewMode = "all" | "favorites" | "folder";
 
@@ -82,14 +82,7 @@ export default function MyRecipesScreen() {
       onPress={() => router.push(`/recipe/${recipe.id}`)}
       style={s.recipeCard}
     >
-      <LinearGradient
-        colors={recipe.gradientColors as [string, string]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={s.recipeImg}
-      >
-        <Text style={{ fontSize: size.thumbEmoji }}>{recipe.emoji}</Text>
-      </LinearGradient>
+      <RecipeThumb thumbnailUrl={recipe.thumbnailUrl} gradientColors={recipe.gradientColors as [string, string]} emoji={recipe.emoji} />
       <View style={s.recipeInfo}>
         <Text style={s.recipeName} numberOfLines={1}>{recipe.title}</Text>
         <View style={s.recipeMeta}>
@@ -422,13 +415,6 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: space.xl,
-  },
-  recipeImg: {
-    width: size.thumb,
-    height: size.thumb,
-    borderRadius: radius.lg,
-    alignItems: "center",
-    justifyContent: "center",
   },
   recipeInfo: { flex: 1 },
   recipeName: { ...typo.body1Bold, color: colors.textPrimary, marginBottom: space.xs },

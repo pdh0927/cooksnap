@@ -2,10 +2,10 @@ import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRecipes } from "../../src/store/recipeStore";
 import { colors, typo, space, radius, size } from "../../src/theme";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
+import RecipeThumb from "../../src/components/RecipeThumb";
 import Spinner from "../../src/components/Spinner";
 import type { Recipe } from "../../src/types/recipe";
 
@@ -81,14 +81,9 @@ const THEMES: ThemeSection[] = [
 function RecipeHCard({ recipe, onPress }: { recipe: Recipe; onPress: () => void }) {
   return (
     <AnimatedPressable onPress={onPress} style={s.hCard}>
-      <LinearGradient
-        colors={recipe.gradientColors as [string, string]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={s.hCardImg}
-      >
-        <Text style={{ fontSize: 34 }}>{recipe.emoji}</Text>
-      </LinearGradient>
+      <View style={{ marginBottom: space.md }}>
+        <RecipeThumb thumbnailUrl={recipe.thumbnailUrl} gradientColors={recipe.gradientColors as [string, string]} emoji={recipe.emoji} width={150} height={110} borderRadius={radius.lg} />
+      </View>
       <Text style={s.hCardTitle} numberOfLines={2}>{recipe.title}</Text>
       <Text style={s.hCardMeta}>{recipe.cookTimeMinutes}분 · {recipe.difficulty}</Text>
       <Text style={s.hCardDifficulty}>{recipe.difficulty === "쉬움" ? "초보 가능" : recipe.difficulty === "보통" ? "약간의 경험" : "숙련자"}</Text>
@@ -213,14 +208,7 @@ export default function ExploreScreen() {
                   onPress={() => router.push(`/recipe/${r.id}`)}
                   style={s.listItem}
                 >
-                  <LinearGradient
-                    colors={r.gradientColors as [string, string]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={s.listImg}
-                  >
-                    <Text style={{ fontSize: size.thumbEmoji }}>{r.emoji}</Text>
-                  </LinearGradient>
+                  <RecipeThumb thumbnailUrl={r.thumbnailUrl} gradientColors={r.gradientColors as [string, string]} emoji={r.emoji} />
                   <View style={{ flex: 1 }}>
                     <Text style={[typo.body1Bold, { color: colors.textPrimary }]} numberOfLines={1}>{r.title}</Text>
                     <View style={s.listMeta}>
@@ -321,14 +309,6 @@ const s = StyleSheet.create({
   hCard: {
     width: 150,
   },
-  hCardImg: {
-    width: 150,
-    height: 110,
-    borderRadius: radius.lg,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: space.md,
-  },
   hCardTitle: { ...typo.body2Bold, color: colors.textPrimary, lineHeight: 18 },
   hCardMeta: { ...typo.caption1, color: colors.textTertiary, marginTop: 3 },
   hCardDifficulty: { ...typo.caption3, color: colors.textDisabled, marginTop: 2 },
@@ -338,13 +318,6 @@ const s = StyleSheet.create({
     alignItems: "center",
     gap: space.xl,
     paddingVertical: space.lg,
-  },
-  listImg: {
-    width: size.thumb,
-    height: size.thumb,
-    borderRadius: radius.lg,
-    alignItems: "center",
-    justifyContent: "center",
   },
   listMeta: { flexDirection: "row", alignItems: "center", gap: space.sm, marginTop: space.xs },
   listMetaText: { ...typo.caption1, color: colors.textTertiary },

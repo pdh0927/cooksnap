@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Pressable, StyleSheet, Alert, Share, Linking } from "react-native";
+import { View, Text, ScrollView, Pressable, StyleSheet, Alert, Share, Linking, Image } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
@@ -117,32 +117,57 @@ export default function RecipeDetailScreen() {
     <View style={s.root}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Hero */}
-        <LinearGradient
-          colors={recipe.gradientColors as [string, string]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={s.hero}
-        >
-          <Text style={{ fontSize: size.heroEmoji }}>{recipe.emoji}</Text>
-          <Pressable onPress={() => router.back()} style={[s.backBtn, { top: insets.top + 8 }]}>
-            <Ionicons name="chevron-back" size={20} color={colors.white} />
-          </Pressable>
-          <View style={[s.actionRow, { top: insets.top + 8 }]}>
-            <Pressable onPress={() => toggleFavorite(id)} style={s.actionBtn}>
-              <Ionicons
-                name={recipe.isFavorite ? "heart" : "heart-outline"}
-                size={18}
-                color={recipe.isFavorite ? colors.red : colors.white}
-              />
+        {recipe.thumbnailUrl ? (
+          <View style={s.hero}>
+            <Image source={{ uri: recipe.thumbnailUrl }} style={s.heroImage} resizeMode="cover" />
+            <View style={s.heroOverlay} />
+            <Pressable onPress={() => router.back()} style={[s.backBtn, { top: insets.top + 8 }]}>
+              <Ionicons name="chevron-back" size={20} color={colors.white} />
             </Pressable>
-            <Pressable onPress={handleShare} style={s.actionBtn}>
-              <Ionicons name="share-outline" size={18} color={colors.white} />
-            </Pressable>
-            <Pressable onPress={showMoreMenu} style={s.actionBtn}>
-              <Ionicons name="ellipsis-horizontal" size={18} color={colors.white} />
-            </Pressable>
+            <View style={[s.actionRow, { top: insets.top + 8 }]}>
+              <Pressable onPress={() => toggleFavorite(id)} style={s.actionBtn}>
+                <Ionicons
+                  name={recipe.isFavorite ? "heart" : "heart-outline"}
+                  size={18}
+                  color={recipe.isFavorite ? colors.red : colors.white}
+                />
+              </Pressable>
+              <Pressable onPress={handleShare} style={s.actionBtn}>
+                <Ionicons name="share-outline" size={18} color={colors.white} />
+              </Pressable>
+              <Pressable onPress={showMoreMenu} style={s.actionBtn}>
+                <Ionicons name="ellipsis-horizontal" size={18} color={colors.white} />
+              </Pressable>
+            </View>
           </View>
-        </LinearGradient>
+        ) : (
+          <LinearGradient
+            colors={recipe.gradientColors as [string, string]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={s.hero}
+          >
+            <Text style={{ fontSize: size.heroEmoji }}>{recipe.emoji}</Text>
+            <Pressable onPress={() => router.back()} style={[s.backBtn, { top: insets.top + 8 }]}>
+              <Ionicons name="chevron-back" size={20} color={colors.white} />
+            </Pressable>
+            <View style={[s.actionRow, { top: insets.top + 8 }]}>
+              <Pressable onPress={() => toggleFavorite(id)} style={s.actionBtn}>
+                <Ionicons
+                  name={recipe.isFavorite ? "heart" : "heart-outline"}
+                  size={18}
+                  color={recipe.isFavorite ? colors.red : colors.white}
+                />
+              </Pressable>
+              <Pressable onPress={handleShare} style={s.actionBtn}>
+                <Ionicons name="share-outline" size={18} color={colors.white} />
+              </Pressable>
+              <Pressable onPress={showMoreMenu} style={s.actionBtn}>
+                <Ionicons name="ellipsis-horizontal" size={18} color={colors.white} />
+              </Pressable>
+            </View>
+          </LinearGradient>
+        )}
 
         {/* Info card */}
         <View style={s.infoCard}>
@@ -321,6 +346,8 @@ export default function RecipeDetailScreen() {
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bgPage },
   hero: { height: 220, alignItems: "center", justifyContent: "center" },
+  heroImage: { width: "100%" as any, height: 220, position: "absolute" },
+  heroOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.15)" },
   backBtn: {
     position: "absolute",
     left: space.gutter,

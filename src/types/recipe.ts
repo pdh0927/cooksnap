@@ -45,6 +45,7 @@ export interface Recipe {
   tags: string[];
   tips: string[];
   warnings: string[];
+  thumbnailUrl: string | null;
   gradientColors: [string, string];
   isFavorite: boolean;
   createdAt: string;

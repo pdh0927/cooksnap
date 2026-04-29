@@ -1,0 +1,69 @@
+import { View, Image, Text, StyleSheet } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Ionicons } from "@expo/vector-icons";
+import { colors, radius, size } from "../theme";
+
+interface Props {
+  thumbnailUrl?: string | null;
+  gradientColors: [string, string];
+  emoji: string;
+  width?: number;
+  height?: number;
+  borderRadius?: number;
+}
+
+export default function RecipeThumb({
+  thumbnailUrl,
+  gradientColors,
+  emoji,
+  width = size.thumb,
+  height = size.thumb,
+  borderRadius = radius.xl,
+}: Props) {
+  if (thumbnailUrl) {
+    return (
+      <View style={[s.container, { width, height, borderRadius }]}>
+        <Image
+          source={{ uri: thumbnailUrl }}
+          style={[s.image, { width, height, borderRadius }]}
+          resizeMode="cover"
+        />
+        <View style={s.playBadge}>
+          <Ionicons name="play" size={8} color={colors.white} />
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <LinearGradient
+      colors={gradientColors}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={{ width, height, borderRadius, alignItems: "center", justifyContent: "center" }}
+    >
+      <Text style={{ fontSize: Math.round(width * 0.4) }}>{emoji}</Text>
+    </LinearGradient>
+  );
+}
+
+const s = StyleSheet.create({
+  container: {
+    overflow: "hidden",
+    position: "relative",
+  },
+  image: {
+    backgroundColor: colors.gray100,
+  },
+  playBadge: {
+    position: "absolute",
+    bottom: 4,
+    right: 4,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});

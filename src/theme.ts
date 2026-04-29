@@ -82,7 +82,7 @@ export const radius = {
 
 // Sizes
 export const size = {
-  thumb: 56,       // recipe list thumbnail (slightly smaller, cleaner)
+  thumb: 72,       // recipe list thumbnail
   thumbEmoji: 28,  // emoji inside thumbnail
   heroEmoji: 64,   // detail hero emoji
 };
