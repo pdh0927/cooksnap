@@ -44,7 +44,7 @@ export default function RecipeThumb({
       end={{ x: 1, y: 1 }}
       style={[sizeStyle, { borderRadius, alignItems: "center", justifyContent: "center" }]}
     >
-      <Text style={{ fontSize: Math.round((width || 100) * 0.4) }}>{emoji}</Text>
+      <Text style={{ fontSize: Math.round((width || height || 100) * 0.35) }}>{emoji}</Text>
     </LinearGradient>
   );
 }

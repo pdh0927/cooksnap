@@ -345,8 +345,8 @@ export default function RecipeDetailScreen() {
 
 const s = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bgPage },
-  hero: { height: 220, alignItems: "center", justifyContent: "center" },
-  heroImage: { width: "100%" as any, height: 220, position: "absolute" },
+  hero: { aspectRatio: 16 / 9, width: "100%" as any, alignItems: "center", justifyContent: "center" },
+  heroImage: { width: "100%" as any, height: "100%" as any, position: "absolute" },
   heroOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.15)" },
   backBtn: {
     position: "absolute",

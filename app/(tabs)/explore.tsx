@@ -3,7 +3,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useRecipes } from "../../src/store/recipeStore";
-import { colors, typo, space, radius, size } from "../../src/theme";
+import { colors, typo, space, radius } from "../../src/theme";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
 import RecipeThumb from "../../src/components/RecipeThumb";
 import Spinner from "../../src/components/Spinner";
@@ -202,39 +202,25 @@ export default function ExploreScreen() {
                 <Text style={[typo.caption2, { color: colors.accent }]}>{recipes.length}</Text>
               </View>
             </View>
-            {recipes.slice(0, 10).map((r, i) => (
-              <View key={r.id}>
+            <View style={s.allGrid}>
+              {recipes.slice(0, 10).map((r) => (
                 <AnimatedPressable
+                  key={r.id}
                   onPress={() => router.push(`/recipe/${r.id}`)}
-                  style={s.listItem}
+                  style={s.allCard}
                 >
-                  <RecipeThumb thumbnailUrl={r.thumbnailUrl} gradientColors={r.gradientColors as [string, string]} emoji={r.emoji} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={[typo.body1Bold, { color: colors.textPrimary }]} numberOfLines={1}>{r.title}</Text>
+                  <RecipeThumb thumbnailUrl={r.thumbnailUrl} gradientColors={r.gradientColors as [string, string]} emoji={r.emoji} width={undefined} height={140} borderRadius={radius.lg} />
+                  <View style={{ paddingTop: space.md }}>
+                    <Text style={[typo.body1Bold, { color: colors.textPrimary }]} numberOfLines={2}>{r.title}</Text>
                     <View style={s.listMeta}>
                       <Text style={s.listMetaText}>{r.cookTimeMinutes}분</Text>
                       <View style={s.dot} />
                       <Text style={s.listMetaText}>{r.servings}인분</Text>
-                      {r.sourceLabel && r.sourceLabel !== "직접 작성" && (
-                        <>
-                          <View style={s.dot} />
-                          <Text style={s.listMetaText}>{r.sourceLabel}</Text>
-                        </>
-                      )}
                     </View>
-                    {(r.tags ?? []).length > 0 && (
-                      <View style={s.listTags}>
-                        {r.tags.slice(0, 3).map((t) => (
-                          <Text key={t} style={s.listTagText}>#{t}</Text>
-                        ))}
-                      </View>
-                    )}
                   </View>
-                  <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
                 </AnimatedPressable>
-                {i < Math.min(recipes.length, 10) - 1 && <View style={s.divider} />}
-              </View>
-            ))}
+              ))}
+            </View>
             {recipes.length > 10 && (
               <Pressable
                 onPress={() => router.push("/(tabs)/search")}
@@ -312,19 +298,16 @@ const s = StyleSheet.create({
   hCardTitle: { ...typo.body2Bold, color: colors.textPrimary, lineHeight: 18 },
   hCardMeta: { ...typo.caption1, color: colors.textTertiary, marginTop: 3 },
   hCardDifficulty: { ...typo.caption3, color: colors.textDisabled, marginTop: 2 },
-  // List item
-  listItem: {
-    flexDirection: "row",
-    alignItems: "center",
+  // All recipes grid
+  allGrid: {
     gap: space.xl,
-    paddingVertical: space.lg,
+  },
+  allCard: {
+    overflow: "hidden",
   },
   listMeta: { flexDirection: "row", alignItems: "center", gap: space.sm, marginTop: space.xs },
   listMetaText: { ...typo.caption1, color: colors.textTertiary },
   dot: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: colors.textDisabled },
-  listTags: { flexDirection: "row", gap: space.sm, marginTop: space.xs },
-  listTagText: { ...typo.caption3, color: colors.accent },
-  divider: { height: space.xs, marginLeft: size.thumb + space.xl },
   showMoreBtn: {
     alignItems: "center",
     paddingVertical: space.xl,
