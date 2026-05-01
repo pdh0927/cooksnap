@@ -10,6 +10,7 @@ interface Props {
   width?: number;
   height?: number;
   borderRadius?: number;
+  sourceType?: string | null;
 }
 
 export default function RecipeThumb({
@@ -19,6 +20,7 @@ export default function RecipeThumb({
   width = size.thumb,
   height = size.thumb,
   borderRadius = radius.xl,
+  sourceType,
 }: Props) {
   const sizeStyle = width ? { width, height } : { height, width: "100%" as const };
 
@@ -30,9 +32,11 @@ export default function RecipeThumb({
           style={[s.image, sizeStyle, { borderRadius }]}
           resizeMode="cover"
         />
-        <View style={s.playBadge}>
-          <Ionicons name="play" size={8} color={colors.white} />
-        </View>
+        {sourceType === "youtube" && (
+          <View style={s.playBadge}>
+            <Ionicons name="play" size={8} color={colors.white} />
+          </View>
+        )}
       </View>
     );
   }
