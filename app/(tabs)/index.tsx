@@ -5,7 +5,7 @@ import { useCallback, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRecipes } from "../../src/store/recipeStore";
 import { useFolders } from "../../src/store/folderStore";
-import { colors, typo, space, radius } from "../../src/theme";
+import { colors, typo, space, radius, size } from "../../src/theme";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
 import Spinner from "../../src/components/Spinner";
 import RecipeThumb from "../../src/components/RecipeThumb";
@@ -105,8 +105,8 @@ export default function MyRecipesScreen() {
         gradientColors={recipe.gradientColors as [string, string]}
         emoji={recipe.emoji}
         fullWidth
-        height={160}
-        borderRadius={radius.xl}
+        height={size.cardThumbH}
+        borderRadius={0}
         sourceType={recipe.sourceType}
       />
       <View style={s.recipeInfo}>
@@ -338,6 +338,10 @@ export default function MyRecipesScreen() {
         contentContainerStyle={s.scroll}
         onRefresh={handleRefresh}
         refreshing={refreshing}
+        initialNumToRender={6}
+        maxToRenderPerBatch={8}
+        windowSize={5}
+        removeClippedSubviews
       />
     </View>
   );

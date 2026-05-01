@@ -3,7 +3,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState, useRef } from "react";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { colors, typo, space, radius } from "../../src/theme";
+import { colors, typo, space, radius, size } from "../../src/theme";
 import Spinner from "../../src/components/Spinner";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
 import { extractRecipeFromUrl, generateRecipeFromName, isUrl, ExtractStep } from "../../src/services/extractRecipe";
@@ -228,7 +228,7 @@ const s = StyleSheet.create({
   primaryBtn: {
     backgroundColor: colors.orange,
     borderRadius: radius.lg,
-    height: 52,
+    height: size.ctaHeight,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",

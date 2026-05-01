@@ -84,9 +84,17 @@ export const radius = {
 
 // Sizes
 export const size = {
-  thumb: 72,       // recipe list thumbnail
-  thumbEmoji: 28,  // emoji inside thumbnail
-  heroEmoji: 64,   // detail hero emoji
+  thumb: 72,           // recipe list thumbnail (search results, etc.)
+  thumbEmoji: 28,      // emoji inside thumbnail
+  heroEmoji: 64,       // detail hero emoji
+  cardThumbH: 160,     // vertical card thumbnail height (home)
+  gridThumbH: 140,     // grid card thumbnail height (explore all)
+  hCardW: 150,         // horizontal card width (explore themes)
+  hCardThumbH: 110,    // horizontal card thumbnail height
+  searchThumbW: 100,   // search result thumbnail width
+  searchThumbH: 72,    // search result thumbnail height
+  heroBtn: 40,         // hero overlay button (back, share, etc.)
+  ctaHeight: 52,       // primary CTA button height
 };
 
 // Dark mode tokens (cooking mode)

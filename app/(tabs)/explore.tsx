@@ -3,7 +3,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useRecipes } from "../../src/store/recipeStore";
-import { colors, typo, space, radius } from "../../src/theme";
+import { colors, typo, space, radius, size } from "../../src/theme";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
 import RecipeThumb from "../../src/components/RecipeThumb";
 import Spinner from "../../src/components/Spinner";
@@ -82,7 +82,7 @@ function RecipeHCard({ recipe, onPress }: { recipe: Recipe; onPress: () => void 
   return (
     <AnimatedPressable onPress={onPress} style={s.hCard}>
       <View style={s.hCardThumb}>
-        <RecipeThumb thumbnailUrl={recipe.thumbnailUrl} gradientColors={recipe.gradientColors as [string, string]} emoji={recipe.emoji} width={150} height={110} borderRadius={radius.lg} sourceType={recipe.sourceType} />
+        <RecipeThumb thumbnailUrl={recipe.thumbnailUrl} gradientColors={recipe.gradientColors as [string, string]} emoji={recipe.emoji} width={size.hCardW} height={size.hCardThumbH} borderRadius={radius.lg} sourceType={recipe.sourceType} />
       </View>
       <Text style={s.hCardTitle} numberOfLines={2}>{recipe.title}</Text>
       <Text style={s.hCardMeta}>{recipe.cookTimeMinutes}분 · {recipe.difficulty}</Text>
@@ -208,8 +208,8 @@ export default function ExploreScreen() {
                   onPress={() => router.push(`/recipe/${r.id}`)}
                   style={s.allCard}
                 >
-                  <RecipeThumb thumbnailUrl={r.thumbnailUrl} gradientColors={r.gradientColors as [string, string]} emoji={r.emoji} fullWidth height={140} borderRadius={radius.lg} sourceType={r.sourceType} />
-                  <View style={{ paddingTop: space.md }}>
+                  <RecipeThumb thumbnailUrl={r.thumbnailUrl} gradientColors={r.gradientColors as [string, string]} emoji={r.emoji} fullWidth height={size.gridThumbH} borderRadius={0} sourceType={r.sourceType} />
+                  <View style={s.allCardInfo}>
                     <Text style={[typo.body1Bold, { color: colors.textPrimary }]} numberOfLines={2}>{r.title}</Text>
                     <View style={s.listMeta}>
                       <Text style={s.listMetaText}>{r.cookTimeMinutes}분</Text>
@@ -292,7 +292,7 @@ const s = StyleSheet.create({
   // Horizontal card
   hScroll: { gap: space.lg },
   hCard: {
-    width: 150,
+    width: size.hCardW,
   },
   hCardThumb: {
     marginBottom: space.md,
@@ -306,7 +306,12 @@ const s = StyleSheet.create({
     gap: space.xl,
   },
   allCard: {
+    backgroundColor: colors.bgPage,
+    borderRadius: radius.xl,
     overflow: "hidden",
+  },
+  allCardInfo: {
+    padding: space.lg,
   },
   listMeta: { flexDirection: "row", alignItems: "center", gap: space.sm, marginTop: space.xs },
   listMetaText: { ...typo.caption1, color: colors.textTertiary },

@@ -4,7 +4,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState, useMemo, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRecipes } from "../../src/store/recipeStore";
-import { colors, typo, space, radius } from "../../src/theme";
+import { colors, typo, space, radius, size } from "../../src/theme";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
 import RecipeThumb from "../../src/components/RecipeThumb";
 import type { Recipe } from "../../src/types/recipe";
@@ -200,7 +200,7 @@ export default function SearchScreen() {
                   <>
                     {filtered.slice(0, 20).map((r) => (
                       <AnimatedPressable key={r.id} onPress={() => router.push(`/recipe/${r.id}`)} style={s.resultCard}>
-                        <RecipeThumb thumbnailUrl={r.thumbnailUrl} gradientColors={r.gradientColors as [string, string]} emoji={r.emoji} width={100} height={72} borderRadius={radius.lg} sourceType={r.sourceType} />
+                        <RecipeThumb thumbnailUrl={r.thumbnailUrl} gradientColors={r.gradientColors as [string, string]} emoji={r.emoji} width={size.searchThumbW} height={size.searchThumbH} borderRadius={radius.lg} sourceType={r.sourceType} />
                         <View style={{ flex: 1 }}>
                           <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>{r.title}</Text>
                           <View style={s.meta}>
@@ -295,7 +295,7 @@ export default function SearchScreen() {
                 {fridgeMatches.length > 0 ? (
                   fridgeMatches.map((m) => (
                     <AnimatedPressable key={m.recipe.id} onPress={() => router.push(`/recipe/${m.recipe.id}`)} style={s.resultCard}>
-                      <RecipeThumb thumbnailUrl={m.recipe.thumbnailUrl} gradientColors={m.recipe.gradientColors as [string, string]} emoji={m.recipe.emoji} width={100} height={72} borderRadius={radius.lg} sourceType={m.recipe.sourceType} />
+                      <RecipeThumb thumbnailUrl={m.recipe.thumbnailUrl} gradientColors={m.recipe.gradientColors as [string, string]} emoji={m.recipe.emoji} width={size.searchThumbW} height={size.searchThumbH} borderRadius={radius.lg} sourceType={m.recipe.sourceType} />
                       <View style={{ flex: 1 }}>
                         <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>{m.recipe.title}</Text>
                         <View style={s.meta}>
