@@ -38,9 +38,14 @@ export function useRecipes() {
   }, []);
 
   const refresh = useCallback(async () => {
-    const data = await api.getRecipes();
-    recipesCache = data;
-    notifyListeners();
+    try {
+      const data = await api.getRecipes();
+      recipesCache = data;
+      notifyListeners();
+    } catch (err) {
+      // Re-throw so callers can handle (e.g. show error UI)
+      throw err;
+    }
   }, []);
 
   const addRecipe = useCallback(async (recipe: Recipe) => {

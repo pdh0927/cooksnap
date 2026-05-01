@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, FlatList, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRecipes } from "../../src/store/recipeStore";
 import { useFolders } from "../../src/store/folderStore";
@@ -17,7 +17,21 @@ const FOLDER_EMOJIS = ["📁", "🍳", "🥗", "🍜", "🍖", "🎂", "🥘", "
 export default function MyRecipesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { recipes, loading } = useRecipes();
+  const { recipes, loading, refresh } = useRecipes();
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    setError(null);
+    try {
+      await refresh();
+    } catch {
+      setError("레시피를 불러올 수 없습니다. 네트워크를 확인해주세요.");
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refresh]);
   const { folders, createFolder, deleteFolder } = useFolders();
   const [mode, setMode] = useState<ViewMode>("all");
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
@@ -89,6 +103,7 @@ export default function MyRecipesScreen() {
         width={undefined}
         height={160}
         borderRadius={radius.xl}
+        sourceType={recipe.sourceType}
       />
       <View style={s.recipeInfo}>
         <View style={s.recipeTopRow}>
@@ -247,6 +262,20 @@ export default function MyRecipesScreen() {
           <Spinner size={36} />
         </View>
       )}
+
+      {/* Error state */}
+      {error && (
+        <View style={s.errorCard}>
+          <Ionicons name="cloud-offline-outline" size={24} color={colors.red} />
+          <Text style={[typo.body2, { color: colors.textSecondary, textAlign: "center", marginTop: space.md }]}>
+            {error}
+          </Text>
+          <AnimatedPressable onPress={handleRefresh} style={s.retryBtn}>
+            <Ionicons name="refresh" size={16} color={colors.accent} />
+            <Text style={[typo.body2Bold, { color: colors.accent }]}>다시 시도</Text>
+          </AnimatedPressable>
+        </View>
+      )}
     </View>
   );
 
@@ -299,6 +328,8 @@ export default function MyRecipesScreen() {
         ListEmptyComponent={listEmpty}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={s.scroll}
+        onRefresh={handleRefresh}
+        refreshing={refreshing}
       />
     </View>
   );
@@ -434,6 +465,23 @@ const s = StyleSheet.create({
     paddingVertical: space.x5,
     alignItems: "center",
     justifyContent: "center",
+  },
+  // Error
+  errorCard: {
+    backgroundColor: colors.redLight,
+    borderRadius: radius.xxl,
+    padding: space.x4,
+    alignItems: "center",
+  },
+  retryBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: space.sm,
+    marginTop: space.xl,
+    paddingHorizontal: space.xxl,
+    paddingVertical: space.lg,
+    backgroundColor: colors.bgPrimary,
+    borderRadius: radius.lg,
   },
   // Empty
   emptyCard: {
