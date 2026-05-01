@@ -37,6 +37,8 @@ export const colors = {
   purpleLight: "#F3EEFF",
   pink: "#EC4899",
   pinkLight: "#FDF2F8",
+  violet: "#7B1FA2",
+  violetLight: "#F3E5F5",
 
   // Grays (Toss scale)
   gray50: "#F9FAFB",
@@ -95,4 +97,9 @@ export const darkColors = {
   text: "rgba(255,255,255,0.65)",
   textDim: "rgba(255,255,255,0.35)",
   textFaint: "rgba(255,255,255,0.2)",
+  // Badge accent tints (for dark backgrounds)
+  orangeTint: "#FFA726",
+  blueTint: "#90CAF9",
+  greenTint: "#81C784",
+  violetTint: "#CE93D8",
 };

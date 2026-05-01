@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, typo, space, radius } from "../../../src/theme";
 import { useRecipes } from "../../../src/store/recipeStore";
-import type { Recipe, Category, Difficulty, Ingredient, Step } from "../../../src/types/recipe";
+import type { Recipe, Category, Difficulty } from "../../../src/types/recipe";
 
 const CATEGORIES: Category[] = ["한식", "중식", "일식", "양식", "디저트", "간편식"];
 const DIFFICULTIES: Difficulty[] = ["쉬움", "보통", "어려움"];
@@ -162,6 +162,7 @@ export default function CreateRecipeScreen() {
         tip: null,
         details: { tip: null, warning: null, highlights: [], ingredientRefs: [] },
       })),
+      thumbnailUrl: null,
       sourceUrl: null,
       sourceType: "manual",
       sourceLabel: "직접 작성",

@@ -249,7 +249,6 @@ const st = StyleSheet.create({
     alignItems: "flex-start",
   },
   tipText: { ...typo.body2, color: "rgba(255,255,255,0.7)", flex: 1, lineHeight: 20 },
-  stepInst: { fontSize: 24, fontWeight: "700", color: colors.white, lineHeight: 36 },
   timerCard: {
     backgroundColor: darkColors.card,
     borderRadius: radius.xl,
@@ -278,7 +277,7 @@ const st = StyleSheet.create({
   // All steps
   allRow: { flexDirection: "row", gap: space.lg, paddingVertical: space.xl, borderBottomWidth: 0.5, borderBottomColor: darkColors.card },
   allRowActive: { backgroundColor: "rgba(249,115,22,0.08)", marginHorizontal: -space.gutter, paddingHorizontal: space.gutter, borderRadius: radius.lg, borderBottomWidth: 0 },
-  allDot: { width: 24, height: 24, borderRadius: 12, backgroundColor: darkColors.card, alignItems: "center", justifyContent: "center", marginTop: 2 },
+  allDot: { width: 24, height: 24, borderRadius: 12, backgroundColor: darkColors.card, alignItems: "center", justifyContent: "center", marginTop: space.xxs },
   allDotText: { ...typo.caption2, color: darkColors.textDim, fontWeight: "700" },
   allText: { flex: 1, ...typo.body2, color: darkColors.textDim, lineHeight: 20 },
 });

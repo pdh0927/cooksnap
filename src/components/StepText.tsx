@@ -20,28 +20,28 @@ const badgeStyles: Record<BadgeKind, BadgeStyle> = {
     bg: colors.orangeLight,
     bgDark: "rgba(249,115,22,0.18)",
     fg: colors.orange,
-    fgDark: "#FFA726",
+    fgDark: darkColors.orangeTint,
     icon: "\uD83D\uDD25", // fire emoji
   },
   time: {
     bg: colors.accentLight,
     bgDark: "rgba(49,130,246,0.18)",
     fg: colors.accent,
-    fgDark: "#90CAF9",
+    fgDark: darkColors.blueTint,
     icon: "\u23F1", // stopwatch
   },
   cut: {
     bg: colors.greenLight,
     bgDark: "rgba(3,178,108,0.18)",
     fg: colors.green,
-    fgDark: "#81C784",
+    fgDark: darkColors.greenTint,
     icon: "\uD83D\uDD2A", // knife
   },
   temp: {
-    bg: "#F3E5F5",
+    bg: colors.violetLight,
     bgDark: "rgba(171,71,188,0.18)",
-    fg: "#7B1FA2",
-    fgDark: "#CE93D8",
+    fg: colors.violet,
+    fgDark: darkColors.violetTint,
     icon: "\uD83C\uDF21", // thermometer
   },
   done: {

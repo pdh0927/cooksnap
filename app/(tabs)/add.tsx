@@ -170,7 +170,7 @@ export default function AddRecipeScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>직접 작성</Text>
-              <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: 2 }]}>
+              <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: space.xxs }]}>
                 나만의 레시피를 직접 입력해요
               </Text>
             </View>
@@ -185,12 +185,12 @@ export default function AddRecipeScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>사진으로 추가</Text>
-              <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: 2 }]}>
+              <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: space.xxs }]}>
                 레시피 사진을 찍으면 AI가 텍스트로 변환해요
               </Text>
             </View>
             <View style={s.comingSoonBadge}>
-              <Text style={[typo.caption3, { color: colors.white }]}>Coming Soon</Text>
+              <Text style={[typo.caption3, { color: colors.white }]}>준비 중</Text>
             </View>
           </View>
         </View>

@@ -356,8 +356,8 @@ const s = StyleSheet.create({
     flexDirection: "row",
     backgroundColor: colors.bgPage,
     borderRadius: radius.xl,
-    padding: 3,
-    gap: 2,
+    padding: space.xxs,
+    gap: space.xxs,
   },
   modeBtn: {
     flex: 1,
@@ -370,7 +370,7 @@ const s = StyleSheet.create({
   },
   modeBtnActive: {
     backgroundColor: colors.bgPrimary,
-    shadowColor: "#000",
+    shadowColor: colors.gray900,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
     shadowRadius: 2,

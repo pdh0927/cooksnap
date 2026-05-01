@@ -1,7 +1,7 @@
-import { View, Text, ScrollView, FlatList, Pressable, TextInput, StyleSheet, Alert, ActivityIndicator } from "react-native";
+import { View, Text, ScrollView, FlatList, Pressable, TextInput, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRecipes } from "../../src/store/recipeStore";
 import { useFolders } from "../../src/store/folderStore";
@@ -462,8 +462,6 @@ const s = StyleSheet.create({
   recipeMetaText: { ...typo.caption1, color: colors.textTertiary },
   dot: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: colors.textDisabled },
   sourceText: { ...typo.caption2, color: colors.textTertiary, marginTop: space.sm },
-  tagRow: { flexDirection: "row", gap: space.sm, marginTop: space.xs },
-  tagText: { ...typo.caption3, color: colors.accent },
   // Loading
   loadingWrap: {
     paddingVertical: space.x5,

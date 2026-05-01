@@ -341,7 +341,7 @@ export default function EditRecipeScreen() {
             <Text style={[typo.heading3, { color: colors.textPrimary }]}>재료</Text>
             <Pressable onPress={addIngredient} style={s.addBtn}>
               <Ionicons name="add" size={18} color={colors.orange} />
-              <Text style={[typo.body2Bold, { color: colors.accent }]}>추가</Text>
+              <Text style={[typo.body2Bold, { color: colors.orange }]}>추가</Text>
             </Pressable>
           </View>
           {ingredients.map((ing, i) => (
@@ -375,7 +375,7 @@ export default function EditRecipeScreen() {
             <Text style={[typo.heading3, { color: colors.textPrimary }]}>조리 순서</Text>
             <Pressable onPress={addStep} style={s.addBtn}>
               <Ionicons name="add" size={18} color={colors.orange} />
-              <Text style={[typo.body2Bold, { color: colors.accent }]}>추가</Text>
+              <Text style={[typo.body2Bold, { color: colors.orange }]}>추가</Text>
             </Pressable>
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm, backgroundColor: colors.orangeLight, padding: space.lg, borderRadius: radius.lg, marginBottom: space.xl }}>

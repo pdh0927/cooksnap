@@ -1,20 +1,20 @@
 import { Tabs } from "expo-router";
 import { View, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { colors } from "../../src/theme";
+import { colors, radius, space } from "../../src/theme";
 import type { BottomTabBarButtonProps } from "@react-navigation/bottom-tabs";
 
-function AddButton(props: BottomTabBarButtonProps) {
+function AddButton({ style: _style, ref: _ref, ...props }: BottomTabBarButtonProps) {
   return (
     <Pressable
       {...props}
-      style={{ alignItems: "center", justifyContent: "center", top: -12 }}
+      style={{ alignItems: "center", justifyContent: "center", top: -space.lg }}
     >
       <View
         style={{
           width: 50,
           height: 50,
-          borderRadius: 16,
+          borderRadius: radius.xl,
           backgroundColor: colors.orange,
           alignItems: "center",
           justifyContent: "center",
@@ -38,13 +38,13 @@ export default function TabLayout() {
           borderTopColor: colors.divider,
           borderTopWidth: 0.5,
           height: 84,
-          paddingTop: 6,
-          paddingBottom: 28,
+          paddingTop: space.sm,
+          paddingBottom: space.sectionGap,
         },
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: "600",
-          marginTop: 2,
+          marginTop: space.xxs,
           letterSpacing: -0.2,
         },
       }}

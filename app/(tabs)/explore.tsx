@@ -164,7 +164,7 @@ export default function ExploreScreen() {
                   <Text style={[typo.heading3, { color: colors.textPrimary }]}>
                     {theme.title}
                   </Text>
-                  <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: 2 }]}>
+                  <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: space.xxs }]}>
                     {theme.subtitle}
                   </Text>
                 </View>

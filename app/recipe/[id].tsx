@@ -191,7 +191,7 @@ export default function RecipeDetailScreen() {
           </View>
           {(recipe.tags ?? []).length > 0 && (
             <View style={s.tagsRow}>
-              {recipe.tags.map((t) => (
+              {(recipe.tags ?? []).map((t) => (
                 <View key={t} style={s.tagChip}>
                   <Text style={s.tagChipText}>#{t}</Text>
                 </View>
@@ -331,8 +331,8 @@ export default function RecipeDetailScreen() {
 
       {/* CTA */}
       <LinearGradient
-        colors={["rgba(245,246,248,0)", colors.bgPage]}
-        style={[s.ctaWrap, { paddingBottom: insets.bottom + 12 }]}
+        colors={[`${colors.bgPage}00`, colors.bgPage]}
+        style={[s.ctaWrap, { paddingBottom: insets.bottom + space.lg }]}
       >
         <AnimatedPressable onPress={() => router.push(`/recipe/cook/${id}`)} style={s.ctaBtn}>
           <Ionicons name="play" size={20} color={colors.white} />
@@ -384,7 +384,7 @@ const s = StyleSheet.create({
   statChip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 3,
+    gap: space.xxs,
     backgroundColor: colors.bgPage,
     paddingHorizontal: space.lg,
     paddingVertical: space.xs,
@@ -420,7 +420,7 @@ const s = StyleSheet.create({
   tabBtn: { flex: 1, paddingVertical: space.md, borderRadius: radius.md, alignItems: "center" },
   tabBtnActive: {
     backgroundColor: colors.bgPrimary,
-    shadowColor: "#000",
+    shadowColor: colors.gray900,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
     shadowRadius: 2,
@@ -459,7 +459,7 @@ const s = StyleSheet.create({
     backgroundColor: colors.accent,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 2,
+    marginTop: space.xxs,
   },
   stepDotText: { ...typo.caption2, color: colors.white, fontWeight: "700" },
   timerTag: {
