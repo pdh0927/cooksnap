@@ -9,6 +9,7 @@ interface Props {
   emoji: string;
   width?: number;
   height?: number;
+  fullWidth?: boolean;
   borderRadius?: number;
   sourceType?: string | null;
 }
@@ -17,19 +18,24 @@ export default function RecipeThumb({
   thumbnailUrl,
   gradientColors,
   emoji,
-  width = size.thumb,
-  height = size.thumb,
+  width,
+  height,
+  fullWidth = false,
   borderRadius = radius.xl,
   sourceType,
 }: Props) {
-  const sizeStyle = width ? { width, height } : { height, width: "100%" as const };
+  const w = fullWidth ? undefined : (width ?? size.thumb);
+  const h = height ?? size.thumb;
+  const containerStyle = fullWidth
+    ? { width: "100%" as const, height: h, borderRadius }
+    : { width: w!, height: h, borderRadius };
 
   if (thumbnailUrl) {
     return (
-      <View style={[s.container, sizeStyle, { borderRadius }]}>
+      <View style={[s.container, containerStyle]}>
         <Image
           source={{ uri: thumbnailUrl }}
-          style={[s.image, sizeStyle, { borderRadius }]}
+          style={[s.image, { width: "100%" as const, height: h, borderRadius }]}
           resizeMode="cover"
         />
         {sourceType === "youtube" && (
@@ -41,18 +47,16 @@ export default function RecipeThumb({
     );
   }
 
-  const refDim = Math.min(width || height || 100, height || width || 100);
-  const emojiSize = Math.round(refDim * 0.28);
-  const wrapSize = Math.round(refDim * 0.48);
+  const emojiSize = Math.round(h * 0.3);
 
   return (
     <LinearGradient
       colors={gradientColors}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={[sizeStyle, { borderRadius, alignItems: "center", justifyContent: "center" }]}
+      style={[containerStyle, { alignItems: "center", justifyContent: "center" }]}
     >
-      <View style={[s.emojiWrap, { width: wrapSize, height: wrapSize, borderRadius: wrapSize / 2 }]}>
+      <View style={[s.emojiWrap, { width: h * 0.45, height: h * 0.45, borderRadius: h * 0.225 }]}>
         <Text style={{ fontSize: emojiSize }}>{emoji}</Text>
       </View>
     </LinearGradient>

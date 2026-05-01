@@ -100,7 +100,7 @@ export default function MyRecipesScreen() {
         thumbnailUrl={recipe.thumbnailUrl}
         gradientColors={recipe.gradientColors as [string, string]}
         emoji={recipe.emoji}
-        width={undefined}
+        fullWidth
         height={160}
         borderRadius={radius.xl}
         sourceType={recipe.sourceType}

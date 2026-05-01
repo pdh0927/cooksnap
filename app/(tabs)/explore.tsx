@@ -208,7 +208,7 @@ export default function ExploreScreen() {
                   onPress={() => router.push(`/recipe/${r.id}`)}
                   style={s.allCard}
                 >
-                  <RecipeThumb thumbnailUrl={r.thumbnailUrl} gradientColors={r.gradientColors as [string, string]} emoji={r.emoji} width={undefined} height={140} borderRadius={radius.lg} sourceType={r.sourceType} />
+                  <RecipeThumb thumbnailUrl={r.thumbnailUrl} gradientColors={r.gradientColors as [string, string]} emoji={r.emoji} fullWidth height={140} borderRadius={radius.lg} sourceType={r.sourceType} />
                   <View style={{ paddingTop: space.md }}>
                     <Text style={[typo.body1Bold, { color: colors.textPrimary }]} numberOfLines={2}>{r.title}</Text>
                     <View style={s.listMeta}>
