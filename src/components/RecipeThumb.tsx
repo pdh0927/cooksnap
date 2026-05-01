@@ -41,6 +41,10 @@ export default function RecipeThumb({
     );
   }
 
+  const refDim = Math.min(width || height || 100, height || width || 100);
+  const emojiSize = Math.round(refDim * 0.28);
+  const wrapSize = Math.round(refDim * 0.48);
+
   return (
     <LinearGradient
       colors={gradientColors}
@@ -48,7 +52,9 @@ export default function RecipeThumb({
       end={{ x: 1, y: 1 }}
       style={[sizeStyle, { borderRadius, alignItems: "center", justifyContent: "center" }]}
     >
-      <Text style={{ fontSize: Math.round((width || height || 100) * 0.35) }}>{emoji}</Text>
+      <View style={[s.emojiWrap, { width: wrapSize, height: wrapSize, borderRadius: wrapSize / 2 }]}>
+        <Text style={{ fontSize: emojiSize }}>{emoji}</Text>
+      </View>
     </LinearGradient>
   );
 }
@@ -61,10 +67,15 @@ const s = StyleSheet.create({
   image: {
     backgroundColor: colors.gray100,
   },
+  emojiWrap: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   playBadge: {
     position: "absolute",
-    bottom: 4,
-    right: 4,
+    bottom: 6,
+    right: 6,
     backgroundColor: "rgba(0,0,0,0.5)",
     borderRadius: 10,
     width: 20,

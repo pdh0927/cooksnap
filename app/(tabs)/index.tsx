@@ -128,6 +128,13 @@ export default function MyRecipesScreen() {
 
   const listHeader = (
     <View style={{ gap: space.cardGap }}>
+      {/* Subtle greeting caption */}
+      {recipes.length > 0 && (
+        <Text style={[typo.caption1, { color: colors.textTertiary }]}>
+          저장된 레시피 {recipes.length}개
+        </Text>
+      )}
+
       {/* Filter chips: 전체, 즐겨찾기 */}
       <ScrollView
         horizontal
@@ -315,9 +322,6 @@ export default function MyRecipesScreen() {
       {/* Header */}
       <View style={s.header}>
         <Text style={s.title}>내 레시피</Text>
-        <Text style={[typo.caption1, { color: colors.textTertiary }]}>
-          {recipes.length}개
-        </Text>
       </View>
 
       <FlatList
@@ -385,7 +389,7 @@ const s = StyleSheet.create({
   },
   folderCard: {
     backgroundColor: colors.bgPrimary,
-    borderRadius: radius.xl,
+    borderRadius: radius.xxl,
     padding: space.xl,
     width: "48.5%" as any,
     minHeight: 88,

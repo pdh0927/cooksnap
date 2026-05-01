@@ -31,9 +31,9 @@ export default function SettingsScreen() {
         <View style={s.card}>
           <View style={s.appInfo}>
             <View style={s.appIcon}>
-              <Text style={{ fontSize: 28 }}>🍳</Text>
+              <Text style={{ fontSize: 32 }}>🍳</Text>
             </View>
-            <View>
+            <View style={{ flex: 1 }}>
               <Text style={[typo.heading2, { color: colors.textPrimary }]}>CookSnap</Text>
               <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: space.xxs }]}>
                 레시피를 쉽고 정확하게
@@ -41,6 +41,9 @@ export default function SettingsScreen() {
             </View>
           </View>
         </View>
+
+        {/* Spacer divider */}
+        <View style={{ height: space.sm }} />
 
         {/* Menu items */}
         <View style={s.card}>
@@ -95,9 +98,9 @@ const s = StyleSheet.create({
     gap: space.xl,
   },
   appIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: radius.lg,
+    width: 56,
+    height: 56,
+    borderRadius: radius.xl,
     backgroundColor: colors.orangeLight,
     alignItems: "center",
     justifyContent: "center",
@@ -106,11 +109,11 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: space.xl,
-    paddingVertical: space.lg,
+    paddingVertical: space.xl,
   },
   menuDivider: {
     height: 0.5,
     backgroundColor: colors.divider,
-    marginLeft: 36,
+    marginLeft: 36, // 20(icon) + 16(gap)
   },
 });

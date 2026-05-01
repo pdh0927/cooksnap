@@ -355,9 +355,9 @@ const s = StyleSheet.create({
   modeToggle: {
     flexDirection: "row",
     backgroundColor: colors.bgPage,
-    borderRadius: radius.lg,
-    padding: space.xxs,
-    gap: space.xxs,
+    borderRadius: radius.xl,
+    padding: 3,
+    gap: 2,
   },
   modeBtn: {
     flex: 1,
@@ -365,8 +365,8 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: space.sm,
-    paddingVertical: space.md,
-    borderRadius: radius.md,
+    paddingVertical: space.lg,
+    borderRadius: radius.lg,
   },
   modeBtnActive: {
     backgroundColor: colors.bgPrimary,
@@ -378,7 +378,7 @@ const s = StyleSheet.create({
   },
   searchCard: {
     backgroundColor: colors.bgPrimary,
-    borderRadius: radius.lg,
+    borderRadius: radius.xxl,
     paddingHorizontal: space.xxl,
     paddingVertical: space.xl,
     flexDirection: "row",
@@ -419,7 +419,7 @@ const s = StyleSheet.create({
     borderRadius: radius.full,
   },
   sectionRow: { flexDirection: "row", alignItems: "center", gap: space.md, marginTop: space.lg },
-  badge: { backgroundColor: colors.accentLight, paddingHorizontal: space.md, paddingVertical: space.xxs, borderRadius: radius.xs },
+  badge: { backgroundColor: colors.accentLight, paddingHorizontal: space.md, paddingVertical: space.xxs, borderRadius: radius.full },
   chips: { gap: space.md, marginTop: space.xs },
   chip: { height: 30, paddingHorizontal: space.lg, borderRadius: radius.full, backgroundColor: colors.bgPrimary, justifyContent: "center" },
   chipActive: { backgroundColor: colors.accent },

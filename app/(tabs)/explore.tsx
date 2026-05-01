@@ -56,8 +56,8 @@ const THEMES: ThemeSection[] = [
     title: "초보도 OK",
     subtitle: "누구나 쉽게 따라해요",
     emoji: "👩‍🍳",
-    color: "#EC4899",
-    bgColor: "#FDF2F8",
+    color: colors.pink,
+    bgColor: colors.pinkLight,
     filter: (r) => r.filter((x) => x.difficulty === "쉬움"),
   },
   {
@@ -81,12 +81,11 @@ const THEMES: ThemeSection[] = [
 function RecipeHCard({ recipe, onPress }: { recipe: Recipe; onPress: () => void }) {
   return (
     <AnimatedPressable onPress={onPress} style={s.hCard}>
-      <View style={{ marginBottom: space.md }}>
+      <View style={s.hCardThumb}>
         <RecipeThumb thumbnailUrl={recipe.thumbnailUrl} gradientColors={recipe.gradientColors as [string, string]} emoji={recipe.emoji} width={150} height={110} borderRadius={radius.lg} sourceType={recipe.sourceType} />
       </View>
       <Text style={s.hCardTitle} numberOfLines={2}>{recipe.title}</Text>
       <Text style={s.hCardMeta}>{recipe.cookTimeMinutes}분 · {recipe.difficulty}</Text>
-      <Text style={s.hCardDifficulty}>{recipe.difficulty === "쉬움" ? "초보 가능" : recipe.difficulty === "보통" ? "약간의 경험" : "숙련자"}</Text>
     </AnimatedPressable>
   );
 }
@@ -249,7 +248,7 @@ const s = StyleSheet.create({
     borderBottomColor: colors.divider,
   },
   headerTitle: { ...typo.screenTitle, color: colors.textPrimary },
-  headerSub: { ...typo.caption1, color: colors.textTertiary, marginTop: space.xs },
+  headerSub: { ...typo.caption1, color: colors.textTertiary, marginTop: space.sm },
   scroll: { padding: space.gutter, paddingBottom: 120, gap: space.cardGap },
   // Card
   card: {
@@ -288,16 +287,20 @@ const s = StyleSheet.create({
   countBadge: {
     paddingHorizontal: space.md,
     paddingVertical: space.xxs,
-    borderRadius: radius.xs,
+    borderRadius: radius.full,
   },
   // Horizontal card
   hScroll: { gap: space.lg },
   hCard: {
     width: 150,
   },
+  hCardThumb: {
+    marginBottom: space.md,
+    borderRadius: radius.lg,
+    overflow: "hidden",
+  },
   hCardTitle: { ...typo.body2Bold, color: colors.textPrimary, lineHeight: 18 },
-  hCardMeta: { ...typo.caption1, color: colors.textTertiary, marginTop: 3 },
-  hCardDifficulty: { ...typo.caption3, color: colors.textDisabled, marginTop: 2 },
+  hCardMeta: { ...typo.caption1, color: colors.textTertiary, marginTop: space.xs },
   // All recipes grid
   allGrid: {
     gap: space.xl,

@@ -8,19 +8,19 @@ function AddButton(props: BottomTabBarButtonProps) {
   return (
     <Pressable
       {...props}
-      style={{ alignItems: "center", justifyContent: "center", top: -14 }}
+      style={{ alignItems: "center", justifyContent: "center", top: -12 }}
     >
       <View
         style={{
-          width: 54,
-          height: 54,
-          borderRadius: 18,
+          width: 50,
+          height: 50,
+          borderRadius: 16,
           backgroundColor: colors.orange,
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <Ionicons name="add" size={30} color={colors.white} />
+        <Ionicons name="add" size={28} color={colors.white} />
       </View>
     </Pressable>
   );
@@ -31,20 +31,21 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.accent,
+        tabBarActiveTintColor: colors.textPrimary,
         tabBarInactiveTintColor: colors.textDisabled,
         tabBarStyle: {
           backgroundColor: colors.bgPrimary,
           borderTopColor: colors.divider,
           borderTopWidth: 0.5,
-          height: 88,
-          paddingTop: 8,
-          paddingBottom: 30,
+          height: 84,
+          paddingTop: 6,
+          paddingBottom: 28,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: "500",
-          marginTop: 4,
+          fontSize: 10,
+          fontWeight: "600",
+          marginTop: 2,
+          letterSpacing: -0.2,
         },
       }}
     >
@@ -53,7 +54,7 @@ export default function TabLayout() {
         options={{
           title: "내 레시피",
           tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? "book" : "book-outline"} size={24} color={color} />
+            <Ionicons name={focused ? "book" : "book-outline"} size={22} color={color} />
           ),
         }}
       />
@@ -62,7 +63,7 @@ export default function TabLayout() {
         options={{
           title: "탐색",
           tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? "compass" : "compass-outline"} size={24} color={color} />
+            <Ionicons name={focused ? "compass" : "compass-outline"} size={22} color={color} />
           ),
         }}
       />
@@ -75,7 +76,7 @@ export default function TabLayout() {
         options={{
           title: "검색",
           tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? "search" : "search-outline"} size={24} color={color} />
+            <Ionicons name={focused ? "search" : "search-outline"} size={22} color={color} />
           ),
         }}
       />
@@ -84,7 +85,7 @@ export default function TabLayout() {
         options={{
           title: "설정",
           tabBarIcon: ({ focused, color }) => (
-            <Ionicons name={focused ? "settings" : "settings-outline"} size={24} color={color} />
+            <Ionicons name={focused ? "settings" : "settings-outline"} size={22} color={color} />
           ),
         }}
       />
