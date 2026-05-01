@@ -64,12 +64,16 @@ export default function MyRecipesScreen() {
 
   const selectedFolder = folders.find((f) => f.id === selectedFolderId);
 
-  function handleCreateFolder() {
+  async function handleCreateFolder() {
     if (!newFolderName.trim()) return;
-    createFolder(newFolderName.trim(), newFolderEmoji);
-    setNewFolderName("");
-    setNewFolderEmoji("📁");
-    setShowNewFolder(false);
+    try {
+      await createFolder(newFolderName.trim(), newFolderEmoji);
+      setNewFolderName("");
+      setNewFolderEmoji("📁");
+      setShowNewFolder(false);
+    } catch {
+      Alert.alert("폴더 생성 실패", "네트워크를 확인해주세요.");
+    }
   }
 
   function handleDeleteFolder(id: string, name: string) {
