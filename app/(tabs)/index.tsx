@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, FlatList, Pressable, TextInput, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useRef } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRecipes } from "../../src/store/recipeStore";
 import { useFolders } from "../../src/store/folderStore";
@@ -20,6 +20,7 @@ export default function MyRecipesScreen() {
   const { recipes, loading, refresh } = useRecipes();
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const listRef = useRef<FlatList>(null);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -221,6 +222,7 @@ export default function MyRecipesScreen() {
                 onPress={() => {
                   setMode("folder");
                   setSelectedFolderId(folder.id);
+                  setTimeout(() => listRef.current?.scrollToOffset({ offset: 0, animated: true }), 100);
                 }}
                 onLongPress={() => handleDeleteFolder(folder.id, folder.name)}
                 style={[s.folderCard, isSelected && s.folderCardActive]}
@@ -329,6 +331,7 @@ export default function MyRecipesScreen() {
       </View>
 
       <FlatList
+        ref={listRef}
         data={sorted}
         keyExtractor={(item) => item.id}
         renderItem={renderRecipeCard}
