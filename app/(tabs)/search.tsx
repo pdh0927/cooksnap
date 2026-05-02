@@ -63,8 +63,11 @@ export default function SearchScreen() {
 
   useEffect(() => {
     if (params.q) {
+      setMode("search");
       setQuery(params.q);
       setSelectedTag(null);
+      setFridgeItems([]);
+      setFridgeInput("");
     }
   }, [params.q]);
 

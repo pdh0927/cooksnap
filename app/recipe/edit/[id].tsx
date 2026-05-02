@@ -185,13 +185,20 @@ export default function EditRecipeScreen() {
           scalable: parsed.amount > 0,
         };
       }),
-      steps: validSteps.map((s, i) => ({
-        order: i + 1,
-        instruction: s.trim(),
-        timerSeconds: parseTimerFromStep(s),
-        tip: null,
-        details: { tip: null, warning: null, highlights: [], ingredientRefs: [] },
-      })),
+      steps: validSteps.map((s, i) => {
+        // Preserve existing step details if the instruction hasn't changed
+        const existingStep = recipe?.steps[i];
+        const instructionChanged = existingStep?.instruction !== s.trim();
+        return {
+          order: i + 1,
+          instruction: s.trim(),
+          timerSeconds: parseTimerFromStep(s),
+          tip: instructionChanged ? null : (existingStep?.tip ?? null),
+          details: instructionChanged
+            ? { tip: null, warning: null, highlights: [], ingredientRefs: [] }
+            : (existingStep?.details ?? { tip: null, warning: null, highlights: [], ingredientRefs: [] }),
+        };
+      }),
       tags,
     };
 

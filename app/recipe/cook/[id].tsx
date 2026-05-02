@@ -98,7 +98,7 @@ export default function CookingModeScreen() {
             <Ionicons name="close" size={18} color={colors.white} />
           </Pressable>
         </View>
-        <ScrollView contentContainerStyle={{ paddingHorizontal: space.gutter, paddingBottom: space.x5 }}>
+        <ScrollView contentContainerStyle={{ paddingHorizontal: space.gutter, paddingBottom: insets.bottom + space.x5 }}>
           {recipe.steps.map((s, i) => (
             <Pressable
               key={i}
@@ -168,11 +168,21 @@ export default function CookingModeScreen() {
               </View>
             </View>
             <Pressable
-              onPress={() => { if (sec > 0) { setRunning((r) => !r); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } }}
-              style={[st.timerBtn, sec === 0 && { backgroundColor: colors.green }, running && { backgroundColor: darkColors.border }]}
+              onPress={() => {
+                if (sec === 0 && timerDone) {
+                  // Reset timer so user can re-time this step
+                  setSec(step.timerSeconds!);
+                  setTimerDone(false);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                } else if (sec > 0) {
+                  setRunning((r) => !r);
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                }
+              }}
+              style={[st.timerBtn, sec === 0 && timerDone && { backgroundColor: colors.green }, running && { backgroundColor: darkColors.border }]}
             >
               <Text style={[typo.body2Bold, { color: colors.white }]}>
-                {sec === 0 ? "완료!" : running ? "정지" : "시작"}
+                {sec === 0 && timerDone ? "다시" : running ? "정지" : "시작"}
               </Text>
             </Pressable>
           </View>
