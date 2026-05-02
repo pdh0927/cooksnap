@@ -2,6 +2,7 @@ import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useMemo } from "react";
 import { useRecipes } from "../../src/store/recipeStore";
 import { colors, typo, space, radius, size } from "../../src/theme";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
@@ -96,7 +97,16 @@ export default function ExploreScreen() {
   const { recipes, loading } = useRecipes();
 
   // Collect all unique tags from recipes
-  const allTags = Array.from(new Set(recipes.flatMap((r) => r.tags ?? [])));
+  const allTags = useMemo(
+    () => Array.from(new Set(recipes.flatMap((r) => r.tags ?? []))),
+    [recipes]
+  );
+
+  // Pre-compute theme matches so they don't recompute on every render
+  const themeMatches = useMemo(
+    () => THEMES.map((theme) => ({ theme, matched: theme.filter(recipes) })),
+    [recipes]
+  );
 
   return (
     <View style={[s.root, { paddingTop: insets.top }]}>
@@ -151,8 +161,7 @@ export default function ExploreScreen() {
         )}
 
         {/* Theme sections */}
-        {THEMES.map((theme) => {
-          const matched = theme.filter(recipes);
+        {themeMatches.map(({ theme, matched }) => {
           if (matched.length < 1) return null;
 
           return (

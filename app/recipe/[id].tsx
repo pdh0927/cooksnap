@@ -326,7 +326,7 @@ export default function RecipeDetailScreen() {
           </View>
         )}
 
-        <View style={{ height: 120 }} />
+        <View style={{ height: 140 }} />
       </ScrollView>
 
       {/* CTA */}

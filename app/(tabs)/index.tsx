@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, FlatList, Pressable, TextInput, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useCallback, useState, useRef } from "react";
+import { useCallback, useState, useRef, useMemo } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRecipes } from "../../src/store/recipeStore";
 import { useFolders } from "../../src/store/folderStore";
@@ -131,7 +131,7 @@ export default function MyRecipesScreen() {
     </AnimatedPressable>
   ), [router]);
 
-  const listHeader = (
+  const listHeader = useMemo(() => (
     <View style={{ gap: space.cardGap }}>
       {/* Subtle greeting caption */}
       {recipes.length > 0 && (
@@ -290,7 +290,7 @@ export default function MyRecipesScreen() {
         </View>
       )}
     </View>
-  );
+  ), [recipes.length, mode, selectedFolderId, selectedFolder, showNewFolder, newFolderName, newFolderEmoji, folders, filtered.length, sectionTitle, sortLabel, loading, error]);
 
   const listEmpty = !loading ? (
     <View style={s.emptyCard}>

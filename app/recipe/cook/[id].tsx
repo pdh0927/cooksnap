@@ -31,7 +31,6 @@ export default function CookingModeScreen() {
   const [allSteps, setAllSteps] = useState(false);
   const [timerDone, setTimerDone] = useState(false);
   const ref = useRef<ReturnType<typeof setInterval> | null>(null);
-  const pulseRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useKeepAwake();
 
@@ -46,8 +45,6 @@ export default function CookingModeScreen() {
   useEffect(() => {
     if (ref.current) clearInterval(ref.current);
     ref.current = null;
-    if (pulseRef.current) clearInterval(pulseRef.current);
-    pulseRef.current = null;
     setRunning(false);
     setTimerDone(false);
     setSec(step?.timerSeconds ?? 0);
@@ -140,7 +137,7 @@ export default function CookingModeScreen() {
       </View>
 
       {/* Step */}
-      <View style={st.body}>
+      <ScrollView style={st.body} contentContainerStyle={st.bodyContent} showsVerticalScrollIndicator={false}>
         <Text style={st.stepLabel}>STEP {cur + 1}</Text>
 
         {/* Ingredient pills for current step */}
@@ -195,7 +192,7 @@ export default function CookingModeScreen() {
             <Text style={st.tipText}>{step.tip}</Text>
           </View>
         )}
-      </View>
+      </ScrollView>
 
       {/* Next */}
       {cur < total - 1 && (
@@ -244,7 +241,8 @@ const st = StyleSheet.create({
   progRow: { flexDirection: "row", alignItems: "center", gap: space.lg, paddingHorizontal: space.gutter, paddingBottom: space.xxl },
   progBg: { flex: 1, height: 4, backgroundColor: darkColors.card, borderRadius: 2, overflow: "hidden" },
   progFill: { height: 4, backgroundColor: colors.orange, borderRadius: 2 },
-  body: { flex: 1, paddingHorizontal: space.cardPad, paddingTop: space.xxxl },
+  body: { flex: 1, paddingHorizontal: space.cardPad },
+  bodyContent: { paddingTop: space.xxxl, paddingBottom: space.lg },
   stepLabel: { ...typo.caption2, color: colors.orange, letterSpacing: 2, marginBottom: space.lg, fontWeight: "700" },
   ingPillRow: { flexDirection: "row", flexWrap: "wrap", gap: space.md, marginBottom: space.xl },
   ingPill: { backgroundColor: "rgba(249,115,22,0.15)", paddingHorizontal: space.lg, paddingVertical: space.xs, borderRadius: radius.full },
