@@ -32,6 +32,7 @@ export default function AddRecipeScreen() {
     : ["레시피 검색 중...", "레시피 만드는 중...", "조리 순서 정리 중...", "레시피 완성!"];
 
   async function startParsing() {
+    if (parsing) return;
     const trimmed = input.trim();
     if (!trimmed) {
       Alert.alert("입력 없음", "URL이나 요리명을 입력해주세요");
@@ -58,6 +59,8 @@ export default function AddRecipeScreen() {
 
       if (cancelled.current) return;
 
+      // Show "done" checkmark for all steps before navigating
+      setParseStep(steps.length);
       await addRecipe(recipe);
       setParsing(false);
       setInput("");

@@ -51,7 +51,9 @@ export default function CookingModeScreen() {
   }, [cur, step?.timerSeconds]);
 
   useEffect(() => {
-    if (!running || sec <= 0) return;
+    if (!running || sec <= 0) {
+      return;
+    }
     ref.current = setInterval(() => {
       setSec((p) => {
         if (p <= 1) {
@@ -69,7 +71,7 @@ export default function CookingModeScreen() {
       });
     }, 1000);
     return () => { if (ref.current) clearInterval(ref.current); };
-  }, [running]);
+  }, [running, sec > 0]);
 
   const nav = useCallback((d: number) => {
     const n = cur + d;
@@ -194,11 +196,18 @@ export default function CookingModeScreen() {
         )}
       </ScrollView>
 
-      {/* Next */}
-      {cur < total - 1 && (
+      {/* Next step preview or last step indicator */}
+      {cur < total - 1 ? (
         <View style={st.nextCard}>
           <Text style={st.nextLabel}>STEP {cur + 2} · 다음 단계</Text>
           <StepText instruction={recipe.steps[cur + 1].instruction} fontSize={15} dark />
+        </View>
+      ) : (
+        <View style={st.nextCard}>
+          <Text style={[st.nextLabel, { color: colors.green, letterSpacing: 1 }]}>마지막 단계</Text>
+          <Text style={[typo.body2, { color: "rgba(255,255,255,0.6)" }]}>
+            아래 "완성!" 버튼을 눌러 요리를 마무리하세요
+          </Text>
         </View>
       )}
 

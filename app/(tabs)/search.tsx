@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRecipes } from "../../src/store/recipeStore";
 import { colors, typo, space, radius, size } from "../../src/theme";
@@ -59,7 +59,7 @@ export default function SearchScreen() {
   const [fridgeItems, setFridgeItems] = useState<string[]>([]);
   const [fridgeInput, setFridgeInput] = useState("");
 
-  const params = useLocalSearchParams<{ q?: string }>();
+  const params = useLocalSearchParams<{ q?: string; _ts?: string }>();
 
   useEffect(() => {
     if (params.q) {
@@ -69,7 +69,7 @@ export default function SearchScreen() {
       setFridgeItems([]);
       setFridgeInput("");
     }
-  }, [params.q]);
+  }, [params.q, params._ts]);
 
   const filtered = recipes.filter((r) => {
     const q = query.trim().toLowerCase();

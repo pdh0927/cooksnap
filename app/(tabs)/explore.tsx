@@ -150,7 +150,7 @@ export default function ExploreScreen() {
               {allTags.slice(0, 12).map((tag) => (
                 <Pressable
                   key={tag}
-                  onPress={() => router.push({ pathname: "/(tabs)/search", params: { q: tag } })}
+                  onPress={() => router.push({ pathname: "/(tabs)/search", params: { q: tag, _ts: String(Date.now()) } })}
                   style={s.tag}
                 >
                   <Text style={s.tagText}>#{tag}</Text>
