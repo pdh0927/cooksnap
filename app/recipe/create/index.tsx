@@ -174,8 +174,12 @@ export default function CreateRecipeScreen() {
       createdAt: new Date().toISOString(),
     };
 
-    await addRecipe(recipe);
-    router.replace(`/recipe/${recipe.id}`);
+    try {
+      const created = await addRecipe(recipe);
+      router.replace(`/recipe/${created.id}`);
+    } catch {
+      Alert.alert("저장 실패", "네트워크를 확인하고 다시 시도해주세요.");
+    }
   }
 
   return (

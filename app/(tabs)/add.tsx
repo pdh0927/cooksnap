@@ -61,10 +61,10 @@ export default function AddRecipeScreen() {
 
       // Show "done" checkmark for all steps before navigating
       setParseStep(steps.length);
-      await addRecipe(recipe);
+      const created = await addRecipe(recipe);
       setParsing(false);
       setInput("");
-      router.push(`/recipe/${recipe.id}`);
+      router.push(`/recipe/${created.id}`);
     } catch (err: any) {
       if (cancelled.current) return;
       setParsing(false);

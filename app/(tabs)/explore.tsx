@@ -22,7 +22,7 @@ interface ThemeSection {
 
 const THEMES: ThemeSection[] = [
   {
-    title: "10분 안에 뚝딱",
+    title: "15분 안에 뚝딱",
     subtitle: "바쁜 날 빠르게 만들어요",
     emoji: "⚡",
     color: colors.yellow,
@@ -30,7 +30,7 @@ const THEMES: ThemeSection[] = [
     filter: (r) => r.filter((x) => x.cookTimeMinutes <= 15),
   },
   {
-    title: "재료 3개 이하",
+    title: "주재료 3개 이하",
     subtitle: "심플하게, 맛있게",
     emoji: "🧂",
     color: colors.green,

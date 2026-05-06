@@ -48,10 +48,11 @@ export function useRecipes() {
     }
   }, []);
 
-  const addRecipe = useCallback(async (recipe: Recipe) => {
+  const addRecipe = useCallback(async (recipe: Recipe): Promise<Recipe> => {
     const created = await api.createRecipe(recipe);
     recipesCache = [created, ...(recipesCache ?? [])];
     notifyListeners();
+    return created;
   }, []);
 
   const deleteRecipe = useCallback(async (id: string) => {

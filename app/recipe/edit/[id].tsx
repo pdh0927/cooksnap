@@ -192,7 +192,7 @@ export default function EditRecipeScreen() {
         return {
           order: i + 1,
           instruction: s.trim(),
-          timerSeconds: parseTimerFromStep(s),
+          timerSeconds: instructionChanged ? parseTimerFromStep(s) : (existingStep?.timerSeconds ?? parseTimerFromStep(s)),
           tip: instructionChanged ? null : (existingStep?.tip ?? null),
           details: instructionChanged
             ? { tip: null, warning: null, highlights: [], ingredientRefs: [] }
@@ -202,8 +202,12 @@ export default function EditRecipeScreen() {
       tags,
     };
 
-    await updateRecipe(id, updates);
-    router.back();
+    try {
+      await updateRecipe(id, updates);
+      router.back();
+    } catch {
+      Alert.alert("저장 실패", "네트워크를 확인하고 다시 시도해주세요.");
+    }
   }
 
   if (!recipe) {
