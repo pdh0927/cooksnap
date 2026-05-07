@@ -1,7 +1,6 @@
 import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { useMemo, memo } from "react";
 import { useRecipes } from "../../src/store/recipeStore";
 import { colors, typo, space, radius, size } from "../../src/theme";
@@ -86,7 +85,7 @@ const RecipeHCard = memo(function RecipeHCard({ recipe, onPress }: { recipe: Rec
         <RecipeThumb thumbnailUrl={recipe.thumbnailUrl} gradientColors={recipe.gradientColors as [string, string]} emoji={recipe.emoji} width={size.hCardW} height={size.hCardThumbH} borderRadius={radius.lg} sourceType={recipe.sourceType} />
       </View>
       <Text style={s.hCardTitle} numberOfLines={2}>{recipe.title}</Text>
-      <Text style={s.hCardMeta}>{recipe.cookTimeMinutes}분 · {recipe.difficulty}</Text>
+      <Text style={s.hCardMeta}>{recipe.cookTimeMinutes ?? "—"}분 · {recipe.difficulty ?? "보통"}</Text>
     </AnimatedPressable>
   );
 });
@@ -183,19 +182,21 @@ export default function ExploreScreen() {
               </View>
 
               {/* Horizontal recipe scroll — cap at 15 to avoid rendering too many off-screen cards */}
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={s.hScroll}
-              >
-                {matched.slice(0, 15).map((r) => (
-                  <RecipeHCard
-                    key={r.id}
-                    recipe={r}
-                    onPress={() => router.push(`/recipe/${r.id}`)}
-                  />
-                ))}
-              </ScrollView>
+              <View style={s.hScrollWrap}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={s.hScroll}
+                >
+                  {matched.slice(0, 15).map((r) => (
+                    <RecipeHCard
+                      key={r.id}
+                      recipe={r}
+                      onPress={() => router.push(`/recipe/${r.id}`)}
+                    />
+                  ))}
+                </ScrollView>
+              </View>
             </View>
           );
         })}
@@ -221,9 +222,11 @@ export default function ExploreScreen() {
                   <View style={s.allCardInfo}>
                     <Text style={[typo.body1Bold, { color: colors.textPrimary }]} numberOfLines={2}>{r.title}</Text>
                     <View style={s.listMeta}>
-                      <Text style={s.listMetaText}>{r.cookTimeMinutes}분</Text>
+                      <Text style={s.listMetaText}>{r.cookTimeMinutes ?? "—"}분</Text>
                       <View style={s.dot} />
-                      <Text style={s.listMetaText}>{r.servings}인분</Text>
+                      <Text style={s.listMetaText}>{r.servings ?? 1}인분</Text>
+                      <View style={s.dot} />
+                      <Text style={s.listMetaText}>{r.difficulty ?? "보통"}</Text>
                     </View>
                   </View>
                 </AnimatedPressable>
@@ -231,7 +234,7 @@ export default function ExploreScreen() {
             </View>
             {recipes.length > 10 && (
               <Pressable
-                onPress={() => router.push("/(tabs)")}
+                onPress={() => router.navigate("/(tabs)/index")}
                 style={s.showMoreBtn}
               >
                 <Text style={[typo.body2Bold, { color: colors.accent }]}>
@@ -298,8 +301,11 @@ const s = StyleSheet.create({
     paddingVertical: space.xxs,
     borderRadius: radius.full,
   },
-  // Horizontal card
-  hScroll: { gap: space.lg },
+  // Horizontal card — negative margin + padding for edge-to-edge scroll within card
+  hScrollWrap: {
+    marginHorizontal: -space.cardPad,
+  },
+  hScroll: { gap: space.lg, paddingHorizontal: space.cardPad },
   hCard: {
     width: size.hCardW,
   },
