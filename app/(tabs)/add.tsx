@@ -39,10 +39,6 @@ export default function AddRecipeScreen() {
       return;
     }
 
-    // 디버깅: 실제 전달되는 입력값 확인
-    console.log("[CookSnap] 입력값:", trimmed);
-    console.log("[CookSnap] URL여부:", inputIsUrl);
-
     setParsing(true);
     setParseStep(0);
     cancelled.current = false;
@@ -80,7 +76,7 @@ export default function AddRecipeScreen() {
 
   if (parsing) {
     return (
-      <View style={s.parsingRoot}>
+      <View style={[s.parsingRoot, { paddingTop: insets.top }]}>
         <View style={s.spinnerWrap}>
           <Spinner />
         </View>
@@ -126,7 +122,7 @@ export default function AddRecipeScreen() {
         <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: space.xs }]}>URL이나 요리명을 입력하세요</Text>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         {/* Input Card */}
         <View style={s.card}>
           <Text style={[typo.caption1, { color: colors.textTertiary, marginBottom: space.lg }]}>
@@ -143,7 +139,7 @@ export default function AddRecipeScreen() {
               autoCapitalize="none"
               autoCorrect={false}
               returnKeyType="go"
-              onSubmitEditing={startParsing}
+              onSubmitEditing={() => input.trim() && startParsing()}
             />
             {input.length > 0 && (
               <Pressable onPress={() => setInput("")}>
@@ -153,6 +149,7 @@ export default function AddRecipeScreen() {
           </View>
           <AnimatedPressable
             onPress={startParsing}
+            disabled={!input.trim()}
             style={[s.primaryBtn, !input.trim() && { backgroundColor: colors.gray200 }]}
           >
             <Ionicons name="sparkles" size={18} color={input.trim() ? colors.white : colors.textDisabled} />
@@ -182,7 +179,7 @@ export default function AddRecipeScreen() {
 
           <View style={s.optDivider} />
 
-          <View style={[s.option, { opacity: 0.4 }]}>
+          <View style={[s.option, { opacity: 0.4 }]} pointerEvents="none">
             <View style={[s.optIcon, { backgroundColor: colors.gray100 }]}>
               <Ionicons name="camera-outline" size={20} color={colors.gray600} />
             </View>

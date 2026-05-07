@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRecipes } from "../../src/store/recipeStore";
 import { colors, typo, space, radius, size } from "../../src/theme";
@@ -137,7 +137,7 @@ export default function SearchScreen() {
       <View style={s.header}>
         <Text style={[typo.screenTitle, { color: colors.textPrimary }]}>검색</Text>
       </View>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         {/* Mode toggle */}
         <View style={s.modeToggle}>
           <Pressable
@@ -168,6 +168,8 @@ export default function SearchScreen() {
                 value={query}
                 onChangeText={(v) => { setQuery(v); setSelectedTag(null); }}
                 returnKeyType="search"
+                autoCorrect={false}
+                autoCapitalize="none"
               />
               {(query || selectedTag) && (
                 <Pressable onPress={() => { setQuery(""); setSelectedTag(null); }}>
@@ -263,6 +265,8 @@ export default function SearchScreen() {
                 onChangeText={setFridgeInput}
                 onSubmitEditing={addFridgeItem}
                 returnKeyType="done"
+                autoCorrect={false}
+                autoCapitalize="none"
               />
               {fridgeInput.trim() ? (
                 <Pressable onPress={addFridgeItem} style={s.addBtn}>
@@ -299,31 +303,41 @@ export default function SearchScreen() {
                 </View>
 
                 {fridgeMatches.length > 0 ? (
-                  fridgeMatches.map((m) => (
-                    <AnimatedPressable key={m.recipe.id} onPress={() => router.push(`/recipe/${m.recipe.id}`)} style={s.resultCard}>
-                      <RecipeThumb thumbnailUrl={m.recipe.thumbnailUrl} gradientColors={m.recipe.gradientColors as [string, string]} emoji={m.recipe.emoji} width={size.searchThumbW} height={size.searchThumbH} borderRadius={radius.lg} sourceType={m.recipe.sourceType} />
-                      <View style={{ flex: 1 }}>
-                        <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>{m.recipe.title}</Text>
-                        <View style={s.meta}>
-                          <Text style={s.metaText}>{m.recipe.cookTimeMinutes}분</Text>
-                          <View style={s.dot} />
-                          <Text style={s.metaText}>{m.recipe.servings}인분</Text>
-                        </View>
-                        <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm, marginTop: space.sm }}>
-                          <View style={[s.matchBadge, { backgroundColor: getMatchBgColor(m.matchPercent) }]}>
-                            <Text style={[typo.caption2, { color: getMatchColor(m.matchPercent) }]}>
-                              재료 {m.matchedCount}/{m.totalIngredients} 보유 ({m.matchPercent}%)
-                            </Text>
+                  <>
+                    {fridgeMatches.slice(0, 20).map((m) => (
+                      <AnimatedPressable key={m.recipe.id} onPress={() => router.push(`/recipe/${m.recipe.id}`)} style={s.resultCard}>
+                        <RecipeThumb thumbnailUrl={m.recipe.thumbnailUrl} gradientColors={m.recipe.gradientColors as [string, string]} emoji={m.recipe.emoji} width={size.searchThumbW} height={size.searchThumbH} borderRadius={radius.lg} sourceType={m.recipe.sourceType} />
+                        <View style={{ flex: 1 }}>
+                          <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>{m.recipe.title}</Text>
+                          <View style={s.meta}>
+                            <Text style={s.metaText}>{m.recipe.cookTimeMinutes}분</Text>
+                            <View style={s.dot} />
+                            <Text style={s.metaText}>{m.recipe.servings}인분</Text>
                           </View>
+                          <View style={{ flexDirection: "row", alignItems: "center", gap: space.sm, marginTop: space.sm }}>
+                            <View style={[s.matchBadge, { backgroundColor: getMatchBgColor(m.matchPercent) }]}>
+                              <Text style={[typo.caption2, { color: getMatchColor(m.matchPercent) }]}>
+                                재료 {m.matchedCount}/{m.totalIngredients} 보유 ({m.matchPercent}%)
+                              </Text>
+                            </View>
+                          </View>
+                          {m.missingIngredients.length > 0 && (
+                            <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: space.xs }]} numberOfLines={1}>
+                              부족: {m.missingIngredients.join(", ")}
+                            </Text>
+                          )}
                         </View>
-                        {m.missingIngredients.length > 0 && (
-                          <Text style={[typo.caption1, { color: colors.textTertiary, marginTop: space.xs }]} numberOfLines={1}>
-                            부족: {m.missingIngredients.join(", ")}
-                          </Text>
-                        )}
+                        <Ionicons name="chevron-forward" size={18} color={colors.textDisabled} />
+                      </AnimatedPressable>
+                    ))}
+                    {fridgeMatches.length > 20 && (
+                      <View style={s.limitMsg}>
+                        <Text style={[typo.caption1, { color: colors.textTertiary, textAlign: "center" }]}>
+                          더 많은 결과가 있어요. 재료를 더 추가해보세요
+                        </Text>
                       </View>
-                    </AnimatedPressable>
-                  ))
+                    )}
+                  </>
                 ) : (
                   <View style={s.emptyCard}>
                     <Text style={{ fontSize: 36, marginBottom: space.lg }}>😅</Text>
