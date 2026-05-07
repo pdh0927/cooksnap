@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, FlatList, Pressable, TextInput, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useCallback, useState, useRef, useMemo, useEffect } from "react";
+import { useCallback, useState, useRef, useMemo, useEffect, memo } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRecipes } from "../../src/store/recipeStore";
 import { useFolders } from "../../src/store/folderStore";
@@ -49,7 +49,7 @@ export default function MyRecipesScreen() {
   }
 
   // Filter logic
-  const filtered =
+  const filtered = useMemo(() =>
     mode === "favorites"
       ? recipes.filter((r) => r.isFavorite)
       : mode === "folder" && selectedFolderId
@@ -57,13 +57,14 @@ export default function MyRecipesScreen() {
           const folder = folders.find((f) => f.id === selectedFolderId);
           return folder?.recipeIds.includes(r.id) ?? false;
         })
-      : recipes;
+      : recipes,
+    [recipes, mode, selectedFolderId, folders]);
 
-  const sorted = [...filtered].sort((a, b) => {
+  const sorted = useMemo(() => [...filtered].sort((a, b) => {
     if (sortBy === "name") return a.title.localeCompare(b.title, "ko");
     if (sortBy === "time") return a.cookTimeMinutes - b.cookTimeMinutes;
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-  });
+  }), [filtered, sortBy]);
 
   const selectedFolder = folders.find((f) => f.id === selectedFolderId);
 

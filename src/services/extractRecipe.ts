@@ -310,7 +310,7 @@ export async function extractRecipeFromUrl(
     thumbnailUrl,
     sourceUrl: url,
     sourceType: urlType === "youtube" ? "youtube" : "blog",
-    sourceLabel: urlType === "youtube" ? "YouTube" : new URL(url).hostname.replace("www.", ""),
+    sourceLabel: urlType === "youtube" ? "YouTube" : (() => { try { return new URL(url).hostname.replace("www.", ""); } catch { return "웹사이트"; } })(),
     tags: parsed.tags || [],
     tips: parsed.tips || [],
     warnings: parsed.warnings || [],

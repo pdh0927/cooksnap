@@ -182,13 +182,13 @@ export default function ExploreScreen() {
                 </View>
               </View>
 
-              {/* Horizontal recipe scroll */}
+              {/* Horizontal recipe scroll — cap at 15 to avoid rendering too many off-screen cards */}
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={s.hScroll}
               >
-                {matched.map((r) => (
+                {matched.slice(0, 15).map((r) => (
                   <RecipeHCard
                     key={r.id}
                     recipe={r}

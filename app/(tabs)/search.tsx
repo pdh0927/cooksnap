@@ -110,16 +110,19 @@ export default function SearchScreen() {
     return recipes
       .map((recipe) => {
         const scalableIngredients = recipe.ingredients.filter((i) => i.scalable);
-        const totalIngredients = scalableIngredients.length || recipe.ingredients.length;
+        // Use scalable (main) ingredients for both numerator and denominator
+        // so non-scalable items like "소금 약간" don't inflate the match count
+        const baseIngredients = scalableIngredients.length > 0 ? scalableIngredients : recipe.ingredients;
+        const totalIngredients = baseIngredients.length;
 
-        const matchedIngredients = recipe.ingredients.filter((ing) =>
+        const matchedIngredients = baseIngredients.filter((ing) =>
           fridgeItems.some((item) => ing.name.toLowerCase().includes(item.toLowerCase()))
         );
         const matchedCount = matchedIngredients.length;
         const matchPercent = totalIngredients > 0 ? Math.round((matchedCount / totalIngredients) * 100) : 0;
 
         const matchedNames = new Set(matchedIngredients.map((i) => i.name));
-        const missingIngredients = scalableIngredients
+        const missingIngredients = baseIngredients
           .filter((i) => !matchedNames.has(i.name))
           .map((i) => i.name);
 

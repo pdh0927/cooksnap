@@ -16,6 +16,20 @@ function notify() {
   listeners.forEach((fn) => fn());
 }
 
+/** Remove a recipe from all folders (called when a recipe is deleted). */
+export function _removeRecipeFromAllFolders(recipeId: string) {
+  if (!foldersCache) return;
+  let changed = false;
+  foldersCache = foldersCache.map((f) => {
+    if (f.recipeIds.includes(recipeId)) {
+      changed = true;
+      return { ...f, recipeIds: f.recipeIds.filter((id) => id !== recipeId) };
+    }
+    return f;
+  });
+  if (changed) notify();
+}
+
 export function useFolders() {
   const [folders, setFolders] = useState<Folder[]>(foldersCache ?? []);
   const [loading, setLoading] = useState(foldersCache === null);

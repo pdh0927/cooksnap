@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Recipe } from "../types/recipe";
 import { api } from "./api";
+import { _removeRecipeFromAllFolders } from "./folderStore";
 
 let recipesCache: Recipe[] | null = null;
 let listeners: Set<() => void> = new Set();
@@ -58,6 +59,8 @@ export function useRecipes() {
   const deleteRecipe = useCallback(async (id: string) => {
     await api.deleteRecipe(id);
     recipesCache = (recipesCache ?? []).filter((r) => r.id !== id);
+    // Clean deleted recipe from all folders so counts stay correct
+    _removeRecipeFromAllFolders(id);
     notifyListeners();
   }, []);
 
