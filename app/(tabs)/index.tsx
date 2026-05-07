@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, FlatList, Pressable, TextInput, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useCallback, useState, useRef, useMemo, useEffect, memo } from "react";
+import { useCallback, useState, useRef, useMemo, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRecipes } from "../../src/store/recipeStore";
 import { useFolders } from "../../src/store/folderStore";
@@ -13,6 +13,7 @@ import RecipeThumb from "../../src/components/RecipeThumb";
 type ViewMode = "all" | "favorites" | "folder";
 
 const FOLDER_EMOJIS = ["📁", "🍳", "🥗", "🍜", "🍖", "🎂", "🥘", "🍕", "🌮", "🍱", "☕", "🧁", "💪", "🎉", "❄️", "☀️"];
+const MAX_FOLDER_NAME_LENGTH = 20;
 
 export default function MyRecipesScreen() {
   const insets = useSafeAreaInsets();
@@ -42,11 +43,17 @@ export default function MyRecipesScreen() {
   const [newFolderName, setNewFolderName] = useState("");
   const [newFolderEmoji, setNewFolderEmoji] = useState("📁");
   const [sortBy, setSortBy] = useState<"newest" | "name" | "time">("newest");
+  const [creatingFolder, setCreatingFolder] = useState(false);
 
   const sortLabel = sortBy === "newest" ? "최신순" : sortBy === "name" ? "이름순" : "조리시간순";
-  function cycleSortBy() {
+  const cycleSortBy = useCallback(() => {
     setSortBy((prev) => (prev === "newest" ? "name" : prev === "name" ? "time" : "newest"));
-  }
+  }, []);
+
+  /** Scroll list to top after filter/folder changes */
+  const scrollToTop = useCallback(() => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  }, []);
 
   // Filter logic
   const filtered = useMemo(() =>
@@ -68,8 +75,9 @@ export default function MyRecipesScreen() {
 
   const selectedFolder = folders.find((f) => f.id === selectedFolderId);
 
-  async function handleCreateFolder() {
-    if (!newFolderName.trim()) return;
+  const handleCreateFolder = useCallback(async () => {
+    if (!newFolderName.trim() || creatingFolder) return;
+    setCreatingFolder(true);
     try {
       await createFolder(newFolderName.trim(), newFolderEmoji);
       setNewFolderName("");
@@ -77,16 +85,23 @@ export default function MyRecipesScreen() {
       setShowNewFolder(false);
     } catch {
       Alert.alert("폴더 생성 실패", "네트워크를 확인해주세요.");
+    } finally {
+      setCreatingFolder(false);
     }
-  }
+  }, [newFolderName, newFolderEmoji, creatingFolder, createFolder]);
 
-  function handleDeleteFolder(id: string, name: string) {
+  const handleDeleteFolder = useCallback((id: string, name: string) => {
     Alert.alert(`"${name}" 폴더 삭제`, "폴더만 삭제되고 레시피는 유지됩니다.", [
       { text: "취소", style: "cancel" },
       {
         text: "삭제", style: "destructive",
-        onPress: () => {
-          deleteFolder(id);
+        onPress: async () => {
+          try {
+            await deleteFolder(id);
+          } catch {
+            Alert.alert("삭제 실패", "네트워크를 확인해주세요.");
+            return;
+          }
           if (selectedFolderId === id) {
             setMode("all");
             setSelectedFolderId(null);
@@ -94,7 +109,26 @@ export default function MyRecipesScreen() {
         },
       },
     ]);
-  }
+  }, [deleteFolder, selectedFolderId]);
+
+  const handleSelectAll = useCallback(() => {
+    setMode("all");
+    setSelectedFolderId(null);
+    scrollToTop();
+  }, [scrollToTop]);
+
+  const handleSelectFavorites = useCallback(() => {
+    setMode("favorites");
+    setSelectedFolderId(null);
+    scrollToTop();
+  }, [scrollToTop]);
+
+  const handleSelectFolder = useCallback((folderId: string) => {
+    setMode("folder");
+    setSelectedFolderId(folderId);
+    // Delay scroll slightly so FlatList re-renders with new data first
+    setTimeout(scrollToTop, 100);
+  }, [scrollToTop]);
 
   const sectionTitle =
     mode === "all" ? "모든 레시피" : mode === "favorites" ? "즐겨찾기" : selectedFolder?.name ?? "";
@@ -135,7 +169,7 @@ export default function MyRecipesScreen() {
   ), []);
 
   const listHeader = useMemo(() => (
-    <View style={{ gap: space.cardGap }}>
+    <View style={s.headerSection}>
       {/* Subtle greeting caption */}
       {recipes.length > 0 && (
         <Text style={[typo.caption1, { color: colors.textTertiary }]}>
@@ -150,13 +184,13 @@ export default function MyRecipesScreen() {
         contentContainerStyle={s.chipScroll}
       >
         <Pressable
-          onPress={() => { setMode("all"); setSelectedFolderId(null); }}
+          onPress={handleSelectAll}
           style={[s.chip, mode === "all" && s.chipActive]}
         >
           <Text style={[s.chipText, mode === "all" && s.chipTextActive]}>전체</Text>
         </Pressable>
         <Pressable
-          onPress={() => { setMode("favorites"); setSelectedFolderId(null); }}
+          onPress={handleSelectFavorites}
           style={[s.chip, mode === "favorites" && s.chipActive]}
         >
           <Ionicons
@@ -181,7 +215,7 @@ export default function MyRecipesScreen() {
       {showNewFolder && (
         <View style={s.newFolderCard}>
           {/* Emoji picker */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.sm, marginBottom: space.lg }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.emojiScroll}>
             {FOLDER_EMOJIS.map((e) => (
               <Pressable
                 key={e}
@@ -198,16 +232,23 @@ export default function MyRecipesScreen() {
               placeholder="폴더 이름 (예: 주말 브런치)"
               placeholderTextColor={colors.textDisabled}
               value={newFolderName}
-              onChangeText={setNewFolderName}
+              onChangeText={(text) => setNewFolderName(text.slice(0, MAX_FOLDER_NAME_LENGTH))}
               autoFocus
+              maxLength={MAX_FOLDER_NAME_LENGTH}
               returnKeyType="done"
               onSubmitEditing={handleCreateFolder}
             />
-            <Pressable onPress={handleCreateFolder} style={s.newFolderBtn}>
-              <Text style={[typo.body2Bold, { color: colors.white }]}>만들기</Text>
+            <Pressable
+              onPress={handleCreateFolder}
+              style={[s.newFolderBtn, (!newFolderName.trim() || creatingFolder) && s.newFolderBtnDisabled]}
+              disabled={!newFolderName.trim() || creatingFolder}
+            >
+              <Text style={[typo.body2Bold, { color: colors.white }]}>
+                {creatingFolder ? "..." : "만들기"}
+              </Text>
             </Pressable>
           </View>
-          <Pressable onPress={() => setShowNewFolder(false)} style={{ alignSelf: "center", marginTop: space.md }}>
+          <Pressable onPress={() => { setShowNewFolder(false); setNewFolderName(""); setNewFolderEmoji("📁"); }} style={s.cancelBtn}>
             <Text style={[typo.caption1, { color: colors.textTertiary }]}>취소</Text>
           </Pressable>
         </View>
@@ -222,11 +263,7 @@ export default function MyRecipesScreen() {
             return (
               <AnimatedPressable
                 key={folder.id}
-                onPress={() => {
-                  setMode("folder");
-                  setSelectedFolderId(folder.id);
-                  setTimeout(() => listRef.current?.scrollToOffset({ offset: 0, animated: true }), 100);
-                }}
+                onPress={() => handleSelectFolder(folder.id)}
                 onLongPress={() => handleDeleteFolder(folder.id, folder.name)}
                 style={[s.folderCard, isSelected && s.folderCardActive]}
               >
@@ -248,24 +285,18 @@ export default function MyRecipesScreen() {
         </Pressable>
       ) : null}
 
-      {/* Selected folder header */}
-      {mode === "folder" && selectedFolder && (
-        <View style={s.folderHeader}>
-          <Text style={{ fontSize: 20 }}>{selectedFolder.emoji}</Text>
-          <Text style={[typo.heading3, { color: colors.textPrimary, flex: 1 }]}>
-            {selectedFolder.name}
-          </Text>
-          <Text style={[typo.caption2, { color: colors.textTertiary }]}>
-            {filtered.length}개
-          </Text>
-        </View>
-      )}
-
       {/* Unified recipe list header with sort button */}
       <View style={s.sectionHeader}>
         <Text style={[typo.heading3, { color: colors.textPrimary }]}>
           {sectionTitle}
         </Text>
+        {/* Show filtered count for folder/favorites mode */}
+        {mode !== "all" && (
+          <Text style={[typo.caption2, { color: colors.textTertiary, marginLeft: space.sm }]}>
+            {filtered.length}개
+          </Text>
+        )}
+        <View style={{ flex: 1 }} />
         <Pressable onPress={cycleSortBy} style={s.sortBtn} hitSlop={8}>
           <Ionicons name="swap-vertical" size={16} color={colors.accent} />
           <Text style={[typo.caption1, { color: colors.accent }]}>{sortLabel}</Text>
@@ -293,38 +324,44 @@ export default function MyRecipesScreen() {
         </View>
       )}
     </View>
-  ), [recipes.length, mode, selectedFolderId, selectedFolder, showNewFolder, newFolderName, newFolderEmoji, folders, filtered.length, sectionTitle, sortLabel, loading, error]);
+  ), [recipes.length, mode, selectedFolderId, showNewFolder, newFolderName, newFolderEmoji,
+      creatingFolder, folders, filtered.length, sectionTitle, sortLabel, loading, error,
+      handleCreateFolder, handleDeleteFolder, handleSelectAll, handleSelectFavorites,
+      handleSelectFolder, cycleSortBy, handleRefresh]);
 
-  const listEmpty = !loading ? (
-    <View style={s.emptyCard}>
-      <Text style={{ fontSize: 44, marginBottom: space.xl }}>
-        {mode === "favorites" ? "💝" : mode === "folder" ? "📂" : "📖"}
-      </Text>
-      <Text style={[typo.heading3, { color: colors.textPrimary, marginBottom: space.md }]}>
-        {mode === "favorites"
-          ? "즐겨찾기한 레시피가 없어요"
-          : mode === "folder"
-          ? "이 폴더가 비어있어요"
-          : "레시피가 없어요"}
-      </Text>
-      <Text style={[typo.body2, { color: colors.textTertiary, textAlign: "center" }]}>
-        {mode === "favorites"
-          ? "레시피 상세에서 ♥를 눌러 추가해보세요"
-          : mode === "folder"
-          ? "레시피 상세에서 폴더에 추가할 수 있어요"
-          : "아래 + 버튼을 눌러 레시피를 추가해보세요"}
-      </Text>
-      {mode === "all" && (
-        <AnimatedPressable
-          onPress={() => router.push("/(tabs)/add")}
-          style={s.ctaBtn}
-        >
-          <Ionicons name="add" size={18} color={colors.white} />
-          <Text style={[typo.body2Bold, { color: colors.white }]}>레시피 추가하기</Text>
-        </AnimatedPressable>
-      )}
-    </View>
-  ) : null;
+  const listEmpty = useMemo(() => {
+    if (loading) return null;
+    return (
+      <View style={s.emptyCard}>
+        <Text style={{ fontSize: 44, marginBottom: space.xl }}>
+          {mode === "favorites" ? "💝" : mode === "folder" ? "📂" : "📖"}
+        </Text>
+        <Text style={[typo.heading3, { color: colors.textPrimary, marginBottom: space.md }]}>
+          {mode === "favorites"
+            ? "즐겨찾기한 레시피가 없어요"
+            : mode === "folder"
+            ? "이 폴더가 비어있어요"
+            : "레시피가 없어요"}
+        </Text>
+        <Text style={[typo.body2, { color: colors.textTertiary, textAlign: "center" }]}>
+          {mode === "favorites"
+            ? "레시피 상세에서 ♥를 눌러 추가해보세요"
+            : mode === "folder"
+            ? "레시피 상세에서 폴더에 추가할 수 있어요"
+            : "아래 + 버튼을 눌러 레시피를 추가해보세요"}
+        </Text>
+        {mode === "all" && (
+          <AnimatedPressable
+            onPress={() => routerRef.current.push("/(tabs)/add")}
+            style={s.ctaBtn}
+          >
+            <Ionicons name="add" size={18} color={colors.white} />
+            <Text style={[typo.body2Bold, { color: colors.white }]}>레시피 추가하기</Text>
+          </AnimatedPressable>
+        )}
+      </View>
+    );
+  }, [loading, mode]);
 
   return (
     <View style={[s.root, { paddingTop: insets.top }]}>
@@ -368,8 +405,10 @@ const s = StyleSheet.create({
   },
   title: { ...typo.screenTitle, color: colors.textPrimary },
   scroll: { padding: space.gutter, paddingBottom: 120, gap: space.cardGap },
+  // Header section wrapper for consistent gap
+  headerSection: { gap: space.cardGap },
   // Chips
-  chipScroll: { gap: space.md, marginBottom: space.xs },
+  chipScroll: { gap: space.md },
   chip: {
     height: 34,
     paddingHorizontal: space.xl,
@@ -385,7 +424,6 @@ const s = StyleSheet.create({
   // Section
   sectionHeader: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     marginTop: space.lg,
     marginBottom: space.xs,
@@ -405,7 +443,11 @@ const s = StyleSheet.create({
     backgroundColor: colors.bgPrimary,
     borderRadius: radius.xxl,
     padding: space.xl,
-    width: "48.5%" as any,
+    // Use calculated width: (100% - gap) / 2
+    // With flexBasis and flexGrow, two cards fill each row evenly
+    flexBasis: "47%",
+    flexGrow: 1,
+    maxWidth: "49%",
     minHeight: 88,
   },
   folderCardActive: {
@@ -423,18 +465,13 @@ const s = StyleSheet.create({
     borderColor: colors.divider,
     borderStyle: "dashed",
   },
-  folderHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.md,
-    marginTop: space.lg,
-  },
   // New folder
   newFolderCard: {
     backgroundColor: colors.bgPrimary,
     borderRadius: radius.xxl,
     padding: space.cardPad,
   },
+  emojiScroll: { gap: space.sm, marginBottom: space.lg },
   emojiBtn: {
     width: 40,
     height: 40,
@@ -462,6 +499,15 @@ const s = StyleSheet.create({
     borderRadius: radius.md,
     paddingHorizontal: space.xxl,
     justifyContent: "center",
+  },
+  newFolderBtnDisabled: {
+    opacity: 0.5,
+  },
+  cancelBtn: {
+    alignSelf: "center",
+    marginTop: space.md,
+    paddingVertical: space.sm,
+    paddingHorizontal: space.xl,
   },
   // Recipe cards — vertical layout (thumbnail on top)
   recipeCard: {
