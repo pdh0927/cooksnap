@@ -12,6 +12,26 @@ export interface Folder {
 let foldersCache: Folder[] | null = null;
 let listeners: Set<() => void> = new Set();
 
+/** Validate that data looks like a Folder array; returns safe array */
+function validateFolders(data: unknown): Folder[] {
+  if (!Array.isArray(data)) return [];
+  return data.filter(
+    (f: any) =>
+      f && typeof f === "object" && typeof f.id === "string" && typeof f.name === "string"
+  ).map((f: any) => ({
+    ...f,
+    recipeIds: Array.isArray(f.recipeIds) ? f.recipeIds : [],
+  })) as Folder[];
+}
+
+/** Validate a single folder */
+function validateFolder(data: unknown): Folder | null {
+  if (!data || typeof data !== "object") return null;
+  const f = data as any;
+  if (typeof f.id !== "string" || typeof f.name !== "string") return null;
+  return { ...f, recipeIds: Array.isArray(f.recipeIds) ? f.recipeIds : [] } as Folder;
+}
+
 function notify() {
   listeners.forEach((fn) => fn());
 }
@@ -40,9 +60,10 @@ export function useFolders() {
 
     if (foldersCache === null) {
       api.getFolders()
-        .then((data: Folder[]) => {
-          foldersCache = data;
-          setFolders(data);
+        .then((data: unknown) => {
+          const validated = validateFolders(data);
+          foldersCache = validated;
+          setFolders(validated);
           setLoading(false);
         })
         .catch(() => {
@@ -59,7 +80,9 @@ export function useFolders() {
   }, []);
 
   const createFolder = useCallback(async (name: string, emoji: string) => {
-    const folder = await api.createFolder(name, emoji);
+    const data = await api.createFolder(name, emoji);
+    const folder = validateFolder(data);
+    if (!folder) throw new Error("서버에서 잘못된 응답을 받았습니다.");
     foldersCache = [...(foldersCache ?? []), folder];
     notify();
     return folder;

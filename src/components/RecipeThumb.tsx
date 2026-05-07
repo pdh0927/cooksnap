@@ -48,16 +48,20 @@ export default function RecipeThumb({
   }
 
   const emojiSize = Math.round(h * 0.3);
+  const safeGradient: [string, string] =
+    gradientColors && gradientColors.length >= 2
+      ? gradientColors
+      : ["#A0C4FF", "#BDB2FF"];
 
   return (
     <LinearGradient
-      colors={gradientColors}
+      colors={safeGradient}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={[containerStyle, { alignItems: "center", justifyContent: "center" }]}
     >
       <View style={[s.emojiWrap, { width: h * 0.45, height: h * 0.45, borderRadius: h * 0.225 }]}>
-        <Text style={{ fontSize: emojiSize }}>{emoji}</Text>
+        <Text style={{ fontSize: emojiSize }}>{emoji || "🍽️"}</Text>
       </View>
     </LinearGradient>
   );

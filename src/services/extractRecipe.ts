@@ -50,10 +50,17 @@ async function fetchYoutubeContent(url: string): Promise<string> {
   }
 
   const data = await resp.json();
-  const { title, description, transcript } = data;
+  const title = data?.title || "";
+  const description = data?.description || "";
+  const transcript = data?.transcript || "";
+
+  // If we got essentially nothing useful, fall back to title-based generation
+  if (!title && !transcript && !description) {
+    throw new Error("YouTube 영상에서 레시피 정보를 찾을 수 없습니다. 영상 제목을 직접 입력해보세요.");
+  }
 
   const parts: string[] = [];
-  parts.push(`YouTube 요리 영상 제목: ${title}`);
+  parts.push(`YouTube 요리 영상 제목: ${title || "(제목 없음)"}`);
 
   if (transcript && transcript.length > 50) {
     parts.push(`\n영상 자막:\n${transcript}`);
@@ -63,9 +70,16 @@ async function fetchYoutubeContent(url: string): Promise<string> {
     parts.push(`\n영상 설명:\n${description}`);
   }
 
-  parts.push(
-    `\n위 영상의 내용을 기반으로 레시피를 정확하게 추출해주세요. 설명이나 자막에 재료와 조리법이 있으면 그대로 사용하세요.`
-  );
+  // If only title is available, tell the AI to generate from title knowledge
+  if ((!transcript || transcript.length <= 50) && (!description || description.length <= 30)) {
+    parts.push(
+      `\n이 영상에는 자막과 설명이 부족합니다. 영상 제목을 기반으로 정확한 레시피를 만들어주세요.`
+    );
+  } else {
+    parts.push(
+      `\n위 영상의 내용을 기반으로 레시피를 정확하게 추출해주세요. 설명이나 자막에 재료와 조리법이 있으면 그대로 사용하세요.`
+    );
+  }
 
   return parts.join("\n");
 }
@@ -187,36 +201,143 @@ const SYSTEM_PROMPT = `당신은 10년 경력 한식/양식 셰프입니다. 주
 - 단위: g, ml, 큰술, 작은술, 컵, 개, 모, 대, 쪽 등
 - 콘텐츠에서 추출 불가하면 제목 기반으로 정확한 레시피 생성`;
 
+const AI_TIMEOUT_MS = 60_000;
+
 async function callAI(content: string): Promise<string> {
-  if (!API_KEY) throw new Error("API 키가 설정되지 않았습니다");
+  if (!API_KEY) throw new Error("API 키가 설정되지 않았습니다. 설정에서 API 키를 입력해주세요.");
 
-  const resp = await fetch(API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      max_tokens: 2000,
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: `다음 콘텐츠에서 레시피를 추출해주세요:\n\n${content}` },
-      ],
-    }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
 
-  if (!resp.ok) {
-    const err = await resp.text();
-    throw new Error(`API 오류 (${resp.status}): ${err}`);
+  try {
+    const resp = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${API_KEY}`,
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        max_tokens: 4096,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: `다음 콘텐츠에서 레시피를 추출해주세요:\n\n${content}` },
+        ],
+      }),
+    });
+
+    if (!resp.ok) {
+      if (resp.status === 429) {
+        throw new Error("AI 요청이 너무 많습니다. 잠시 후 다시 시도해주세요.");
+      }
+      if (resp.status === 401) {
+        throw new Error("API 키가 유효하지 않습니다. 설정에서 확인해주세요.");
+      }
+      throw new Error("AI 서비스에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.");
+    }
+
+    const data = await resp.json();
+    const message = data?.choices?.[0]?.message?.content;
+    if (!message || typeof message !== "string") {
+      throw new Error("AI에서 유효한 응답을 받지 못했습니다. 다시 시도해주세요.");
+    }
+    return message;
+  } catch (e: any) {
+    if (e.name === "AbortError") {
+      throw new Error("AI 응답 시간이 초과되었습니다. 다시 시도해주세요.");
+    }
+    throw e;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  const data = await resp.json();
-  return data.choices[0].message.content;
 }
 
 // ============================================================
-// 3) 메인 추출 함수
+// 3) JSON 파싱 & Recipe 객체 빌더 (공통)
+// ============================================================
+
+/** Safely parse AI JSON output, handling code fences and partial JSON */
+function parseAIJson(jsonText: string): any {
+  const cleaned = jsonText.replace(/```json\n?|```\n?/g, "").trim();
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    // Try to extract the largest JSON object
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        return JSON.parse(jsonMatch[0]);
+      } catch {
+        // fall through
+      }
+    }
+    throw new Error("AI 응답을 레시피로 변환할 수 없습니다. 다시 시도해주세요.");
+  }
+}
+
+const VALID_CATEGORIES: Category[] = ["한식", "중식", "일식", "양식", "디저트", "간편식"];
+const VALID_DIFFICULTIES: Difficulty[] = ["쉬움", "보통", "어려움"];
+
+/** Build a Recipe from parsed AI JSON with safe defaults for all fields */
+function buildRecipe(
+  parsed: any,
+  overrides: Partial<Recipe>
+): Recipe {
+  const category = VALID_CATEGORIES.includes(parsed.category) ? parsed.category : "한식";
+  const difficulty = VALID_DIFFICULTIES.includes(parsed.difficulty) ? parsed.difficulty : "보통";
+
+  return {
+    id: Date.now().toString(),
+    title: (typeof parsed.title === "string" && parsed.title) || "새 레시피",
+    emoji: (typeof parsed.emoji === "string" && parsed.emoji) || "🍽️",
+    category,
+    difficulty,
+    cookTimeMinutes:
+      typeof parsed.cookTimeMinutes === "number" && parsed.cookTimeMinutes > 0
+        ? parsed.cookTimeMinutes
+        : 30,
+    servings:
+      typeof parsed.servings === "number" && parsed.servings > 0
+        ? parsed.servings
+        : 2,
+    ingredients: (Array.isArray(parsed.ingredients) ? parsed.ingredients : []).map((ing: any) => ({
+      name: typeof ing?.name === "string" ? ing.name : "",
+      amount: typeof ing?.amount === "number" ? ing.amount : 0,
+      unit: typeof ing?.unit === "string" ? ing.unit : "개",
+      scalable: ing?.scalable !== false,
+    })),
+    steps: (Array.isArray(parsed.steps) ? parsed.steps : []).map((step: any, i: number) => ({
+      order: typeof step?.order === "number" ? step.order : i + 1,
+      instruction: typeof step?.instruction === "string" ? step.instruction : "",
+      timerSeconds:
+        typeof step?.timerSeconds === "number" && step.timerSeconds > 0
+          ? step.timerSeconds
+          : null,
+      tip: step?.details?.tip || step?.tip || null,
+      details: {
+        tip: step?.details?.tip || step?.tip || null,
+        warning: step?.details?.warning || null,
+        highlights: Array.isArray(step?.details?.highlights) ? step.details.highlights : [],
+        ingredientRefs: Array.isArray(step?.details?.ingredientRefs) ? step.details.ingredientRefs : [],
+      },
+    })),
+    thumbnailUrl: null,
+    sourceUrl: null,
+    sourceType: null,
+    sourceLabel: null,
+    tags: Array.isArray(parsed.tags) ? parsed.tags.filter((t: any) => typeof t === "string") : [],
+    tips: Array.isArray(parsed.tips) ? parsed.tips.filter((t: any) => typeof t === "string") : [],
+    warnings: Array.isArray(parsed.warnings) ? parsed.warnings.filter((t: any) => typeof t === "string") : [],
+    isFavorite: false,
+    gradientColors: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
+    createdAt: new Date().toISOString(),
+    ...overrides,
+  };
+}
+
+// ============================================================
+// 4) 메인 추출 함수
 // ============================================================
 
 export type ExtractStep = "fetch" | "extract" | "structure" | "done";
@@ -254,20 +375,7 @@ export async function extractRecipeFromUrl(
   // Step 3: 구조화
   onProgress({ step: "structure", message: "조리 순서 정리 중..." });
 
-  // JSON 파싱 (코드블럭 제거)
-  const cleaned = jsonText.replace(/```json\n?|```\n?/g, "").trim();
-  let parsed: any;
-  try {
-    parsed = JSON.parse(cleaned);
-  } catch {
-    // 부분 JSON 추출 시도
-    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      parsed = JSON.parse(jsonMatch[0]);
-    } else {
-      throw new Error("AI 응답을 파싱할 수 없습니다");
-    }
-  }
+  const parsed = parseAIJson(jsonText);
 
   // Step 4: Recipe 객체로 변환
   onProgress({ step: "done", message: "레시피 완성!" });
@@ -281,45 +389,12 @@ export async function extractRecipeFromUrl(
     }
   }
 
-  const recipe: Recipe = {
-    id: Date.now().toString(),
-    title: parsed.title || "새 레시피",
-    emoji: parsed.emoji || "🍽️",
-    category: (parsed.category as Category) || "한식",
-    difficulty: (parsed.difficulty as Difficulty) || "보통",
-    cookTimeMinutes: parsed.cookTimeMinutes || 30,
-    servings: parsed.servings || 2,
-    ingredients: (parsed.ingredients || []).map((ing: any) => ({
-      name: ing.name || "",
-      amount: typeof ing.amount === "number" ? ing.amount : 0,
-      unit: ing.unit || "개",
-      scalable: ing.scalable !== false,
-    })),
-    steps: (parsed.steps || []).map((step: any, i: number) => ({
-      order: step.order || i + 1,
-      instruction: step.instruction || "",
-      timerSeconds: step.timerSeconds || null,
-      tip: step.details?.tip || step.tip || null,
-      details: {
-        tip: step.details?.tip || step.tip || null,
-        warning: step.details?.warning || null,
-        highlights: Array.isArray(step.details?.highlights) ? step.details.highlights : [],
-        ingredientRefs: Array.isArray(step.details?.ingredientRefs) ? step.details.ingredientRefs : [],
-      },
-    })),
+  return buildRecipe(parsed, {
     thumbnailUrl,
     sourceUrl: url,
     sourceType: urlType === "youtube" ? "youtube" : "blog",
     sourceLabel: urlType === "youtube" ? "YouTube" : (() => { try { return new URL(url).hostname.replace("www.", ""); } catch { return "웹사이트"; } })(),
-    tags: parsed.tags || [],
-    tips: parsed.tips || [],
-    warnings: parsed.warnings || [],
-    isFavorite: false,
-    gradientColors: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
-    createdAt: new Date().toISOString(),
-  };
-
-  return recipe;
+  });
 }
 
 // ============================================================
@@ -341,60 +416,14 @@ export async function generateRecipeFromName(
 
   onProgress({ step: "structure", message: "조리 순서 정리 중..." });
 
-  const cleaned = jsonText.replace(/```json\n?|```\n?/g, "").trim();
-  let parsed: any;
-  try {
-    parsed = JSON.parse(cleaned);
-  } catch {
-    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      parsed = JSON.parse(jsonMatch[0]);
-    } else {
-      throw new Error("AI 응답을 파싱할 수 없습니다");
-    }
-  }
+  const parsed = parseAIJson(jsonText);
 
   onProgress({ step: "done", message: "레시피 완성!" });
 
-  const recipe: Recipe = {
-    id: Date.now().toString(),
-    title: parsed.title || dishName,
-    emoji: parsed.emoji || "🍽️",
-    category: (parsed.category as Category) || "한식",
-    difficulty: (parsed.difficulty as Difficulty) || "보통",
-    cookTimeMinutes: parsed.cookTimeMinutes || 30,
-    servings: parsed.servings || 2,
-    ingredients: (parsed.ingredients || []).map((ing: any) => ({
-      name: ing.name || "",
-      amount: typeof ing.amount === "number" ? ing.amount : 0,
-      unit: ing.unit || "개",
-      scalable: ing.scalable !== false,
-    })),
-    steps: (parsed.steps || []).map((step: any, i: number) => ({
-      order: step.order || i + 1,
-      instruction: step.instruction || "",
-      timerSeconds: step.timerSeconds || null,
-      tip: step.details?.tip || step.tip || null,
-      details: {
-        tip: step.details?.tip || step.tip || null,
-        warning: step.details?.warning || null,
-        highlights: Array.isArray(step.details?.highlights) ? step.details.highlights : [],
-        ingredientRefs: Array.isArray(step.details?.ingredientRefs) ? step.details.ingredientRefs : [],
-      },
-    })),
-    thumbnailUrl: null,
-    sourceUrl: null,
-    sourceType: null,
+  return buildRecipe(parsed, {
+    title: (typeof parsed.title === "string" && parsed.title) || dishName,
     sourceLabel: "AI 생성",
-    tags: parsed.tags || [],
-    tips: parsed.tips || [],
-    warnings: parsed.warnings || [],
-    isFavorite: false,
-    gradientColors: GRADIENTS[Math.floor(Math.random() * GRADIENTS.length)],
-    createdAt: new Date().toISOString(),
-  };
-
-  return recipe;
+  });
 }
 
 // URL인지 요리명인지 판별

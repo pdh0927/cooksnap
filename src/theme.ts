@@ -85,7 +85,6 @@ export const radius = {
 // Sizes
 export const size = {
   thumb: 72,           // recipe list thumbnail (search results, etc.)
-  thumbEmoji: 28,      // emoji inside thumbnail
   heroEmoji: 64,       // detail hero emoji
   cardThumbH: 160,     // vertical card thumbnail height (home)
   gridThumbH: 140,     // grid card thumbnail height (explore all)
@@ -104,7 +103,6 @@ export const darkColors = {
   border: "rgba(255,255,255,0.08)",
   text: "rgba(255,255,255,0.65)",
   textDim: "rgba(255,255,255,0.35)",
-  textFaint: "rgba(255,255,255,0.2)",
   // Badge accent tints (for dark backgrounds)
   orangeTint: "#FFA726",
   blueTint: "#90CAF9",

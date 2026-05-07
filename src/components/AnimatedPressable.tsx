@@ -30,27 +30,32 @@ export default function AnimatedPressable({ style, scaleValue = 0.97, children, 
   // Extract layout-related styles for the outer Animated.View
   // so that width/height/flex/margin work correctly with parent layout
   const flatStyle = StyleSheet.flatten(style) || {};
-  const { width, height, minWidth, minHeight, maxWidth, maxHeight, flex, flexGrow, flexShrink, flexBasis, alignSelf, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical, ...innerStyle } = flatStyle as any;
+  const {
+    // Dimensions
+    width, height, minWidth, minHeight, maxWidth, maxHeight,
+    // Flex layout
+    flex, flexGrow, flexShrink, flexBasis, alignSelf,
+    // Margins
+    margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical,
+    // Positioning
+    position, zIndex, top, bottom, left, right,
+    // Overflow
+    overflow,
+    ...innerStyle
+  } = flatStyle as any;
+
+  const layoutKeys = {
+    width, height, minWidth, minHeight, maxWidth, maxHeight,
+    flex, flexGrow, flexShrink, flexBasis, alignSelf,
+    margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical,
+    position, zIndex, top, bottom, left, right,
+    overflow,
+  };
 
   const outerStyle: any = { transform: [{ scale }] };
-  if (width !== undefined) outerStyle.width = width;
-  if (height !== undefined) outerStyle.height = height;
-  if (minWidth !== undefined) outerStyle.minWidth = minWidth;
-  if (minHeight !== undefined) outerStyle.minHeight = minHeight;
-  if (maxWidth !== undefined) outerStyle.maxWidth = maxWidth;
-  if (maxHeight !== undefined) outerStyle.maxHeight = maxHeight;
-  if (flex !== undefined) outerStyle.flex = flex;
-  if (flexGrow !== undefined) outerStyle.flexGrow = flexGrow;
-  if (flexShrink !== undefined) outerStyle.flexShrink = flexShrink;
-  if (flexBasis !== undefined) outerStyle.flexBasis = flexBasis;
-  if (alignSelf !== undefined) outerStyle.alignSelf = alignSelf;
-  if (margin !== undefined) outerStyle.margin = margin;
-  if (marginTop !== undefined) outerStyle.marginTop = marginTop;
-  if (marginBottom !== undefined) outerStyle.marginBottom = marginBottom;
-  if (marginLeft !== undefined) outerStyle.marginLeft = marginLeft;
-  if (marginRight !== undefined) outerStyle.marginRight = marginRight;
-  if (marginHorizontal !== undefined) outerStyle.marginHorizontal = marginHorizontal;
-  if (marginVertical !== undefined) outerStyle.marginVertical = marginVertical;
+  for (const [k, v] of Object.entries(layoutKeys)) {
+    if (v !== undefined) outerStyle[k] = v;
+  }
 
   return (
     <Animated.View style={outerStyle}>

@@ -63,19 +63,19 @@ interface PatternDef {
 }
 
 const patterns: PatternDef[] = [
-  // Temperature: 180도, 200도 예열, etc.
-  { kind: "temp", re: /\d+\s*도(?:\s*예열)?/ },
+  // Temperature: 180도, 200도 예열, etc. — require digit before 도 to avoid "각도", "정도"
+  { kind: "temp", re: /\d+\s*도(?:\s*예열)?(?=\s|,|$|[을를으로에서])/ },
   { kind: "temp", re: /예열/ },
   // Fire level
   { kind: "fire", re: /(?:약불|중불|센불|강불|중약불|중강불)/ },
-  // Time: 5분, 30초, 1시간, 1~2분, 10-15분 etc.
-  { kind: "time", re: /\d+(?:\s*[~\-]\s*\d+)?\s*(?:분|초|시간)(?:\s*(?:정도|간|동안))?/ },
+  // Time: 5분, 30초, 1시간, 1~2분, 10-15분 etc. — use word boundary after unit to avoid partial matches
+  { kind: "time", re: /\d+(?:\s*[~\-]\s*\d+)?\s*(?:분|초|시간)(?:\s*(?:정도|간|동안))?(?=\s|,|$|[을를으로에서])/ },
   // Cut size: 2cm, 1.5cm, etc.
   { kind: "cut", re: /\d+(?:\.\d+)?\s*cm/ },
   // Cut techniques
   { kind: "cut", re: /(?:깍둑썰기|깍둑썰어|송송|어슷|채썰기|채썰어|다지기|다져|편썰기|편썰어|잘게\s*썰어|잘게\s*썰기|한입\s*크기)/ },
-  // Done signals: ~때까지, ~되면, ~나면, ~날때까지
-  { kind: "done", re: /\S{1,8}(?:때까지|되면|나면|날\s*때)/ },
+  // Done signals: ~때까지, ~되면, ~나면, ~날때까지 — require Korean preceding chars only
+  { kind: "done", re: /[\uAC00-\uD7A3]{1,8}(?:때까지|되면|나면|날\s*때)/ },
 ];
 
 /* ------------------------------------------------------------------ */

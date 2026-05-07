@@ -13,6 +13,21 @@ export interface ShoppingItem {
 let itemsCache: ShoppingItem[] | null = null;
 let listeners: Set<() => void> = new Set();
 
+/** Validate that data looks like a ShoppingItem array; returns safe array */
+function validateShoppingItems(data: unknown): ShoppingItem[] {
+  if (!Array.isArray(data)) return [];
+  return data.filter(
+    (i: any) => i && typeof i === "object" && typeof i.id === "string" && typeof i.name === "string"
+  ).map((i: any) => ({
+    id: i.id,
+    name: i.name,
+    amount: typeof i.amount === "number" ? i.amount : 0,
+    unit: typeof i.unit === "string" ? i.unit : "",
+    checked: typeof i.checked === "boolean" ? i.checked : false,
+    recipeTitle: typeof i.recipeTitle === "string" ? i.recipeTitle : "",
+  }));
+}
+
 function notify() {
   listeners.forEach((fn) => fn());
 }
@@ -26,9 +41,10 @@ export function useShoppingList() {
 
     if (itemsCache === null) {
       api.getShoppingItems()
-        .then((data: ShoppingItem[]) => {
-          itemsCache = data;
-          setItems(data);
+        .then((data: unknown) => {
+          const validated = validateShoppingItems(data);
+          itemsCache = validated;
+          setItems(validated);
         })
         .catch(() => {
           itemsCache = [];
@@ -43,7 +59,7 @@ export function useShoppingList() {
 
   const addItems = useCallback(async (newItems: Omit<ShoppingItem, "id" | "checked">[]) => {
     const data = await api.addShoppingItems(newItems);
-    itemsCache = data;
+    itemsCache = validateShoppingItems(data);
     notify();
   }, []);
 
@@ -54,6 +70,7 @@ export function useShoppingList() {
   }, []);
 
   const removeItem = useCallback(async (id: string) => {
+    await api.deleteShoppingItem(id);
     itemsCache = (itemsCache ?? []).filter((i) => i.id !== id);
     notify();
   }, []);

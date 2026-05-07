@@ -1,29 +1,29 @@
 export function formatAmount(amount: number, unit: string): string {
-  if (amount === 0) return unit; // "약간", "적당량"
+  if (amount === 0) return unit || "적당량"; // "약간", "적당량" — fallback if unit is also empty
 
   // Whole numbers
   if (amount === Math.floor(amount)) {
     return `${amount}${unit}`;
   }
 
-  // Common fractions
-  const fractions: Record<string, string> = {
-    "0.25": "1/4",
-    "0.33": "1/3",
-    "0.5": "1/2",
-    "0.67": "2/3",
-    "0.75": "3/4",
-  };
+  // Common fractions — use numeric tuples [numerator, denominator, displayStr]
+  // to avoid floating-point string matching issues
+  const fractions: Array<[number, string]> = [
+    [1 / 4, "1/4"],
+    [1 / 3, "1/3"],
+    [1 / 2, "1/2"],
+    [2 / 3, "2/3"],
+    [3 / 4, "3/4"],
+  ];
 
   const whole = Math.floor(amount);
-  const decimal = Math.round((amount - whole) * 100) / 100;
-  const decStr = decimal.toFixed(2).replace(/0$/, "").replace(/0$/, "");
+  const decimal = amount - whole;
 
-  // Check fraction match
-  for (const [key, frac] of Object.entries(fractions)) {
-    if (Math.abs(decimal - parseFloat(key)) < 0.05) {
-      if (whole === 0) return `${frac}${unit}`;
-      return `${whole}+${frac}${unit}`;
+  // Check fraction match — tolerance handles floating-point imprecision
+  for (const [fVal, fStr] of fractions) {
+    if (Math.abs(decimal - fVal) < 0.02) {
+      if (whole === 0) return `${fStr}${unit}`;
+      return `${whole}+${fStr}${unit}`;
     }
   }
 
