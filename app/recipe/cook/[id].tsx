@@ -80,12 +80,15 @@ export default function CookingModeScreen() {
   }, [running, sec]);
 
   const nav = useCallback((d: number) => {
-    const n = cur + d;
-    if (n >= 0 && n < total) {
-      setCur(n);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
-  }, [cur, total]);
+    setCur((prev) => {
+      const n = prev + d;
+      if (n >= 0 && n < total) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        return n;
+      }
+      return prev;
+    });
+  }, [total]);
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
@@ -259,12 +262,15 @@ export default function CookingModeScreen() {
         </Pressable>
         <Pressable
           onPress={() => {
-            if (cur === total - 1) {
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              setCompleted(true);
-            } else {
-              nav(1);
-            }
+            setCur((prev) => {
+              if (prev === total - 1) {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                setCompleted(true);
+                return prev;
+              }
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              return prev + 1;
+            });
           }}
           style={[st.navBtn, st.navNext]}
         >

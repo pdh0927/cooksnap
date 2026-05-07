@@ -30,11 +30,15 @@ export default function AnimatedPressable({ style, scaleValue = 0.97, children, 
   // Extract layout-related styles for the outer Animated.View
   // so that width/height/flex/margin work correctly with parent layout
   const flatStyle = StyleSheet.flatten(style) || {};
-  const { width, height, flex, flexGrow, flexShrink, flexBasis, alignSelf, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical, ...innerStyle } = flatStyle as any;
+  const { width, height, minWidth, minHeight, maxWidth, maxHeight, flex, flexGrow, flexShrink, flexBasis, alignSelf, margin, marginTop, marginBottom, marginLeft, marginRight, marginHorizontal, marginVertical, ...innerStyle } = flatStyle as any;
 
   const outerStyle: any = { transform: [{ scale }] };
   if (width !== undefined) outerStyle.width = width;
   if (height !== undefined) outerStyle.height = height;
+  if (minWidth !== undefined) outerStyle.minWidth = minWidth;
+  if (minHeight !== undefined) outerStyle.minHeight = minHeight;
+  if (maxWidth !== undefined) outerStyle.maxWidth = maxWidth;
+  if (maxHeight !== undefined) outerStyle.maxHeight = maxHeight;
   if (flex !== undefined) outerStyle.flex = flex;
   if (flexGrow !== undefined) outerStyle.flexGrow = flexGrow;
   if (flexShrink !== undefined) outerStyle.flexShrink = flexShrink;

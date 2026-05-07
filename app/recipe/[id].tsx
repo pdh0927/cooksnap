@@ -226,31 +226,43 @@ export default function RecipeDetailScreen() {
               <View style={s.servRow}>
                 <Pressable
                   onPress={() => mult > 0.5 && setMult((m) => m - 0.5)}
-                  style={s.servBtn}
+                  disabled={mult <= 0.5}
+                  style={[s.servBtn, mult <= 0.5 && { opacity: 0.3 }]}
                 >
                   <Ionicons name="remove" size={18} color={colors.textSecondary} />
                 </Pressable>
                 <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>{servings}인분</Text>
                 <Pressable
                   onPress={() => mult < 5 && setMult((m) => m + 0.5)}
-                  style={s.servBtn}
+                  disabled={mult >= 5}
+                  style={[s.servBtn, mult >= 5 && { opacity: 0.3 }]}
                 >
                   <Ionicons name="add" size={18} color={colors.textSecondary} />
                 </Pressable>
               </View>
 
-              {recipe.ingredients.map((ing, i) => {
-                const scaled = ing.scalable ? ing.amount * mult : ing.amount;
-                return (
-                  <View key={i} style={[s.ingRow, i === recipe.ingredients.length - 1 && { borderBottomWidth: 0 }]}>
-                    <Text style={[typo.body1, { color: colors.textPrimary, fontWeight: "400" }]}>{ing.name}</Text>
-                    <Text style={[typo.body2Bold, { color: colors.accent }]}>{formatAmount(scaled, ing.unit)}</Text>
-                  </View>
-                );
-              })}
+              {recipe.ingredients.length === 0 ? (
+                <View style={{ paddingVertical: space.x4, alignItems: "center" }}>
+                  <Text style={[typo.body2, { color: colors.textTertiary }]}>등록된 재료가 없어요</Text>
+                </View>
+              ) : (
+                recipe.ingredients.map((ing, i) => {
+                  const scaled = ing.scalable ? ing.amount * mult : ing.amount;
+                  return (
+                    <View key={i} style={[s.ingRow, i === recipe.ingredients.length - 1 && { borderBottomWidth: 0 }]}>
+                      <Text style={[typo.body1, { color: colors.textPrimary, fontWeight: "400" }]}>{ing.name}</Text>
+                      <Text style={[typo.body2Bold, { color: colors.accent }]}>{formatAmount(scaled, ing.unit)}</Text>
+                    </View>
+                  );
+                })
+              )}
 
               <Pressable
                 onPress={() => {
+                  if (recipe.ingredients.length === 0) {
+                    Alert.alert("알림", "추가할 재료가 없어요");
+                    return;
+                  }
                   const shoppingItems = recipe.ingredients.map((ing) => ({
                     name: ing.name,
                     amount: ing.scalable ? ing.amount * mult : ing.amount,
