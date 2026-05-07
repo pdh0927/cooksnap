@@ -1,5 +1,6 @@
 import {
   View, Text, TextInput, ScrollView, Pressable, StyleSheet, Alert, KeyboardAvoidingView, Platform,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -38,6 +39,7 @@ export default function CreateRecipeScreen() {
   const [steps, setSteps] = useState<string[]>([""]);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
+  const [saving, setSaving] = useState(false);
 
   function handleClose() {
     const hasContent = title.trim() || ingredients.some(i => i.name.trim()) || steps.some(s => s.trim());
@@ -121,6 +123,7 @@ export default function CreateRecipeScreen() {
   }
 
   async function save() {
+    if (saving) return;
     if (!title.trim()) {
       Alert.alert("알림", "레시피 이름을 입력해주세요");
       return;
@@ -137,6 +140,8 @@ export default function CreateRecipeScreen() {
       Alert.alert("알림", "조리 순서를 최소 1개 입력해주세요");
       return;
     }
+
+    setSaving(true);
 
     const recipe: Recipe = {
       id: Date.now().toString(),
@@ -178,6 +183,7 @@ export default function CreateRecipeScreen() {
       const created = await addRecipe(recipe);
       router.replace(`/recipe/${created.id}`);
     } catch {
+      setSaving(false);
       Alert.alert("저장 실패", "네트워크를 확인하고 다시 시도해주세요.");
     }
   }
@@ -189,12 +195,16 @@ export default function CreateRecipeScreen() {
     >
       {/* Header */}
       <View style={s.header}>
-        <Pressable onPress={handleClose} style={s.headerBtn}>
+        <Pressable onPress={handleClose} hitSlop={8} style={s.headerBtn}>
           <Ionicons name="close" size={20} color={colors.textSecondary} />
         </Pressable>
         <Text style={[typo.heading3, { color: colors.textPrimary }]}>레시피 작성</Text>
-        <Pressable onPress={save} style={s.saveBtn}>
-          <Text style={[typo.body2Bold, { color: colors.white }]}>저장</Text>
+        <Pressable onPress={save} disabled={saving} style={[s.saveBtn, saving && s.saveBtnDisabled]}>
+          {saving ? (
+            <ActivityIndicator size="small" color={colors.white} />
+          ) : (
+            <Text style={[typo.body2Bold, { color: colors.white }]}>저장</Text>
+          )}
         </Pressable>
       </View>
 
@@ -365,12 +375,13 @@ export default function CreateRecipeScreen() {
                 <Text style={s.stepNumText}>{i + 1}</Text>
               </View>
               <TextInput
-                style={[s.input, { flex: 1 }]}
+                style={[s.input, s.stepInput]}
                 placeholder={`${i + 1}단계 설명`}
                 placeholderTextColor={colors.textDisabled}
                 value={step}
                 onChangeText={(v) => updateStep(i, v)}
                 multiline
+                textAlignVertical="top"
               />
               {steps.length > 1 && (
                 <Pressable onPress={() => removeStep(i)} style={s.removeBtn}>
@@ -381,7 +392,7 @@ export default function CreateRecipeScreen() {
           ))}
         </View>
 
-        <View style={{ height: space.x5 }} />
+        <View style={{ height: Math.max(insets.bottom, space.x5) + space.xl }} />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -400,7 +411,8 @@ const s = StyleSheet.create({
     borderBottomColor: colors.divider,
   },
   headerBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.bgPage, alignItems: "center", justifyContent: "center" },
-  saveBtn: { backgroundColor: colors.orange, paddingHorizontal: space.xl, paddingVertical: space.md, borderRadius: radius.lg },
+  saveBtn: { backgroundColor: colors.orange, paddingHorizontal: space.xl, paddingVertical: space.md, borderRadius: radius.lg, minWidth: 56, alignItems: "center" as const },
+  saveBtnDisabled: { opacity: 0.6 },
   scroll: { padding: space.gutter, gap: space.cardGap },
   card: { backgroundColor: colors.bgPrimary, borderRadius: radius.xxl, padding: space.cardPad },
   label: { ...typo.caption2, color: colors.textTertiary, marginBottom: space.md, textTransform: "uppercase", letterSpacing: 0.5 },
@@ -435,6 +447,7 @@ const s = StyleSheet.create({
   ingRow: { flexDirection: "row", gap: space.md, marginBottom: space.md, alignItems: "center" },
   removeBtn: { padding: space.xs },
   stepRow: { flexDirection: "row", gap: space.md, marginBottom: space.lg, alignItems: "flex-start" },
+  stepInput: { flex: 1, minHeight: 44 },
   stepNum: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.orange, alignItems: "center", justifyContent: "center", marginTop: space.lg },
   stepNumText: { ...typo.caption2, color: colors.white, fontWeight: "700" },
   tagAddBtn: {

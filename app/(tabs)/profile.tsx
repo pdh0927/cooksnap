@@ -1,7 +1,8 @@
-import { View, Text, Pressable, ScrollView, StyleSheet, Alert } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet, Alert, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, typo, space, radius } from "../../src/theme";
+import Constants from "expo-constants";
 
 interface SettingsRow {
   icon: keyof typeof Ionicons.glyphMap;
@@ -9,8 +10,10 @@ interface SettingsRow {
   value?: string;
 }
 
+const APP_VERSION = Constants.expoConfig?.version ?? "1.0.0";
+
 const MENU_ITEMS: SettingsRow[] = [
-  { icon: "information-circle-outline", label: "버전 정보", value: "1.0.0" },
+  { icon: "information-circle-outline", label: "버전 정보", value: APP_VERSION },
   { icon: "document-text-outline", label: "오픈소스 라이선스" },
   { icon: "chatbubble-outline", label: "문의하기" },
   { icon: "star-outline", label: "앱 평가하기" },
@@ -50,10 +53,13 @@ export default function SettingsScreen() {
           {MENU_ITEMS.map((item, i) => (
             <View key={item.label}>
               <Pressable
-                style={s.menuRow}
+                style={({ pressed }) => [s.menuRow, pressed && s.menuRowPressed]}
                 onPress={() => {
                   if (item.label === "버전 정보") {
-                    Alert.alert("버전 정보", "CookSnap v1.0.0\nExpo SDK 54\nReact Native 0.81");
+                    Alert.alert(
+                      "버전 정보",
+                      `CookSnap v${APP_VERSION}\nExpo SDK ${Constants.expoConfig?.sdkVersion ?? "54"}\nReact Native 0.81\nPlatform: ${Platform.OS} ${Platform.Version}`,
+                    );
                   } else {
                     Alert.alert("준비 중", "다음 업데이트에서 만나요!");
                   }
@@ -61,11 +67,10 @@ export default function SettingsScreen() {
               >
                 <Ionicons name={item.icon} size={20} color={colors.textTertiary} />
                 <Text style={[typo.body1, { color: colors.textPrimary, flex: 1 }]}>{item.label}</Text>
-                {item.value ? (
-                  <Text style={[typo.body2, { color: colors.textTertiary }]}>{item.value}</Text>
-                ) : (
-                  <Ionicons name="chevron-forward" size={16} color={colors.textDisabled} />
+                {item.value && (
+                  <Text style={[typo.body2, { color: colors.textTertiary, marginRight: space.xs }]}>{item.value}</Text>
                 )}
+                <Ionicons name="chevron-forward" size={16} color={colors.textDisabled} />
               </Pressable>
               {i < MENU_ITEMS.length - 1 && <View style={s.menuDivider} />}
             </View>
@@ -110,6 +115,9 @@ const s = StyleSheet.create({
     alignItems: "center",
     gap: space.xl,
     paddingVertical: space.xl,
+  },
+  menuRowPressed: {
+    opacity: 0.5,
   },
   menuDivider: {
     height: 0.5,
