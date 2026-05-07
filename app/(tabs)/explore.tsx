@@ -2,7 +2,7 @@ import { View, Text, ScrollView, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useMemo } from "react";
+import { useMemo, memo } from "react";
 import { useRecipes } from "../../src/store/recipeStore";
 import { colors, typo, space, radius, size } from "../../src/theme";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
@@ -79,7 +79,7 @@ const THEMES: ThemeSection[] = [
   },
 ];
 
-function RecipeHCard({ recipe, onPress }: { recipe: Recipe; onPress: () => void }) {
+const RecipeHCard = memo(function RecipeHCard({ recipe, onPress }: { recipe: Recipe; onPress: () => void }) {
   return (
     <AnimatedPressable onPress={onPress} style={s.hCard}>
       <View style={s.hCardThumb}>
@@ -89,7 +89,7 @@ function RecipeHCard({ recipe, onPress }: { recipe: Recipe; onPress: () => void 
       <Text style={s.hCardMeta}>{recipe.cookTimeMinutes}분 · {recipe.difficulty}</Text>
     </AnimatedPressable>
   );
-}
+});
 
 export default function ExploreScreen() {
   const insets = useSafeAreaInsets();
@@ -231,7 +231,7 @@ export default function ExploreScreen() {
             </View>
             {recipes.length > 10 && (
               <Pressable
-                onPress={() => router.push("/(tabs)/search")}
+                onPress={() => router.push("/(tabs)")}
                 style={s.showMoreBtn}
               >
                 <Text style={[typo.body2Bold, { color: colors.accent }]}>

@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, FlatList, Pressable, TextInput, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useCallback, useState, useRef, useMemo } from "react";
+import { useCallback, useState, useRef, useMemo, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRecipes } from "../../src/store/recipeStore";
 import { useFolders } from "../../src/store/folderStore";
@@ -17,6 +17,8 @@ const FOLDER_EMOJIS = ["📁", "🍳", "🥗", "🍜", "🍖", "🎂", "🥘", "
 export default function MyRecipesScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const routerRef = useRef(router);
+  useEffect(() => { routerRef.current = router; }, [router]);
   const { recipes, loading, refresh } = useRecipes();
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,7 +100,7 @@ export default function MyRecipesScreen() {
 
   const renderRecipeCard = useCallback(({ item: recipe }: { item: typeof sorted[number] }) => (
     <AnimatedPressable
-      onPress={() => router.push(`/recipe/${recipe.id}`)}
+      onPress={() => routerRef.current.push(`/recipe/${recipe.id}`)}
       style={s.recipeCard}
     >
       <RecipeThumb
@@ -129,7 +131,7 @@ export default function MyRecipesScreen() {
         )}
       </View>
     </AnimatedPressable>
-  ), [router]);
+  ), []);
 
   const listHeader = useMemo(() => (
     <View style={{ gap: space.cardGap }}>

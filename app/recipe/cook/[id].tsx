@@ -30,6 +30,7 @@ export default function CookingModeScreen() {
   const [running, setRunning] = useState(false);
   const [allSteps, setAllSteps] = useState(false);
   const [timerDone, setTimerDone] = useState(false);
+  const [completed, setCompleted] = useState(false);
   const ref = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useKeepAwake();
@@ -85,6 +86,29 @@ export default function CookingModeScreen() {
 
   if (!recipe || !step) {
     return <View style={st.root}><Text style={{ color: darkColors.text }}>레시피를 찾을 수 없어요</Text></View>;
+  }
+
+  if (completed) {
+    return (
+      <View style={st.root}>
+        <StatusBar style="light" />
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: space.x4 }}>
+          <Text style={{ fontSize: 64, marginBottom: space.xxl }}>{recipe.emoji}</Text>
+          <Text style={[typo.heading1, { color: colors.white, marginBottom: space.md, textAlign: "center" }]}>
+            요리 완성!
+          </Text>
+          <Text style={[typo.body1, { color: darkColors.text, textAlign: "center", marginBottom: space.x5 }]}>
+            "{recipe.title}" 맛있게 드세요!
+          </Text>
+          <Pressable
+            onPress={() => router.back()}
+            style={[st.navBtn, st.navNext, { width: "100%", marginHorizontal: space.x4 }]}
+          >
+            <Text style={[typo.body1Bold, { color: colors.white }]}>돌아가기</Text>
+          </Pressable>
+        </View>
+      </View>
+    );
   }
 
   if (allSteps) {
@@ -224,11 +248,7 @@ export default function CookingModeScreen() {
           onPress={() => {
             if (cur === total - 1) {
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              Alert.alert(
-                `${recipe.emoji} 요리 완성!`,
-                `"${recipe.title}" 맛있게 드세요!`,
-                [{ text: "확인", onPress: () => router.back() }]
-              );
+              setCompleted(true);
             } else {
               nav(1);
             }

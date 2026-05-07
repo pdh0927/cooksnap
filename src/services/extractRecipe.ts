@@ -272,6 +272,15 @@ export async function extractRecipeFromUrl(
   // Step 4: Recipe 객체로 변환
   onProgress({ step: "done", message: "레시피 완성!" });
 
+  // Derive YouTube thumbnail from video ID when available
+  let thumbnailUrl: string | null = null;
+  if (urlType === "youtube") {
+    const videoId = extractYoutubeId(url);
+    if (videoId) {
+      thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+    }
+  }
+
   const recipe: Recipe = {
     id: Date.now().toString(),
     title: parsed.title || "새 레시피",
@@ -298,7 +307,7 @@ export async function extractRecipeFromUrl(
         ingredientRefs: Array.isArray(step.details?.ingredientRefs) ? step.details.ingredientRefs : [],
       },
     })),
-    thumbnailUrl: null,
+    thumbnailUrl,
     sourceUrl: url,
     sourceType: urlType === "youtube" ? "youtube" : "blog",
     sourceLabel: urlType === "youtube" ? "YouTube" : new URL(url).hostname.replace("www.", ""),
