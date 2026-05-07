@@ -38,10 +38,15 @@ export default function CookingModeScreen() {
   const step = recipe?.steps[cur];
   const total = recipe?.steps.length ?? 0;
 
-  // Find relevant ingredients for current step by matching ingredient names in instruction
-  const stepIngredients: Ingredient[] = (recipe?.ingredients ?? []).filter(
-    (ing) => step?.instruction?.includes(ing.name)
-  ).slice(0, 3);
+  // Find relevant ingredients for current step using ingredientRefs or text matching
+  const stepIngredients: Ingredient[] = (() => {
+    const ings = recipe?.ingredients ?? [];
+    const refs = step?.details?.ingredientRefs;
+    if (refs && refs.length > 0) {
+      return refs.map((idx) => ings[idx]).filter(Boolean).slice(0, 4);
+    }
+    return ings.filter((ing) => step?.instruction?.includes(ing.name)).slice(0, 4);
+  })();
 
   useEffect(() => {
     if (ref.current) clearInterval(ref.current);
@@ -72,7 +77,7 @@ export default function CookingModeScreen() {
       });
     }, 1000);
     return () => { if (ref.current) clearInterval(ref.current); };
-  }, [running, sec > 0]);
+  }, [running, sec]);
 
   const nav = useCallback((d: number) => {
     const n = cur + d;
@@ -218,6 +223,14 @@ export default function CookingModeScreen() {
             <Text style={st.tipText}>{step.tip}</Text>
           </View>
         )}
+
+        {/* Step warning */}
+        {step.details?.warning && (
+          <View style={st.warnCard}>
+            <Ionicons name="warning-outline" size={16} color={colors.red} />
+            <Text style={st.warnText}>{step.details.warning}</Text>
+          </View>
+        )}
       </ScrollView>
 
       {/* Next step preview or last step indicator */}
@@ -271,7 +284,7 @@ const st = StyleSheet.create({
   progBg: { flex: 1, height: 4, backgroundColor: darkColors.card, borderRadius: 2, overflow: "hidden" },
   progFill: { height: 4, backgroundColor: colors.orange, borderRadius: 2 },
   body: { flex: 1, paddingHorizontal: space.cardPad },
-  bodyContent: { paddingTop: space.xxxl, paddingBottom: space.lg },
+  bodyContent: { paddingTop: space.xxxl, paddingBottom: space.xxl },
   stepLabel: { ...typo.caption2, color: colors.orange, letterSpacing: 2, marginBottom: space.lg, fontWeight: "700" },
   ingPillRow: { flexDirection: "row", flexWrap: "wrap", gap: space.md, marginBottom: space.xl },
   ingPill: { backgroundColor: "rgba(249,115,22,0.15)", paddingHorizontal: space.lg, paddingVertical: space.xs, borderRadius: radius.full },
@@ -286,6 +299,16 @@ const st = StyleSheet.create({
     alignItems: "flex-start",
   },
   tipText: { ...typo.body2, color: "rgba(255,255,255,0.7)", flex: 1, lineHeight: 20 },
+  warnCard: {
+    flexDirection: "row",
+    gap: space.md,
+    backgroundColor: "rgba(240,68,82,0.12)",
+    padding: space.xl,
+    borderRadius: radius.lg,
+    marginTop: space.xl,
+    alignItems: "flex-start",
+  },
+  warnText: { ...typo.body2, color: "rgba(255,255,255,0.7)", flex: 1, lineHeight: 20 },
   timerCard: {
     backgroundColor: darkColors.card,
     borderRadius: radius.xl,

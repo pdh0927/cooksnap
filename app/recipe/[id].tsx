@@ -202,7 +202,7 @@ export default function RecipeDetailScreen() {
             <Pressable onPress={() => Linking.openURL(recipe.sourceUrl!)} style={s.sourceBtn}>
               <Ionicons name="open-outline" size={14} color={colors.accent} />
               <Text style={[typo.caption1, { color: colors.accent, fontWeight: "600" }]}>
-                원본 보기 ({recipe.sourceLabel})
+                원본 보기{recipe.sourceLabel ? ` (${recipe.sourceLabel})` : ""}
               </Text>
             </Pressable>
           )}
