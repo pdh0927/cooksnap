@@ -8,6 +8,7 @@ import { useRecipes } from "../../src/store/recipeStore";
 import { colors, typo, space, radius, size } from "../../src/theme";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
 import RecipeThumb from "../../src/components/RecipeThumb";
+import Spinner from "../../src/components/Spinner";
 import type { Recipe } from "../../src/types/recipe";
 
 
@@ -36,7 +37,7 @@ function getMatchBgColor(percent: number): string {
 export default function SearchScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { recipes } = useRecipes();
+  const { recipes, loading } = useRecipes();
 
   const dynamicTags = useMemo(() => {
     const freq: Record<string, number> = {};
@@ -72,7 +73,7 @@ export default function SearchScreen() {
     }
   }, [params.q, params._ts]);
 
-  const filtered = recipes.filter((r) => {
+  const filtered = useMemo(() => recipes.filter((r) => {
     const q = query.trim().toLowerCase();
     const tag = selectedTag?.toLowerCase();
 
@@ -89,7 +90,7 @@ export default function SearchScreen() {
     }
 
     return false;
-  });
+  }), [recipes, query, selectedTag]);
 
   const showResults = query.trim() || selectedTag;
 
@@ -141,6 +142,16 @@ export default function SearchScreen() {
         <Text style={[typo.screenTitle, { color: colors.textPrimary }]}>검색</Text>
       </View>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+        {/* Loading state */}
+        {loading && recipes.length === 0 && (
+          <View style={s.loadingWrap}>
+            <Spinner size={32} color={colors.accent} />
+            <Text style={[typo.body1, { color: colors.textTertiary, marginTop: space.xl }]}>
+              레시피를 불러오는 중...
+            </Text>
+          </View>
+        )}
+
         {/* Mode toggle */}
         <View style={s.modeToggle}>
           <Pressable
@@ -175,8 +186,8 @@ export default function SearchScreen() {
                 autoCapitalize="none"
               />
               {(query || selectedTag) && (
-                <Pressable onPress={() => { setQuery(""); setSelectedTag(null); }}>
-                  <Ionicons name="close-circle" size={18} color={colors.textDisabled} />
+                <Pressable onPress={() => { setQuery(""); setSelectedTag(null); }} hitSlop={8}>
+                  <Ionicons name="close-circle" size={20} color={colors.textDisabled} />
                 </Pressable>
               )}
             </View>
@@ -185,17 +196,24 @@ export default function SearchScreen() {
             <View style={s.sectionRow}>
               <Text style={[typo.heading3, { color: colors.textPrimary }]}>재료로 찾기</Text>
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chips}>
-              {dynamicTags.map((t) => (
-                <Pressable
-                  key={t}
-                  onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setSelectedTag(selectedTag === t ? null : t); setQuery(""); }}
-                  style={[s.chip, selectedTag === t && s.chipActive]}
-                >
-                  <Text style={[s.chipText, selectedTag === t && { color: colors.white }]}>{t}</Text>
-                </Pressable>
-              ))}
-            </ScrollView>
+            {dynamicTags.length > 0 ? (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.chips}>
+                {dynamicTags.map((t) => (
+                  <Pressable
+                    key={t}
+                    onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setSelectedTag(selectedTag === t ? null : t); setQuery(""); }}
+                    style={[s.chip, selectedTag === t && s.chipActive]}
+                    hitSlop={{ top: 6, bottom: 6 }}
+                  >
+                    <Text style={[s.chipText, selectedTag === t && { color: colors.white }]}>{t}</Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            ) : (
+              <Text style={[typo.caption1, { color: colors.textTertiary }]}>
+                레시피를 추가하면 재료 태그가 자동으로 생성돼요
+              </Text>
+            )}
 
             {/* Results */}
             {showResults ? (
@@ -289,7 +307,7 @@ export default function SearchScreen() {
                     </Pressable>
                   </View>
                 ))}
-                <Pressable onPress={() => setFridgeItems([])} style={s.clearAllBtn}>
+                <Pressable onPress={() => setFridgeItems([])} style={s.clearAllBtn} hitSlop={4}>
                   <Text style={[typo.caption2, { color: colors.textTertiary }]}>전체 삭제</Text>
                 </Pressable>
               </View>
@@ -427,14 +445,17 @@ const s = StyleSheet.create({
     gap: space.sm,
     backgroundColor: colors.accent,
     paddingHorizontal: space.lg,
-    paddingVertical: space.sm,
+    paddingVertical: space.md,
     borderRadius: radius.full,
+    minHeight: 34,
   },
   clearAllBtn: {
     paddingHorizontal: space.lg,
-    paddingVertical: space.sm,
+    paddingVertical: space.md,
     borderRadius: radius.full,
     backgroundColor: colors.gray100,
+    minHeight: 34,
+    justifyContent: "center",
   },
   matchBadge: {
     paddingHorizontal: space.md,
@@ -444,7 +465,7 @@ const s = StyleSheet.create({
   sectionRow: { flexDirection: "row", alignItems: "center", gap: space.md, marginTop: space.lg },
   badge: { backgroundColor: colors.accentLight, paddingHorizontal: space.md, paddingVertical: space.xxs, borderRadius: radius.full },
   chips: { gap: space.md, marginTop: space.xs },
-  chip: { height: 30, paddingHorizontal: space.lg, borderRadius: radius.full, backgroundColor: colors.bgPrimary, justifyContent: "center" },
+  chip: { height: 34, paddingHorizontal: space.lg, borderRadius: radius.full, backgroundColor: colors.bgPrimary, justifyContent: "center" },
   chipActive: { backgroundColor: colors.accent },
   chipText: { ...typo.caption1, color: colors.textTertiary, fontWeight: "600" as const },
   resultCard: {
@@ -464,5 +485,10 @@ const s = StyleSheet.create({
     borderRadius: radius.xxl,
     padding: space.x4,
     alignItems: "center",
+  },
+  loadingWrap: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: space.x6,
   },
 });

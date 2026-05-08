@@ -58,8 +58,9 @@ export default function CreateRecipeScreen() {
   }
 
   function addTag() {
-    const t = tagInput.trim();
-    if (t && !tags.includes(t)) {
+    // Sanitize: strip special characters that could be injection vectors
+    const t = tagInput.trim().replace(/[<>{}()\[\]\\\/;'"&$#!@%^*~`|]/g, "");
+    if (t && t.length <= 20 && !tags.includes(t)) {
       setTags([...tags, t]);
     }
     setTagInput("");
@@ -124,8 +125,24 @@ export default function CreateRecipeScreen() {
 
   async function save() {
     if (saving) return;
-    if (!title.trim()) {
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
       Alert.alert("알림", "레시피 이름을 입력해주세요");
+      return;
+    }
+    if (trimmedTitle.length > 100) {
+      Alert.alert("알림", "레시피 이름은 100자 이내로 입력해주세요");
+      return;
+    }
+
+    const parsedCookTime = parseInt(cookTime, 10);
+    if (isNaN(parsedCookTime) || parsedCookTime <= 0 || parsedCookTime > 1440) {
+      Alert.alert("알림", "조리시간은 1~1440분 사이로 입력해주세요");
+      return;
+    }
+    const parsedServings = parseInt(servings, 10);
+    if (isNaN(parsedServings) || parsedServings <= 0 || parsedServings > 100) {
+      Alert.alert("알림", "인분은 1~100 사이로 입력해주세요");
       return;
     }
 
@@ -145,12 +162,12 @@ export default function CreateRecipeScreen() {
 
     const recipe: Recipe = {
       id: Date.now().toString(),
-      title: title.trim(),
+      title: trimmedTitle,
       emoji,
       category,
       difficulty,
-      cookTimeMinutes: parseInt(cookTime, 10) || 30,
-      servings: parseInt(servings, 10) || 2,
+      cookTimeMinutes: parsedCookTime,
+      servings: parsedServings,
       ingredients: validIngredients.map((ing) => {
         const parsed = parseIngredientAmount(ing.amount);
         return {
@@ -212,6 +229,7 @@ export default function CreateRecipeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={s.scroll}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
         {/* Basic Info */}
         <View style={s.card}>
@@ -222,6 +240,8 @@ export default function CreateRecipeScreen() {
             placeholderTextColor={colors.textDisabled}
             value={title}
             onChangeText={setTitle}
+            returnKeyType="done"
+            autoFocus
           />
 
           {/* Emoji picker */}
@@ -277,6 +297,7 @@ export default function CreateRecipeScreen() {
                 value={cookTime}
                 onChangeText={setCookTime}
                 keyboardType="number-pad"
+                returnKeyType="done"
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -288,6 +309,7 @@ export default function CreateRecipeScreen() {
                 value={servings}
                 onChangeText={setServings}
                 keyboardType="number-pad"
+                returnKeyType="done"
               />
             </View>
           </View>
@@ -410,8 +432,8 @@ const s = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: colors.divider,
   },
-  headerBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.bgPage, alignItems: "center", justifyContent: "center" },
-  saveBtn: { backgroundColor: colors.orange, paddingHorizontal: space.xl, paddingVertical: space.md, borderRadius: radius.lg, minWidth: 56, alignItems: "center" as const },
+  headerBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.bgPage, alignItems: "center", justifyContent: "center" },
+  saveBtn: { backgroundColor: colors.orange, paddingHorizontal: space.xl, paddingVertical: space.lg, borderRadius: radius.lg, minWidth: 56, minHeight: 40, alignItems: "center" as const, justifyContent: "center" as const },
   saveBtnDisabled: { opacity: 0.6 },
   scroll: { padding: space.gutter, gap: space.cardGap },
   card: { backgroundColor: colors.bgPrimary, borderRadius: radius.xxl, padding: space.cardPad },
@@ -445,7 +467,7 @@ const s = StyleSheet.create({
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: space.xl },
   addBtn: { flexDirection: "row", alignItems: "center", gap: space.xs },
   ingRow: { flexDirection: "row", gap: space.md, marginBottom: space.md, alignItems: "center" },
-  removeBtn: { padding: space.xs },
+  removeBtn: { padding: space.md, marginLeft: -space.xs },
   stepRow: { flexDirection: "row", gap: space.md, marginBottom: space.lg, alignItems: "flex-start" },
   stepInput: { flex: 1, minHeight: 44 },
   stepNum: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.orange, alignItems: "center", justifyContent: "center", marginTop: space.lg },

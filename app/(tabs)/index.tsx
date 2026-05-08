@@ -198,6 +198,7 @@ export default function MyRecipesScreen() {
           accessibilityLabel="전체 레시피 보기"
           accessibilityRole="button"
           accessibilityState={{ selected: mode === "all" }}
+          hitSlop={{ top: 4, bottom: 4 }}
         >
           <Text style={[s.chipText, mode === "all" && s.chipTextActive]}>전체</Text>
         </Pressable>
@@ -207,6 +208,7 @@ export default function MyRecipesScreen() {
           accessibilityLabel="즐겨찾기 레시피 보기"
           accessibilityRole="button"
           accessibilityState={{ selected: mode === "favorites" }}
+          hitSlop={{ top: 4, bottom: 4 }}
         >
           <Ionicons
             name="heart"
@@ -447,6 +449,8 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: space.xs,
+    minHeight: 36,
+    paddingHorizontal: space.sm,
   },
   // Folders
   folderGrid: {
@@ -521,8 +525,10 @@ const s = StyleSheet.create({
   cancelBtn: {
     alignSelf: "center",
     marginTop: space.md,
-    paddingVertical: space.sm,
+    paddingVertical: space.md,
     paddingHorizontal: space.xl,
+    minHeight: 36,
+    justifyContent: "center",
   },
   // Recipe cards — vertical layout (thumbnail on top)
   recipeCard: {

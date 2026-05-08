@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, StyleSheet, Alert } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet, Alert, AppState } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -32,6 +32,10 @@ export default function CookingModeScreen() {
   const [timerDone, setTimerDone] = useState(false);
   const [completed, setCompleted] = useState(false);
   const ref = useRef<ReturnType<typeof setInterval> | null>(null);
+  /** Wall-clock timestamp (ms) when the timer was last started/resumed */
+  const timerStartedAt = useRef<number | null>(null);
+  /** Remaining seconds when the timer was last started/resumed */
+  const timerStartedWith = useRef<number>(0);
 
   useKeepAwake();
 
@@ -44,6 +48,27 @@ export default function CookingModeScreen() {
       }
     };
   }, []);
+
+  // When app returns from background, immediately sync timer from wall clock
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state === "active" && timerStartedAt.current && timerStartedWith.current > 0) {
+        const elapsed = Math.floor((Date.now() - timerStartedAt.current) / 1000);
+        const remaining = Math.max(0, timerStartedWith.current - elapsed);
+        setSec(remaining);
+        if (remaining <= 0 && running) {
+          setRunning(false);
+          setTimerDone(true);
+          if (ref.current) {
+            clearInterval(ref.current);
+            ref.current = null;
+          }
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+      }
+    });
+    return () => sub.remove();
+  }, [running]);
 
   const confirmExit = useCallback(() => {
     if (cur > 0 || running) {
@@ -60,13 +85,13 @@ export default function CookingModeScreen() {
                 clearInterval(ref.current);
                 ref.current = null;
               }
-              router.back();
+              router.canGoBack() ? router.back() : router.replace("/(tabs)/");
             },
           },
         ]
       );
     } else {
-      router.back();
+      router.canGoBack() ? router.back() : router.replace("/(tabs)/");
     }
   }, [cur, running, router]);
 
@@ -95,24 +120,33 @@ export default function CookingModeScreen() {
     if (!running || sec <= 0) {
       return;
     }
+    // Record wall-clock start so we can recover after background/resume
+    timerStartedAt.current = Date.now();
+    timerStartedWith.current = sec;
+
     ref.current = setInterval(() => {
-      setSec((p) => {
-        if (p <= 1) {
-          clearInterval(ref.current!);
-          ref.current = null;
-          setRunning(false);
-          setTimerDone(true);
-          // Vibrate 3 times on completion
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          setTimeout(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning), 500);
-          setTimeout(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success), 1000);
-          return 0;
-        }
-        return p - 1;
-      });
+      // Compute remaining from wall-clock elapsed, not tick count.
+      // This handles iOS background suspension correctly: when the app
+      // resumes, Date.now() reflects real elapsed time.
+      const elapsed = Math.floor((Date.now() - timerStartedAt.current!) / 1000);
+      const remaining = Math.max(0, timerStartedWith.current - elapsed);
+
+      if (remaining <= 0) {
+        clearInterval(ref.current!);
+        ref.current = null;
+        setSec(0);
+        setRunning(false);
+        setTimerDone(true);
+        // Vibrate 3 times on completion
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        setTimeout(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning), 500);
+        setTimeout(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success), 1000);
+      } else {
+        setSec(remaining);
+      }
     }, 1000);
     return () => { if (ref.current) clearInterval(ref.current); };
-  }, [running, sec]);
+  }, [running]); // eslint-disable-line react-hooks/exhaustive-deps -- sec is captured via refs
 
   const nav = useCallback((d: number) => {
     setCur((prev) => {
@@ -134,7 +168,7 @@ export default function CookingModeScreen() {
         <Text style={{ color: darkColors.text, fontSize: 48, marginBottom: space.xxl }}>🍳</Text>
         <Text style={[typo.heading2, { color: colors.white, marginBottom: space.md }]}>레시피를 찾을 수 없어요</Text>
         <Text style={[typo.body2, { color: darkColors.textDim, marginBottom: space.xxl }]}>삭제되었거나 존재하지 않는 레시피예요</Text>
-        <Pressable onPress={() => router.back()} style={[st.navBtn, st.navNext, { width: 200 }]}>
+        <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace("/(tabs)/")} style={[st.navBtn, st.navNext, { width: 200 }]}>
           <Text style={[typo.body2Bold, { color: colors.white }]}>돌아가기</Text>
         </Pressable>
       </View>
@@ -158,7 +192,7 @@ export default function CookingModeScreen() {
             총 {total}단계를 완료했어요. 맛있게 드세요!
           </Text>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => router.canGoBack() ? router.back() : router.replace("/(tabs)/")}
             style={[st.navBtn, st.navNext, { width: "100%", marginHorizontal: space.x4 }]}
           >
             <Text style={[typo.body1Bold, { color: colors.white }]}>레시피로 돌아가기</Text>
@@ -336,7 +370,7 @@ export default function CookingModeScreen() {
 const st = StyleSheet.create({
   root: { flex: 1, backgroundColor: darkColors.bg },
   topBar: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: space.gutter, paddingBottom: space.xl },
-  iconBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: darkColors.card, alignItems: "center", justifyContent: "center" },
+  iconBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: darkColors.card, alignItems: "center", justifyContent: "center" },
   progRow: { flexDirection: "row", alignItems: "center", gap: space.lg, paddingHorizontal: space.gutter, paddingBottom: space.xxl },
   progBg: { flex: 1, height: 4, backgroundColor: darkColors.card, borderRadius: 2, overflow: "hidden" },
   progFill: { height: 4, backgroundColor: colors.orange, borderRadius: 2 },
@@ -376,9 +410,9 @@ const st = StyleSheet.create({
     marginTop: space.xxl,
   },
   timerLeft: { flexDirection: "row", alignItems: "center", gap: space.lg },
-  timerIcon: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.orange, alignItems: "center", justifyContent: "center" },
+  timerIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.orange, alignItems: "center", justifyContent: "center" },
   timerVal: { fontSize: 28, fontWeight: "800", color: colors.white, letterSpacing: -1 },
-  timerBtn: { backgroundColor: colors.orange, paddingHorizontal: space.xxl, paddingVertical: space.lg, borderRadius: radius.lg },
+  timerBtn: { backgroundColor: colors.orange, paddingHorizontal: space.xxl, paddingVertical: space.lg, borderRadius: radius.lg, minHeight: 44, justifyContent: "center" },
   nextCard: {
     marginHorizontal: space.cardPad,
     padding: space.xxl,
@@ -392,7 +426,7 @@ const st = StyleSheet.create({
   navPrev: { backgroundColor: darkColors.card },
   navNext: { backgroundColor: colors.orange },
   // All steps
-  allRow: { flexDirection: "row", gap: space.lg, paddingVertical: space.xl, borderBottomWidth: 0.5, borderBottomColor: darkColors.card },
+  allRow: { flexDirection: "row", gap: space.lg, paddingVertical: space.xl, borderBottomWidth: 0.5, borderBottomColor: darkColors.card, minHeight: 48 },
   allRowActive: { backgroundColor: "rgba(249,115,22,0.08)", marginHorizontal: -space.gutter, paddingHorizontal: space.gutter, borderRadius: radius.lg, borderBottomWidth: 0 },
   allDot: { width: 24, height: 24, borderRadius: 12, backgroundColor: darkColors.card, alignItems: "center", justifyContent: "center", marginTop: space.xxs },
   allDotText: { ...typo.caption2, color: darkColors.textDim, fontWeight: "700" },

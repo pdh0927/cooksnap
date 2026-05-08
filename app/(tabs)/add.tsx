@@ -126,7 +126,7 @@ export default function AddRecipeScreen() {
             </View>
           ))}
         </View>
-        <Pressable onPress={cancelParsing} style={{ marginTop: space.xl }}>
+        <Pressable onPress={cancelParsing} style={{ marginTop: space.xl, paddingVertical: space.lg, paddingHorizontal: space.xxl, minHeight: 44, justifyContent: "center" }}>
           <Text style={[typo.body2, { color: colors.textTertiary }]}>취소</Text>
         </Pressable>
       </View>
@@ -163,8 +163,8 @@ export default function AddRecipeScreen() {
               onSubmitEditing={() => input.trim() && startParsing()}
             />
             {input.length > 0 && (
-              <Pressable onPress={() => setInput("")}>
-                <Ionicons name="close-circle" size={18} color={colors.textDisabled} />
+              <Pressable onPress={() => setInput("")} hitSlop={8}>
+                <Ionicons name="close-circle" size={20} color={colors.textDisabled} />
               </Pressable>
             )}
           </View>
@@ -261,7 +261,8 @@ const s = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: space.xl,
-    paddingVertical: space.xs,
+    paddingVertical: space.md,
+    minHeight: 56,
   },
   optIcon: {
     width: 44,
@@ -272,7 +273,7 @@ const s = StyleSheet.create({
   },
   comingSoonBadge: {
     backgroundColor: colors.gray400,
-    borderRadius: radius.xs,
+    borderRadius: radius.sm,
     paddingHorizontal: space.md,
     paddingVertical: space.xxs,
   },
@@ -280,7 +281,7 @@ const s = StyleSheet.create({
     height: 0.5,
     backgroundColor: colors.divider,
     marginVertical: space.xl,
-    marginLeft: 60,
+    marginLeft: 44 + space.xl, // optIcon(44) + gap(xl=16)
   },
   parsingRoot: {
     flex: 1,

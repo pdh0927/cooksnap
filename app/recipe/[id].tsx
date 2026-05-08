@@ -43,7 +43,11 @@ export default function RecipeDetailScreen() {
           deletingRef.current = true;
           try {
             await deleteRecipe(id);
-            router.back();
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace("/(tabs)/");
+            }
           } catch {
             Alert.alert("삭제 실패", "네트워크를 확인하고 다시 시도해주세요.");
           } finally {
@@ -129,7 +133,7 @@ export default function RecipeDetailScreen() {
           삭제되었거나 존재하지 않는 레시피예요
         </Text>
         <AnimatedPressable
-          onPress={() => router.back()}
+          onPress={() => router.canGoBack() ? router.back() : router.replace("/(tabs)/")}
           style={{
             backgroundColor: colors.accent,
             borderRadius: radius.lg,
@@ -160,7 +164,7 @@ export default function RecipeDetailScreen() {
           <View style={s.hero}>
             <Image source={{ uri: recipe.thumbnailUrl }} style={s.heroImage} resizeMode="cover" />
             <View style={s.heroOverlay} />
-            <Pressable onPress={() => router.back()} style={[s.backBtn, { top: insets.top + 8 }]} accessibilityLabel="뒤로 가기" accessibilityRole="button">
+            <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace("/(tabs)/")} style={[s.backBtn, { top: insets.top + 8 }]} accessibilityLabel="뒤로 가기" accessibilityRole="button">
               <Ionicons name="chevron-back" size={20} color={colors.white} />
             </Pressable>
             <View style={[s.actionRow, { top: insets.top + 8 }]}>
@@ -187,7 +191,7 @@ export default function RecipeDetailScreen() {
             style={s.hero}
           >
             <Text style={{ fontSize: size.heroEmoji }}>{recipe.emoji}</Text>
-            <Pressable onPress={() => router.back()} style={[s.backBtn, { top: insets.top + 8 }]} accessibilityLabel="뒤로 가기" accessibilityRole="button">
+            <Pressable onPress={() => router.canGoBack() ? router.back() : router.replace("/(tabs)/")} style={[s.backBtn, { top: insets.top + 8 }]} accessibilityLabel="뒤로 가기" accessibilityRole="button">
               <Ionicons name="chevron-back" size={20} color={colors.white} />
             </Pressable>
             <View style={[s.actionRow, { top: insets.top + 8 }]}>
@@ -212,7 +216,7 @@ export default function RecipeDetailScreen() {
         <View style={s.infoCard}>
           <Text style={s.infoTitle}>{recipe.title}</Text>
           {/* Category chip - tappable to change */}
-          <Pressable onPress={showCategoryPicker} style={s.categoryChip}>
+          <Pressable onPress={showCategoryPicker} style={s.categoryChip} hitSlop={4}>
             <Text style={[typo.caption2, { color: colors.accent }]}>{recipe.category}</Text>
             <Ionicons name="chevron-down" size={12} color={colors.accent} />
           </Pressable>
@@ -228,7 +232,7 @@ export default function RecipeDetailScreen() {
               </View>
             ))}
           </View>
-          {(recipe.tags ?? []).length > 0 && (
+          {(recipe.tags ?? []).length > 0 ? (
             <View style={s.tagsRow}>
               {(recipe.tags ?? []).map((t) => (
                 <View key={t} style={s.tagChip}>
@@ -236,9 +240,13 @@ export default function RecipeDetailScreen() {
                 </View>
               ))}
             </View>
+          ) : (
+            <Pressable onPress={() => router.push(`/recipe/edit/${id}`)} style={s.tagsRow} hitSlop={4}>
+              <Text style={[typo.caption1, { color: colors.textTertiary }]}>태그를 추가하려면 편집하세요</Text>
+            </Pressable>
           )}
           {recipe.sourceUrl && (
-            <Pressable onPress={() => Linking.openURL(recipe.sourceUrl!)} style={s.sourceBtn}>
+            <Pressable onPress={() => Linking.openURL(recipe.sourceUrl!)} style={s.sourceBtn} hitSlop={4}>
               <Ionicons name="open-outline" size={14} color={colors.accent} />
               <Text style={[typo.caption1, { color: colors.accent, fontWeight: "600" }]}>
                 원본 보기{recipe.sourceLabel ? ` (${recipe.sourceLabel})` : ""}
@@ -269,6 +277,7 @@ export default function RecipeDetailScreen() {
                   style={[s.servBtn, mult <= 0.5 && { opacity: 0.3 }]}
                   accessibilityLabel="인분 줄이기"
                   accessibilityRole="button"
+                  hitSlop={4}
                 >
                   <Ionicons name="remove" size={18} color={colors.textSecondary} />
                 </Pressable>
@@ -279,6 +288,7 @@ export default function RecipeDetailScreen() {
                   style={[s.servBtn, mult >= 5 && { opacity: 0.3 }]}
                   accessibilityLabel="인분 늘리기"
                   accessibilityRole="button"
+                  hitSlop={4}
                 >
                   <Ionicons name="add" size={18} color={colors.textSecondary} />
                 </Pressable>
@@ -333,6 +343,11 @@ export default function RecipeDetailScreen() {
             </View>
           ) : (
             <View style={{ gap: space.xxl, marginTop: space.md }}>
+              {recipe.steps.length === 0 && (
+                <View style={{ paddingVertical: space.x4, alignItems: "center" }}>
+                  <Text style={[typo.body2, { color: colors.textTertiary }]}>등록된 조리 순서가 없어요</Text>
+                </View>
+              )}
               {recipe.steps.map((step) => (
                 <View key={step.order} style={s.stepRow}>
                   <View style={s.stepDot}>
@@ -478,7 +493,7 @@ const s = StyleSheet.create({
     padding: space.cardPad,
   },
   tabRow: { flexDirection: "row", backgroundColor: colors.bgPage, borderRadius: radius.lg, padding: space.xxs, gap: space.xxs },
-  tabBtn: { flex: 1, paddingVertical: space.md, borderRadius: radius.md, alignItems: "center" },
+  tabBtn: { flex: 1, paddingVertical: space.lg, borderRadius: radius.md, alignItems: "center", minHeight: 44 },
   tabBtnActive: {
     backgroundColor: colors.bgPrimary,
     shadowColor: colors.gray900,
@@ -497,9 +512,9 @@ const s = StyleSheet.create({
     paddingVertical: space.xxl,
   },
   servBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: colors.bgPage,
     alignItems: "center",
     justifyContent: "center",
@@ -593,7 +608,7 @@ const s = StyleSheet.create({
     height: 5,
     borderRadius: 2.5,
     backgroundColor: colors.yellow,
-    marginTop: 7,
+    marginTop: space.sm,
   },
   shoppingBtn: {
     flexDirection: "row",
@@ -606,5 +621,6 @@ const s = StyleSheet.create({
     borderRadius: radius.lg,
     paddingVertical: space.lg,
     marginTop: space.xxl,
+    minHeight: 48,
   },
 });

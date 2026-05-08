@@ -115,6 +115,7 @@ const s = StyleSheet.create({
     alignItems: "center",
     gap: space.xl,
     paddingVertical: space.xl,
+    minHeight: 48,
   },
   menuRowPressed: {
     opacity: 0.5,
@@ -122,6 +123,6 @@ const s = StyleSheet.create({
   menuDivider: {
     height: 0.5,
     backgroundColor: colors.divider,
-    marginLeft: 36, // 20(icon) + 16(gap)
+    marginLeft: 20 + space.xl, // icon(20) + gap(xl=16)
   },
 });

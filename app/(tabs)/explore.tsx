@@ -138,7 +138,7 @@ export default function ExploreScreen() {
           </View>
         )}
 
-        {/* Trending tags */}
+        {/* Trending tags (show section even when empty for consistent UI) */}
         {allTags.length > 0 && (
           <View style={s.card}>
             <View style={s.cardHeader}>
@@ -236,6 +236,7 @@ export default function ExploreScreen() {
               <Pressable
                 onPress={() => router.navigate("/(tabs)/index")}
                 style={s.showMoreBtn}
+                hitSlop={4}
               >
                 <Text style={[typo.body2Bold, { color: colors.accent }]}>
                   전체 {recipes.length}개 보기 →
@@ -277,7 +278,7 @@ const s = StyleSheet.create({
   // Tags
   tagWrap: { flexDirection: "row", flexWrap: "wrap", gap: space.md },
   tag: {
-    height: 30,
+    height: 34,
     backgroundColor: colors.bgPage,
     paddingHorizontal: space.lg,
     borderRadius: radius.full,

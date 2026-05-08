@@ -235,8 +235,27 @@ export default function EditRecipeScreen() {
 
   if (!recipe) {
     return (
-      <View style={[s.root, { paddingTop: insets.top, alignItems: "center", justifyContent: "center" }]}>
-        <Text style={[typo.body1, { color: colors.textTertiary }]}>레시피를 찾을 수 없어요</Text>
+      <View style={[s.root, { paddingTop: insets.top, alignItems: "center", justifyContent: "center", paddingHorizontal: space.x4 }]}>
+        <Text style={{ fontSize: 48, marginBottom: space.xxl }}>🍳</Text>
+        <Text style={[typo.heading2, { color: colors.textPrimary, marginBottom: space.md }]}>레시피를 찾을 수 없어요</Text>
+        <Text style={[typo.body2, { color: colors.textTertiary, textAlign: "center", marginBottom: space.xxl }]}>
+          삭제되었거나 존재하지 않는 레시피예요
+        </Text>
+        <Pressable
+          onPress={() => router.canGoBack() ? router.back() : router.replace("/(tabs)/")}
+          style={{
+            backgroundColor: colors.accent,
+            borderRadius: radius.lg,
+            paddingHorizontal: space.xxl,
+            paddingVertical: space.lg,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: space.md,
+          }}
+        >
+          <Ionicons name="chevron-back" size={16} color={colors.white} />
+          <Text style={[typo.body2Bold, { color: colors.white }]}>돌아가기</Text>
+        </Pressable>
       </View>
     );
   }
@@ -265,6 +284,7 @@ export default function EditRecipeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={s.scroll}
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
       >
         {/* Basic Info */}
         <View style={s.card}>
@@ -275,6 +295,7 @@ export default function EditRecipeScreen() {
             placeholderTextColor={colors.textDisabled}
             value={title}
             onChangeText={setTitle}
+            returnKeyType="done"
           />
 
           {/* Emoji picker */}
@@ -330,6 +351,7 @@ export default function EditRecipeScreen() {
                 value={cookTime}
                 onChangeText={setCookTime}
                 keyboardType="number-pad"
+                returnKeyType="done"
               />
             </View>
             <View style={{ flex: 1 }}>
@@ -341,6 +363,7 @@ export default function EditRecipeScreen() {
                 value={servings}
                 onChangeText={setServings}
                 keyboardType="number-pad"
+                returnKeyType="done"
               />
             </View>
           </View>
@@ -463,8 +486,8 @@ const s = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: colors.divider,
   },
-  headerBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.bgPage, alignItems: "center", justifyContent: "center" },
-  saveBtn: { backgroundColor: colors.orange, paddingHorizontal: space.xl, paddingVertical: space.md, borderRadius: radius.lg, minWidth: 56, alignItems: "center" as const },
+  headerBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.bgPage, alignItems: "center", justifyContent: "center" },
+  saveBtn: { backgroundColor: colors.orange, paddingHorizontal: space.xl, paddingVertical: space.lg, borderRadius: radius.lg, minWidth: 56, minHeight: 40, alignItems: "center" as const, justifyContent: "center" as const },
   saveBtnDisabled: { opacity: 0.6 },
   scroll: { padding: space.gutter, gap: space.cardGap },
   card: { backgroundColor: colors.bgPrimary, borderRadius: radius.xxl, padding: space.cardPad },
@@ -498,7 +521,7 @@ const s = StyleSheet.create({
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: space.xl },
   addBtn: { flexDirection: "row", alignItems: "center", gap: space.xs },
   ingRow: { flexDirection: "row", gap: space.md, marginBottom: space.md, alignItems: "center" },
-  removeBtn: { padding: space.xs },
+  removeBtn: { padding: space.md, marginLeft: -space.xs },
   stepRow: { flexDirection: "row", gap: space.md, marginBottom: space.lg, alignItems: "flex-start" },
   stepInput: { flex: 1, minHeight: 44 },
   stepNum: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.orange, alignItems: "center", justifyContent: "center", marginTop: space.lg },
