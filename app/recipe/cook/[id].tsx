@@ -35,6 +35,41 @@ export default function CookingModeScreen() {
 
   useKeepAwake();
 
+  // Clean up interval on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (ref.current) {
+        clearInterval(ref.current);
+        ref.current = null;
+      }
+    };
+  }, []);
+
+  const confirmExit = useCallback(() => {
+    if (cur > 0 || running) {
+      Alert.alert(
+        "요리를 그만둘까요?",
+        "진행 중인 요리 단계와 타이머가 초기화돼요.",
+        [
+          { text: "계속 요리", style: "cancel" },
+          {
+            text: "나가기",
+            style: "destructive",
+            onPress: () => {
+              if (ref.current) {
+                clearInterval(ref.current);
+                ref.current = null;
+              }
+              router.back();
+            },
+          },
+        ]
+      );
+    } else {
+      router.back();
+    }
+  }, [cur, running, router]);
+
   const step = recipe?.steps[cur];
   const total = recipe?.steps.length ?? 0;
 
@@ -157,11 +192,11 @@ export default function CookingModeScreen() {
     <View style={st.root}>
       <StatusBar style="light" />
       <View style={[st.topBar, { paddingTop: insets.top + space.md }]}>
-        <Pressable onPress={() => router.back()} style={st.iconBtn}>
+        <Pressable onPress={confirmExit} style={st.iconBtn} accessibilityLabel="요리 종료" accessibilityRole="button">
           <Ionicons name="close" size={18} color={colors.white} />
         </Pressable>
         <Text style={[typo.body2Bold, { color: darkColors.text }]}>{recipe.title}</Text>
-        <Pressable onPress={() => setAllSteps(true)} style={st.iconBtn}>
+        <Pressable onPress={() => setAllSteps(true)} style={st.iconBtn} accessibilityLabel="전체 단계 보기" accessibilityRole="button">
           <Ionicons name="list" size={18} color={colors.white} />
         </Pressable>
       </View>
@@ -260,6 +295,8 @@ export default function CookingModeScreen() {
           onPress={() => nav(-1)}
           style={[st.navBtn, st.navPrev, cur === 0 && { opacity: 0.3 }]}
           disabled={cur === 0}
+          accessibilityLabel="이전 단계"
+          accessibilityRole="button"
         >
           <Ionicons name="chevron-back" size={16} color="rgba(255,255,255,0.5)" />
           <Text style={[typo.body2Bold, { color: darkColors.text }]}>이전</Text>

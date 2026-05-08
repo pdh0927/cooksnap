@@ -142,6 +142,9 @@ export default function MyRecipesScreen() {
     <AnimatedPressable
       onPress={() => routerRef.current.push(`/recipe/${recipe.id}`)}
       style={s.recipeCard}
+      accessibilityLabel={`${recipe.title}, ${recipe.cookTimeMinutes}분, ${recipe.servings}인분, ${recipe.difficulty}`}
+      accessibilityRole="button"
+      accessibilityHint="레시피 상세 보기"
     >
       <RecipeThumb
         thumbnailUrl={recipe.thumbnailUrl}
@@ -191,12 +194,18 @@ export default function MyRecipesScreen() {
         <Pressable
           onPress={handleSelectAll}
           style={[s.chip, mode === "all" && s.chipActive]}
+          accessibilityLabel="전체 레시피 보기"
+          accessibilityRole="button"
+          accessibilityState={{ selected: mode === "all" }}
         >
           <Text style={[s.chipText, mode === "all" && s.chipTextActive]}>전체</Text>
         </Pressable>
         <Pressable
           onPress={handleSelectFavorites}
           style={[s.chip, mode === "favorites" && s.chipActive]}
+          accessibilityLabel="즐겨찾기 레시피 보기"
+          accessibilityRole="button"
+          accessibilityState={{ selected: mode === "favorites" }}
         >
           <Ionicons
             name="heart"

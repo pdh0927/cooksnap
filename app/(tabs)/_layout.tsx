@@ -8,6 +8,9 @@ function AddButton({ style: _style, ref: _ref, ...props }: BottomTabBarButtonPro
   return (
     <Pressable
       {...props}
+      accessibilityLabel="레시피 추가"
+      accessibilityRole="button"
+      accessibilityHint="새 레시피를 추가합니다"
       style={{ alignItems: "center", justifyContent: "center", top: -space.lg }}
     >
       <View

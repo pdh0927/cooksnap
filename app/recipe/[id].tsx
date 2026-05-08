@@ -141,21 +141,21 @@ export default function RecipeDetailScreen() {
           <View style={s.hero}>
             <Image source={{ uri: recipe.thumbnailUrl }} style={s.heroImage} resizeMode="cover" />
             <View style={s.heroOverlay} />
-            <Pressable onPress={() => router.back()} style={[s.backBtn, { top: insets.top + 8 }]}>
+            <Pressable onPress={() => router.back()} style={[s.backBtn, { top: insets.top + 8 }]} accessibilityLabel="뒤로 가기" accessibilityRole="button">
               <Ionicons name="chevron-back" size={20} color={colors.white} />
             </Pressable>
             <View style={[s.actionRow, { top: insets.top + 8 }]}>
-              <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); toggleFavorite(id); }} style={s.actionBtn}>
+              <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); toggleFavorite(id); }} style={s.actionBtn} accessibilityLabel={recipe.isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가"} accessibilityRole="button">
                 <Ionicons
                   name={recipe.isFavorite ? "heart" : "heart-outline"}
                   size={18}
                   color={recipe.isFavorite ? colors.red : colors.white}
                 />
               </Pressable>
-              <Pressable onPress={handleShare} style={s.actionBtn}>
+              <Pressable onPress={handleShare} style={s.actionBtn} accessibilityLabel="공유하기" accessibilityRole="button">
                 <Ionicons name="share-outline" size={18} color={colors.white} />
               </Pressable>
-              <Pressable onPress={showMoreMenu} style={s.actionBtn}>
+              <Pressable onPress={showMoreMenu} style={s.actionBtn} accessibilityLabel="더보기 메뉴" accessibilityRole="button">
                 <Ionicons name="ellipsis-horizontal" size={18} color={colors.white} />
               </Pressable>
             </View>
@@ -168,21 +168,21 @@ export default function RecipeDetailScreen() {
             style={s.hero}
           >
             <Text style={{ fontSize: size.heroEmoji }}>{recipe.emoji}</Text>
-            <Pressable onPress={() => router.back()} style={[s.backBtn, { top: insets.top + 8 }]}>
+            <Pressable onPress={() => router.back()} style={[s.backBtn, { top: insets.top + 8 }]} accessibilityLabel="뒤로 가기" accessibilityRole="button">
               <Ionicons name="chevron-back" size={20} color={colors.white} />
             </Pressable>
             <View style={[s.actionRow, { top: insets.top + 8 }]}>
-              <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); toggleFavorite(id); }} style={s.actionBtn}>
+              <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); toggleFavorite(id); }} style={s.actionBtn} accessibilityLabel={recipe.isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가"} accessibilityRole="button">
                 <Ionicons
                   name={recipe.isFavorite ? "heart" : "heart-outline"}
                   size={18}
                   color={recipe.isFavorite ? colors.red : colors.white}
                 />
               </Pressable>
-              <Pressable onPress={handleShare} style={s.actionBtn}>
+              <Pressable onPress={handleShare} style={s.actionBtn} accessibilityLabel="공유하기" accessibilityRole="button">
                 <Ionicons name="share-outline" size={18} color={colors.white} />
               </Pressable>
-              <Pressable onPress={showMoreMenu} style={s.actionBtn}>
+              <Pressable onPress={showMoreMenu} style={s.actionBtn} accessibilityLabel="더보기 메뉴" accessibilityRole="button">
                 <Ionicons name="ellipsis-horizontal" size={18} color={colors.white} />
               </Pressable>
             </View>
@@ -248,14 +248,18 @@ export default function RecipeDetailScreen() {
                   onPress={() => { if (mult > 0.5) { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setMult((m) => m - 0.5); } }}
                   disabled={mult <= 0.5}
                   style={[s.servBtn, mult <= 0.5 && { opacity: 0.3 }]}
+                  accessibilityLabel="인분 줄이기"
+                  accessibilityRole="button"
                 >
                   <Ionicons name="remove" size={18} color={colors.textSecondary} />
                 </Pressable>
-                <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>{servings}인분</Text>
+                <Text style={[typo.body1Bold, { color: colors.textPrimary }]} accessibilityLabel={`${servings}인분`}>{servings}인분</Text>
                 <Pressable
                   onPress={() => { if (mult < 5) { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setMult((m) => m + 0.5); } }}
                   disabled={mult >= 5}
                   style={[s.servBtn, mult >= 5 && { opacity: 0.3 }]}
+                  accessibilityLabel="인분 늘리기"
+                  accessibilityRole="button"
                 >
                   <Ionicons name="add" size={18} color={colors.textSecondary} />
                 </Pressable>
@@ -367,7 +371,7 @@ export default function RecipeDetailScreen() {
         colors={[`${colors.bgPage}00`, colors.bgPage]}
         style={[s.ctaWrap, { paddingBottom: insets.bottom + space.lg }]}
       >
-        <AnimatedPressable onPress={() => router.push(`/recipe/cook/${id}`)} style={s.ctaBtn}>
+        <AnimatedPressable onPress={() => router.push(`/recipe/cook/${id}`)} style={s.ctaBtn} accessibilityLabel="요리 시작하기" accessibilityRole="button">
           <Ionicons name="play" size={20} color={colors.white} />
           <Text style={[typo.body1Bold, { color: colors.white }]}>요리 시작하기</Text>
         </AnimatedPressable>
@@ -387,7 +391,7 @@ const s = StyleSheet.create({
     width: size.heroBtn,
     height: size.heroBtn,
     borderRadius: size.heroBtn / 2,
-    backgroundColor: "rgba(0,0,0,0.25)",
+    backgroundColor: "rgba(0,0,0,0.45)",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -401,7 +405,7 @@ const s = StyleSheet.create({
     width: size.heroBtn,
     height: size.heroBtn,
     borderRadius: size.heroBtn / 2,
-    backgroundColor: "rgba(0,0,0,0.25)",
+    backgroundColor: "rgba(0,0,0,0.45)",
     alignItems: "center",
     justifyContent: "center",
   },
