@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import * as Haptics from "expo-haptics";
 import { useRecipes } from "../../src/store/recipeStore";
 import { useShoppingList } from "../../src/store/shoppingStore";
 import { useFolders } from "../../src/store/folderStore";
@@ -102,8 +103,27 @@ export default function RecipeDetailScreen() {
 
   if (!recipe) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.bgPage, alignItems: "center", justifyContent: "center" }}>
-        <Text style={[typo.body1, { color: colors.textTertiary }]}>레시피를 찾을 수 없어요</Text>
+      <View style={{ flex: 1, backgroundColor: colors.bgPage, alignItems: "center", justifyContent: "center", paddingHorizontal: space.x4 }}>
+        <Text style={{ fontSize: 48, marginBottom: space.xxl }}>🍳</Text>
+        <Text style={[typo.heading2, { color: colors.textPrimary, marginBottom: space.md }]}>레시피를 찾을 수 없어요</Text>
+        <Text style={[typo.body2, { color: colors.textTertiary, textAlign: "center", marginBottom: space.xxl }]}>
+          삭제되었거나 존재하지 않는 레시피예요
+        </Text>
+        <AnimatedPressable
+          onPress={() => router.back()}
+          style={{
+            backgroundColor: colors.accent,
+            borderRadius: radius.lg,
+            paddingHorizontal: space.xxl,
+            paddingVertical: space.lg,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: space.md,
+          }}
+        >
+          <Ionicons name="chevron-back" size={16} color={colors.white} />
+          <Text style={[typo.body2Bold, { color: colors.white }]}>돌아가기</Text>
+        </AnimatedPressable>
       </View>
     );
   }
@@ -125,7 +145,7 @@ export default function RecipeDetailScreen() {
               <Ionicons name="chevron-back" size={20} color={colors.white} />
             </Pressable>
             <View style={[s.actionRow, { top: insets.top + 8 }]}>
-              <Pressable onPress={() => toggleFavorite(id)} style={s.actionBtn}>
+              <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); toggleFavorite(id); }} style={s.actionBtn}>
                 <Ionicons
                   name={recipe.isFavorite ? "heart" : "heart-outline"}
                   size={18}
@@ -152,7 +172,7 @@ export default function RecipeDetailScreen() {
               <Ionicons name="chevron-back" size={20} color={colors.white} />
             </Pressable>
             <View style={[s.actionRow, { top: insets.top + 8 }]}>
-              <Pressable onPress={() => toggleFavorite(id)} style={s.actionBtn}>
+              <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); toggleFavorite(id); }} style={s.actionBtn}>
                 <Ionicons
                   name={recipe.isFavorite ? "heart" : "heart-outline"}
                   size={18}
@@ -212,7 +232,7 @@ export default function RecipeDetailScreen() {
         <View style={s.tabsCard}>
           <View style={s.tabRow}>
             {(["ing", "steps"] as const).map((t) => (
-              <Pressable key={t} onPress={() => setTab(t)} style={[s.tabBtn, tab === t && s.tabBtnActive]}>
+              <Pressable key={t} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setTab(t); }} style={[s.tabBtn, tab === t && s.tabBtnActive]}>
                 <Text style={[s.tabText, tab === t && s.tabTextActive]}>
                   {t === "ing" ? "재료" : "조리 순서"}
                 </Text>
@@ -225,7 +245,7 @@ export default function RecipeDetailScreen() {
               {/* Serving adjuster */}
               <View style={s.servRow}>
                 <Pressable
-                  onPress={() => mult > 0.5 && setMult((m) => m - 0.5)}
+                  onPress={() => { if (mult > 0.5) { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setMult((m) => m - 0.5); } }}
                   disabled={mult <= 0.5}
                   style={[s.servBtn, mult <= 0.5 && { opacity: 0.3 }]}
                 >
@@ -233,7 +253,7 @@ export default function RecipeDetailScreen() {
                 </Pressable>
                 <Text style={[typo.body1Bold, { color: colors.textPrimary }]}>{servings}인분</Text>
                 <Pressable
-                  onPress={() => mult < 5 && setMult((m) => m + 0.5)}
+                  onPress={() => { if (mult < 5) { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setMult((m) => m + 0.5); } }}
                   disabled={mult >= 5}
                   style={[s.servBtn, mult >= 5 && { opacity: 0.3 }]}
                 >
@@ -270,6 +290,7 @@ export default function RecipeDetailScreen() {
                     recipeTitle: recipe.title,
                   }));
                   addItems(shoppingItems);
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                   Alert.alert(
                     "장보기 목록에 추가",
                     `${recipe.ingredients.length}개 재료가 장보기 목록에 추가됐어요`,

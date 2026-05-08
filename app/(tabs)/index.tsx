@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCallback, useState, useRef, useMemo, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { useRecipes } from "../../src/store/recipeStore";
 import { useFolders } from "../../src/store/folderStore";
 import { colors, typo, space, radius, size } from "../../src/theme";
@@ -47,6 +48,7 @@ export default function MyRecipesScreen() {
 
   const sortLabel = sortBy === "newest" ? "최신순" : sortBy === "name" ? "이름순" : "조리시간순";
   const cycleSortBy = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSortBy((prev) => (prev === "newest" ? "name" : prev === "name" ? "time" : "newest"));
   }, []);
 
@@ -112,18 +114,21 @@ export default function MyRecipesScreen() {
   }, [deleteFolder, selectedFolderId]);
 
   const handleSelectAll = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setMode("all");
     setSelectedFolderId(null);
     scrollToTop();
   }, [scrollToTop]);
 
   const handleSelectFavorites = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setMode("favorites");
     setSelectedFolderId(null);
     scrollToTop();
   }, [scrollToTop]);
 
   const handleSelectFolder = useCallback((folderId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setMode("folder");
     setSelectedFolderId(folderId);
     // Delay scroll slightly so FlatList re-renders with new data first

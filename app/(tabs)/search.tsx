@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useState, useMemo, useEffect } from "react";
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { useRecipes } from "../../src/store/recipeStore";
 import { colors, typo, space, radius, size } from "../../src/theme";
 import AnimatedPressable from "../../src/components/AnimatedPressable";
@@ -95,12 +96,14 @@ export default function SearchScreen() {
   const addFridgeItem = () => {
     const item = fridgeInput.trim();
     if (item && !fridgeItems.includes(item)) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setFridgeItems([...fridgeItems, item]);
     }
     setFridgeInput("");
   };
 
   const removeFridgeItem = (item: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setFridgeItems(fridgeItems.filter((i) => i !== item));
   };
 
@@ -141,14 +144,14 @@ export default function SearchScreen() {
         {/* Mode toggle */}
         <View style={s.modeToggle}>
           <Pressable
-            onPress={() => { setMode("search"); setFridgeItems([]); setFridgeInput(""); }}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setMode("search"); setFridgeItems([]); setFridgeInput(""); }}
             style={[s.modeBtn, mode === "search" && s.modeBtnActive]}
           >
             <Ionicons name="search" size={16} color={mode === "search" ? colors.textPrimary : colors.textTertiary} />
             <Text style={[typo.body2Bold, { color: mode === "search" ? colors.textPrimary : colors.textTertiary }]}>레시피 검색</Text>
           </Pressable>
           <Pressable
-            onPress={() => { setMode("fridge"); setQuery(""); setSelectedTag(null); }}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setMode("fridge"); setQuery(""); setSelectedTag(null); }}
             style={[s.modeBtn, mode === "fridge" && s.modeBtnActive]}
           >
             <Text style={{ fontSize: 16 }}>🧊</Text>
@@ -186,7 +189,7 @@ export default function SearchScreen() {
               {dynamicTags.map((t) => (
                 <Pressable
                   key={t}
-                  onPress={() => { setSelectedTag(selectedTag === t ? null : t); setQuery(""); }}
+                  onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setSelectedTag(selectedTag === t ? null : t); setQuery(""); }}
                   style={[s.chip, selectedTag === t && s.chipActive]}
                 >
                   <Text style={[s.chipText, selectedTag === t && { color: colors.white }]}>{t}</Text>

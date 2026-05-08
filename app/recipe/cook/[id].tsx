@@ -101,18 +101,22 @@ export default function CookingModeScreen() {
       <View style={st.root}>
         <StatusBar style="light" />
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: space.x4 }}>
-          <Text style={{ fontSize: 64, marginBottom: space.xxl }}>{recipe.emoji}</Text>
-          <Text style={[typo.heading1, { color: colors.white, marginBottom: space.md, textAlign: "center" }]}>
+          <Text style={{ fontSize: 72, marginBottom: space.lg }}>🎉</Text>
+          <Text style={{ fontSize: 48, marginBottom: space.xxl }}>{recipe.emoji}</Text>
+          <Text style={[typo.screenTitle, { color: colors.white, marginBottom: space.md, textAlign: "center", fontSize: 24, lineHeight: 32 }]}>
             요리 완성!
           </Text>
-          <Text style={[typo.body1, { color: darkColors.text, textAlign: "center", marginBottom: space.x5 }]}>
-            "{recipe.title}" 맛있게 드세요!
+          <Text style={[typo.body1, { color: darkColors.text, textAlign: "center", marginBottom: space.md }]}>
+            "{recipe.title}"
+          </Text>
+          <Text style={[typo.body2, { color: darkColors.textDim, textAlign: "center", marginBottom: space.x5 }]}>
+            총 {total}단계를 완료했어요. 맛있게 드세요!
           </Text>
           <Pressable
             onPress={() => router.back()}
             style={[st.navBtn, st.navNext, { width: "100%", marginHorizontal: space.x4 }]}
           >
-            <Text style={[typo.body1Bold, { color: colors.white }]}>돌아가기</Text>
+            <Text style={[typo.body1Bold, { color: colors.white }]}>레시피로 돌아가기</Text>
           </Pressable>
         </View>
       </View>
