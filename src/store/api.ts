@@ -1,3 +1,6 @@
+import type { Recipe } from "../types/recipe";
+import type { ShoppingItem } from "./shoppingStore";
+
 const API_BASE = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3001";
 
 const REQUEST_TIMEOUT_MS = 15_000;
@@ -65,9 +68,9 @@ async function request(path: string, options?: RequestInit) {
       } catch {
         return text;
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       clearTimeout(timeoutId);
-      if (e.name === "AbortError") {
+      if (e instanceof Error && e.name === "AbortError") {
         lastError = new Error("서버 응답이 너무 느립니다. 네트워크 연결을 확인해주세요.");
         if (attempt < MAX_RETRIES) continue;
         throw lastError;
@@ -88,8 +91,8 @@ export const api = {
   // Recipes
   getRecipes: () => request("/api/recipes"),
   getRecipe: (id: string) => request(`/api/recipes/${id}`),
-  createRecipe: (data: any) => request("/api/recipes", { method: "POST", body: JSON.stringify(data) }),
-  updateRecipe: (id: string, data: any) => request(`/api/recipes/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+  createRecipe: (data: Recipe) => request("/api/recipes", { method: "POST", body: JSON.stringify(data) }),
+  updateRecipe: (id: string, data: Partial<Recipe>) => request(`/api/recipes/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
   deleteRecipe: (id: string) => request(`/api/recipes/${id}`, { method: "DELETE" }),
   toggleFavorite: (id: string) => request(`/api/recipes/${id}/favorite`, { method: "POST" }),
 
@@ -103,7 +106,7 @@ export const api = {
 
   // Shopping
   getShoppingItems: () => request("/api/shopping"),
-  addShoppingItems: (items: any[]) => request("/api/shopping", { method: "POST", body: JSON.stringify({ items }) }),
+  addShoppingItems: (items: Omit<ShoppingItem, "id" | "checked">[]) => request("/api/shopping", { method: "POST", body: JSON.stringify({ items }) }),
   toggleShoppingItem: (id: string) => request(`/api/shopping/${id}/toggle`, { method: "PATCH" }),
   deleteShoppingItem: (id: string) => request(`/api/shopping/${id}`, { method: "DELETE" }),
   clearCheckedItems: () => request("/api/shopping/checked", { method: "DELETE" }),

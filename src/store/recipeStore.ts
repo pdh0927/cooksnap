@@ -7,6 +7,12 @@ let recipesCache: Recipe[] | null = null;
 let listeners: Set<() => void> = new Set();
 /** Track in-flight addRecipe IDs to prevent duplicates from rapid calls */
 const pendingAddIds: Set<string> = new Set();
+/** Track in-flight delete IDs to prevent double-delete race conditions */
+const pendingDeleteIds: Set<string> = new Set();
+/** Track in-flight update IDs to prevent concurrent edits on the same recipe */
+const pendingUpdateIds: Set<string> = new Set();
+/** Track in-flight toggleFavorite IDs to prevent rapid-tap races */
+const pendingFavoriteIds: Set<string> = new Set();
 
 /** Validate that data looks like a Recipe array; returns safe array */
 function validateRecipes(data: unknown): Recipe[] {
@@ -91,27 +97,51 @@ export function useRecipes() {
   }, []);
 
   const deleteRecipe = useCallback(async (id: string) => {
-    await api.deleteRecipe(id);
-    recipesCache = (recipesCache ?? []).filter((r) => r.id !== id);
-    // Clean deleted recipe from all folders so counts stay correct
-    _removeRecipeFromAllFolders(id);
-    notifyListeners();
+    if (pendingDeleteIds.has(id)) {
+      return; // Already deleting this recipe, ignore duplicate tap
+    }
+    pendingDeleteIds.add(id);
+    try {
+      await api.deleteRecipe(id);
+      recipesCache = (recipesCache ?? []).filter((r) => r.id !== id);
+      // Clean deleted recipe from all folders so counts stay correct
+      _removeRecipeFromAllFolders(id);
+      notifyListeners();
+    } finally {
+      pendingDeleteIds.delete(id);
+    }
   }, []);
 
   const updateRecipe = useCallback(async (id: string, updates: Partial<Recipe>) => {
-    const data = await api.updateRecipe(id, updates);
-    const updated = validateRecipe(data);
-    if (!updated) throw new Error("서버에서 잘못된 응답을 받았습니다.");
-    recipesCache = (recipesCache ?? []).map((r) => r.id === id ? updated : r);
-    notifyListeners();
+    if (pendingUpdateIds.has(id)) {
+      throw new Error("이미 수정 중입니다. 잠시 기다려주세요.");
+    }
+    pendingUpdateIds.add(id);
+    try {
+      const data = await api.updateRecipe(id, updates);
+      const updated = validateRecipe(data);
+      if (!updated) throw new Error("서버에서 잘못된 응답을 받았습니다.");
+      recipesCache = (recipesCache ?? []).map((r) => r.id === id ? updated : r);
+      notifyListeners();
+    } finally {
+      pendingUpdateIds.delete(id);
+    }
   }, []);
 
   const toggleFavorite = useCallback(async (id: string) => {
-    const data = await api.toggleFavorite(id);
-    const updated = validateRecipe(data);
-    if (!updated) throw new Error("서버에서 잘못된 응답을 받았습니다.");
-    recipesCache = (recipesCache ?? []).map((r) => r.id === id ? updated : r);
-    notifyListeners();
+    if (pendingFavoriteIds.has(id)) {
+      return; // Already toggling, ignore rapid tap
+    }
+    pendingFavoriteIds.add(id);
+    try {
+      const data = await api.toggleFavorite(id);
+      const updated = validateRecipe(data);
+      if (!updated) throw new Error("서버에서 잘못된 응답을 받았습니다.");
+      recipesCache = (recipesCache ?? []).map((r) => r.id === id ? updated : r);
+      notifyListeners();
+    } finally {
+      pendingFavoriteIds.delete(id);
+    }
   }, []);
 
   const getRecipe = (id: string) => recipesCache?.find((r) => r.id === id) ?? null;

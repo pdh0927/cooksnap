@@ -78,10 +78,11 @@ export default function MyRecipesScreen() {
   const selectedFolder = folders.find((f) => f.id === selectedFolderId);
 
   const handleCreateFolder = useCallback(async () => {
-    if (!newFolderName.trim() || creatingFolder) return;
+    const sanitizedName = newFolderName.trim().replace(/[<>{}\\\/;'"&$#!@%^*~`|]/g, "");
+    if (!sanitizedName || creatingFolder) return;
     setCreatingFolder(true);
     try {
-      await createFolder(newFolderName.trim(), newFolderEmoji);
+      await createFolder(sanitizedName, newFolderEmoji);
       setNewFolderName("");
       setNewFolderEmoji("📁");
       setShowNewFolder(false);

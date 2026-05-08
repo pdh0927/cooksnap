@@ -128,7 +128,17 @@ export default function CookingModeScreen() {
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
   if (!recipe || !step) {
-    return <View style={st.root}><Text style={{ color: darkColors.text }}>레시피를 찾을 수 없어요</Text></View>;
+    return (
+      <View style={[st.root, { paddingTop: insets.top, alignItems: "center", justifyContent: "center" }]}>
+        <StatusBar style="light" />
+        <Text style={{ color: darkColors.text, fontSize: 48, marginBottom: space.xxl }}>🍳</Text>
+        <Text style={[typo.heading2, { color: colors.white, marginBottom: space.md }]}>레시피를 찾을 수 없어요</Text>
+        <Text style={[typo.body2, { color: darkColors.textDim, marginBottom: space.xxl }]}>삭제되었거나 존재하지 않는 레시피예요</Text>
+        <Pressable onPress={() => router.back()} style={[st.navBtn, st.navNext, { width: 200 }]}>
+          <Text style={[typo.body2Bold, { color: colors.white }]}>돌아가기</Text>
+        </Pressable>
+      </View>
+    );
   }
 
   if (completed) {

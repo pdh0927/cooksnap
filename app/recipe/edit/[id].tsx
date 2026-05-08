@@ -71,8 +71,9 @@ export default function EditRecipeScreen() {
   }
 
   function addTag() {
-    const t = tagInput.trim();
-    if (t && !tags.includes(t)) {
+    // Sanitize: strip special characters that could be injection vectors
+    const t = tagInput.trim().replace(/[<>{}()\[\]\\\/;'"&$#!@%^*~`|]/g, "");
+    if (t && t.length <= 20 && !tags.includes(t)) {
       setTags([...tags, t]);
     }
     setTagInput("");
@@ -155,8 +156,24 @@ export default function EditRecipeScreen() {
 
   async function save() {
     if (saving) return;
-    if (!title.trim()) {
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
       Alert.alert("알림", "레시피 이름을 입력해주세요");
+      return;
+    }
+    if (trimmedTitle.length > 100) {
+      Alert.alert("알림", "레시피 이름은 100자 이내로 입력해주세요");
+      return;
+    }
+
+    const parsedCookTime = parseInt(cookTime, 10);
+    if (isNaN(parsedCookTime) || parsedCookTime <= 0 || parsedCookTime > 1440) {
+      Alert.alert("알림", "조리시간은 1~1440분 사이로 입력해주세요");
+      return;
+    }
+    const parsedServings = parseInt(servings, 10);
+    if (isNaN(parsedServings) || parsedServings <= 0 || parsedServings > 100) {
+      Alert.alert("알림", "인분은 1~100 사이로 입력해주세요");
       return;
     }
 
@@ -175,12 +192,12 @@ export default function EditRecipeScreen() {
     setSaving(true);
 
     const updates: Partial<Recipe> = {
-      title: title.trim(),
+      title: trimmedTitle,
       emoji,
       category,
       difficulty,
-      cookTimeMinutes: parseInt(cookTime, 10) || 30,
-      servings: parseInt(servings, 10) || 2,
+      cookTimeMinutes: parsedCookTime,
+      servings: parsedServings,
       ingredients: validIngredients.map((ing) => {
         const parsed = parseIngredientAmount(ing.amount);
         return {

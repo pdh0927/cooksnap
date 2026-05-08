@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, Pressable, StyleSheet, Alert, Share, Linking, Image } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
@@ -30,6 +30,8 @@ export default function RecipeDetailScreen() {
   const recipe = getRecipe(id);
   const recipeFolders = getFoldersForRecipe(id);
 
+  const deletingRef = useRef(false);
+
   function handleDelete() {
     Alert.alert("레시피 삭제", `"${recipe?.title}"을(를) 삭제할까요?`, [
       { text: "취소", style: "cancel" },
@@ -37,8 +39,16 @@ export default function RecipeDetailScreen() {
         text: "삭제",
         style: "destructive",
         onPress: async () => {
-          await deleteRecipe(id);
-          router.back();
+          if (deletingRef.current) return;
+          deletingRef.current = true;
+          try {
+            await deleteRecipe(id);
+            router.back();
+          } catch {
+            Alert.alert("삭제 실패", "네트워크를 확인하고 다시 시도해주세요.");
+          } finally {
+            deletingRef.current = false;
+          }
         },
       },
     ]);
@@ -46,15 +56,19 @@ export default function RecipeDetailScreen() {
 
   async function handleShare() {
     if (!recipe) return;
-    const ingredients = recipe.ingredients
-      .map((i) => `- ${i.name} ${formatAmount(i.amount, i.unit)}`)
-      .join("\n");
-    const steps = recipe.steps
-      .map((s) => `${s.order}. ${s.instruction}`)
-      .join("\n");
-    await Share.share({
-      message: `${recipe.emoji} ${recipe.title}\n\n[재료]\n${ingredients}\n\n[조리 순서]\n${steps}`,
-    });
+    try {
+      const ingredients = recipe.ingredients
+        .map((i) => `- ${i.name} ${formatAmount(i.amount, i.unit)}`)
+        .join("\n");
+      const stepLines = recipe.steps
+        .map((st) => `${st.order}. ${st.instruction}`)
+        .join("\n");
+      await Share.share({
+        message: `${recipe.emoji} ${recipe.title}\n\n[재료]\n${ingredients}\n\n[조리 순서]\n${stepLines}`,
+      });
+    } catch {
+      // Share cancelled or failed — no action needed
+    }
   }
 
   const [tab, setTab] = useState<"ing" | "steps">("ing");
@@ -70,11 +84,12 @@ export default function RecipeDetailScreen() {
       ...folders.map((f) => ({
         text: `${f.emoji} ${f.name}${inFolderIds.includes(f.id) ? " ✓" : ""}`,
         onPress: () => {
-          if (inFolderIds.includes(f.id)) {
-            removeRecipeFromFolder(f.id, id);
-          } else {
-            addRecipeToFolder(f.id, id);
-          }
+          const op = inFolderIds.includes(f.id)
+            ? removeRecipeFromFolder(f.id, id)
+            : addRecipeToFolder(f.id, id);
+          op.catch(() => {
+            Alert.alert("실패", "폴더 작업에 실패했습니다. 네트워크를 확인해주세요.");
+          });
         },
       })),
       { text: "닫기", style: "cancel" as const },
@@ -83,9 +98,9 @@ export default function RecipeDetailScreen() {
 
   function showMoreMenu() {
     Alert.alert("메뉴", undefined, [
-      { text: "✏️ 편집", onPress: () => router.push(`/recipe/edit/${id}`) },
-      { text: "📁 폴더에 추가", onPress: showFolderPicker },
-      { text: "🗑️ 삭제", style: "destructive", onPress: handleDelete },
+      { text: "편집", onPress: () => router.push(`/recipe/edit/${id}`) },
+      { text: "폴더에 추가", onPress: showFolderPicker },
+      { text: "삭제", style: "destructive", onPress: handleDelete },
       { text: "닫기", style: "cancel" },
     ]);
   }
@@ -95,7 +110,11 @@ export default function RecipeDetailScreen() {
     Alert.alert("카테고리 변경", undefined, [
       ...categories.map((c) => ({
         text: c + (c === recipe?.category ? " ✓" : ""),
-        onPress: () => updateRecipe(id, { category: c }),
+        onPress: () => {
+          updateRecipe(id, { category: c }).catch(() => {
+            Alert.alert("변경 실패", "네트워크를 확인하고 다시 시도해주세요.");
+          });
+        },
       })),
       { text: "취소", style: "cancel" as const },
     ]);
@@ -103,7 +122,7 @@ export default function RecipeDetailScreen() {
 
   if (!recipe) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.bgPage, alignItems: "center", justifyContent: "center", paddingHorizontal: space.x4 }}>
+      <View style={{ flex: 1, backgroundColor: colors.bgPage, alignItems: "center", justifyContent: "center", paddingHorizontal: space.x4, paddingTop: insets.top }}>
         <Text style={{ fontSize: 48, marginBottom: space.xxl }}>🍳</Text>
         <Text style={[typo.heading2, { color: colors.textPrimary, marginBottom: space.md }]}>레시피를 찾을 수 없어요</Text>
         <Text style={[typo.body2, { color: colors.textTertiary, textAlign: "center", marginBottom: space.xxl }]}>
@@ -145,7 +164,7 @@ export default function RecipeDetailScreen() {
               <Ionicons name="chevron-back" size={20} color={colors.white} />
             </Pressable>
             <View style={[s.actionRow, { top: insets.top + 8 }]}>
-              <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); toggleFavorite(id); }} style={s.actionBtn} accessibilityLabel={recipe.isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가"} accessibilityRole="button">
+              <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); toggleFavorite(id).catch(() => {}); }} style={s.actionBtn} accessibilityLabel={recipe.isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가"} accessibilityRole="button">
                 <Ionicons
                   name={recipe.isFavorite ? "heart" : "heart-outline"}
                   size={18}
@@ -172,7 +191,7 @@ export default function RecipeDetailScreen() {
               <Ionicons name="chevron-back" size={20} color={colors.white} />
             </Pressable>
             <View style={[s.actionRow, { top: insets.top + 8 }]}>
-              <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); toggleFavorite(id); }} style={s.actionBtn} accessibilityLabel={recipe.isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가"} accessibilityRole="button">
+              <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); toggleFavorite(id).catch(() => {}); }} style={s.actionBtn} accessibilityLabel={recipe.isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가"} accessibilityRole="button">
                 <Ionicons
                   name={recipe.isFavorite ? "heart" : "heart-outline"}
                   size={18}
@@ -293,13 +312,18 @@ export default function RecipeDetailScreen() {
                     unit: ing.unit,
                     recipeTitle: recipe.title,
                   }));
-                  addItems(shoppingItems);
-                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                  Alert.alert(
-                    "장보기 목록에 추가",
-                    `${recipe.ingredients.length}개 재료가 장보기 목록에 추가됐어요`,
-                    [{ text: "확인", style: "cancel" }]
-                  );
+                  addItems(shoppingItems)
+                    .then(() => {
+                      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                      Alert.alert(
+                        "장보기 목록에 추가",
+                        `${recipe.ingredients.length}개 재료가 장보기 목록에 추가됐어요`,
+                        [{ text: "확인", style: "cancel" }]
+                      );
+                    })
+                    .catch(() => {
+                      Alert.alert("추가 실패", "네트워크를 확인하고 다시 시도해주세요.");
+                    });
                 }}
                 style={s.shoppingBtn}
               >

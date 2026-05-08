@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Animated, Pressable, PressableProps, StyleProp, ViewStyle, StyleSheet } from "react-native";
+import { Animated, Pressable, PressableProps, StyleProp, ViewStyle, StyleSheet, GestureResponderEvent } from "react-native";
 
 interface Props extends PressableProps {
   style?: StyleProp<ViewStyle>;
@@ -9,7 +9,7 @@ interface Props extends PressableProps {
 export default function AnimatedPressable({ style, scaleValue = 0.97, children, ...rest }: Props) {
   const scale = useRef(new Animated.Value(1)).current;
 
-  const onPressIn = (e: any) => {
+  const onPressIn = (e: GestureResponderEvent) => {
     Animated.timing(scale, {
       toValue: scaleValue,
       duration: 80,
@@ -18,7 +18,7 @@ export default function AnimatedPressable({ style, scaleValue = 0.97, children, 
     rest.onPressIn?.(e);
   };
 
-  const onPressOut = (e: any) => {
+  const onPressOut = (e: GestureResponderEvent) => {
     Animated.timing(scale, {
       toValue: 1,
       duration: 150,

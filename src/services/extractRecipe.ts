@@ -85,9 +85,17 @@ async function fetchYoutubeContent(url: string): Promise<string> {
 }
 
 async function fetchBlogContent(url: string): Promise<string> {
-  const resp = await fetch(url, {
-    headers: { "User-Agent": "Mozilla/5.0", "Accept-Language": "ko-KR,ko;q=0.9" },
-  });
+  let resp: Response;
+  try {
+    resp = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0", "Accept-Language": "ko-KR,ko;q=0.9" },
+    });
+  } catch {
+    throw new Error("페이지에 접근할 수 없습니다. URL을 확인하고 다시 시도해주세요.");
+  }
+  if (!resp.ok) {
+    throw new Error(`페이지를 불러올 수 없습니다 (${resp.status}). URL을 확인해주세요.`);
+  }
   const html = await resp.text();
 
   // 제목 추출
@@ -243,8 +251,8 @@ async function callAI(content: string): Promise<string> {
       throw new Error("AI에서 유효한 응답을 받지 못했습니다. 다시 시도해주세요.");
     }
     return message;
-  } catch (e: any) {
-    if (e.name === "AbortError") {
+  } catch (e: unknown) {
+    if (e instanceof Error && e.name === "AbortError") {
       throw new Error("AI 응답 시간이 초과되었습니다. 다시 시도해주세요.");
     }
     throw e;
@@ -351,21 +359,28 @@ export async function extractRecipeFromUrl(
   url: string,
   onProgress: (p: ExtractProgress) => void
 ): Promise<Recipe> {
+  // Validate URL before proceeding
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      throw new Error("지원하지 않는 URL 형식입니다. http 또는 https URL을 입력해주세요.");
+    }
+  } catch (e) {
+    if (e instanceof Error && e.message.includes("지원하지 않는")) throw e;
+    throw new Error("올바른 URL 형식이 아닙니다. 다시 확인해주세요.");
+  }
+
   // Step 1: 콘텐츠 가져오기
-  console.log("[CookSnap] extractRecipeFromUrl 호출:", url);
   onProgress({ step: "fetch", message: "페이지 내용 가져오는 중..." });
 
   const urlType = detectUrlType(url);
   let content: string;
 
   if (urlType === "youtube") {
-    console.log("[CookSnap] YouTube 추출 시작");
     content = await fetchYoutubeContent(url);
   } else {
-    console.log("[CookSnap] 블로그 추출 시작");
     content = await fetchBlogContent(url);
   }
-  console.log("[CookSnap] 추출된 콘텐츠:", content.slice(0, 200));
 
   // Step 2: AI 추출
   onProgress({ step: "extract", message: "재료 목록 추출 중..." });
@@ -405,13 +420,22 @@ export async function generateRecipeFromName(
   dishName: string,
   onProgress: (p: ExtractProgress) => void
 ): Promise<Recipe> {
+  // Validate dish name
+  const sanitized = dishName.trim();
+  if (!sanitized) {
+    throw new Error("요리명을 입력해주세요.");
+  }
+  if (sanitized.length > 100) {
+    throw new Error("요리명은 100자 이내로 입력해주세요.");
+  }
+
   onProgress({ step: "fetch", message: "레시피 검색 중..." });
 
   // 바로 AI에게 요리명으로 레시피 생성 요청
   onProgress({ step: "extract", message: "레시피 만드는 중..." });
 
   const jsonText = await callAI(
-    `"${dishName}" 레시피를 만들어주세요. 한국에서 일반적으로 만드는 방식으로, 정확한 계량과 실용적인 조리 순서로 작성해주세요.`
+    `"${sanitized}" 레시피를 만들어주세요. 한국에서 일반적으로 만드는 방식으로, 정확한 계량과 실용적인 조리 순서로 작성해주세요.`
   );
 
   onProgress({ step: "structure", message: "조리 순서 정리 중..." });

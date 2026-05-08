@@ -12,6 +12,11 @@ export interface ShoppingItem {
 
 let itemsCache: ShoppingItem[] | null = null;
 let listeners: Set<() => void> = new Set();
+/** Track in-flight toggle/remove to prevent rapid-tap races */
+const pendingToggleIds: Set<string> = new Set();
+const pendingRemoveIds: Set<string> = new Set();
+let pendingAddItems = false;
+let pendingClear = false;
 
 /** Validate that data looks like a ShoppingItem array; returns safe array */
 function validateShoppingItems(data: unknown): ShoppingItem[] {
@@ -58,33 +63,65 @@ export function useShoppingList() {
   }, []);
 
   const addItems = useCallback(async (newItems: Omit<ShoppingItem, "id" | "checked">[]) => {
-    const data = await api.addShoppingItems(newItems);
-    itemsCache = validateShoppingItems(data);
-    notify();
+    if (pendingAddItems) {
+      throw new Error("이미 추가 중입니다. 잠시 기다려주세요.");
+    }
+    pendingAddItems = true;
+    try {
+      const data = await api.addShoppingItems(newItems);
+      itemsCache = validateShoppingItems(data);
+      notify();
+    } finally {
+      pendingAddItems = false;
+    }
   }, []);
 
   const toggleItem = useCallback(async (id: string) => {
-    await api.toggleShoppingItem(id);
-    itemsCache = (itemsCache ?? []).map((i) => i.id === id ? { ...i, checked: !i.checked } : i);
-    notify();
+    if (pendingToggleIds.has(id)) return;
+    pendingToggleIds.add(id);
+    try {
+      await api.toggleShoppingItem(id);
+      itemsCache = (itemsCache ?? []).map((i) => i.id === id ? { ...i, checked: !i.checked } : i);
+      notify();
+    } finally {
+      pendingToggleIds.delete(id);
+    }
   }, []);
 
   const removeItem = useCallback(async (id: string) => {
-    await api.deleteShoppingItem(id);
-    itemsCache = (itemsCache ?? []).filter((i) => i.id !== id);
-    notify();
+    if (pendingRemoveIds.has(id)) return;
+    pendingRemoveIds.add(id);
+    try {
+      await api.deleteShoppingItem(id);
+      itemsCache = (itemsCache ?? []).filter((i) => i.id !== id);
+      notify();
+    } finally {
+      pendingRemoveIds.delete(id);
+    }
   }, []);
 
   const clearChecked = useCallback(async () => {
-    await api.clearCheckedItems();
-    itemsCache = (itemsCache ?? []).filter((i) => !i.checked);
-    notify();
+    if (pendingClear) return;
+    pendingClear = true;
+    try {
+      await api.clearCheckedItems();
+      itemsCache = (itemsCache ?? []).filter((i) => !i.checked);
+      notify();
+    } finally {
+      pendingClear = false;
+    }
   }, []);
 
   const clearAll = useCallback(async () => {
-    await api.clearAllItems();
-    itemsCache = [];
-    notify();
+    if (pendingClear) return;
+    pendingClear = true;
+    try {
+      await api.clearAllItems();
+      itemsCache = [];
+      notify();
+    } finally {
+      pendingClear = false;
+    }
   }, []);
 
   return { items, addItems, toggleItem, removeItem, clearChecked, clearAll };

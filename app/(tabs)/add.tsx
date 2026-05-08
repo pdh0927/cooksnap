@@ -39,6 +39,26 @@ export default function AddRecipeScreen() {
       return;
     }
 
+    // Validate URL format if it looks like a URL
+    if (inputIsUrl) {
+      try {
+        const url = new URL(trimmed);
+        if (url.protocol !== "http:" && url.protocol !== "https:") {
+          Alert.alert("잘못된 URL", "http 또는 https로 시작하는 URL을 입력해주세요.");
+          return;
+        }
+      } catch {
+        Alert.alert("잘못된 URL", "올바른 URL 형식을 입력해주세요.");
+        return;
+      }
+    } else {
+      // Validate dish name: not too long, no dangerous characters
+      if (trimmed.length > 100) {
+        Alert.alert("입력 오류", "요리명은 100자 이내로 입력해주세요.");
+        return;
+      }
+    }
+
     setParsing(true);
     setParseStep(0);
     cancelled.current = false;
@@ -61,10 +81,11 @@ export default function AddRecipeScreen() {
       setParsing(false);
       setInput("");
       router.push(`/recipe/${created.id}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (cancelled.current) return;
       setParsing(false);
-      Alert.alert("실패", err.message || "레시피를 만들 수 없습니다. 다시 시도해주세요.");
+      const message = err instanceof Error ? err.message : "레시피를 만들 수 없습니다. 다시 시도해주세요.";
+      Alert.alert("실패", message);
     }
   }
 
