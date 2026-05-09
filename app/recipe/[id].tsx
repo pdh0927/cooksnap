@@ -354,7 +354,7 @@ export default function RecipeDetailScreen() {
                     <Text style={s.stepDotText}>{step.order}</Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <StepText instruction={step.instruction} fontSize={15} />
+                    <Text style={s.stepInstruction}>{step.instruction}</Text>
                     {step.timerSeconds != null && (
                       <View style={s.timerTag}>
                         <Ionicons name="time-outline" size={12} color={colors.accent} />
@@ -370,33 +370,19 @@ export default function RecipeDetailScreen() {
           )}
         </View>
 
-        {/* Warnings */}
-        {warnings.length > 0 && (
-          <View style={s.warningsCard}>
-            <View style={s.tipsHeader}>
-              <Ionicons name="warning-outline" size={18} color={colors.red} />
-              <Text style={[typo.heading3, { color: colors.textPrimary }]}>주의사항</Text>
-            </View>
+        {/* Warnings + Tips — compact inline style */}
+        {(warnings.length > 0 || tips.length > 0) && (
+          <View style={s.hintsCard}>
             {warnings.map((w, i) => (
-              <View key={i} style={s.tipRow}>
-                <View style={[s.tipDot, { backgroundColor: colors.red }]} />
-                <Text style={[typo.body2, { color: colors.textSecondary, flex: 1 }]}>{w}</Text>
+              <View key={`w${i}`} style={s.hintRow}>
+                <Ionicons name="warning-outline" size={14} color={colors.red} />
+                <Text style={[typo.caption1, { color: colors.textSecondary, flex: 1 }]}>{w}</Text>
               </View>
             ))}
-          </View>
-        )}
-
-        {/* Tips */}
-        {tips.length > 0 && (
-          <View style={s.tipsCard}>
-            <View style={s.tipsHeader}>
-              <Ionicons name="bulb-outline" size={18} color={colors.yellow} />
-              <Text style={[typo.heading3, { color: colors.textPrimary }]}>꿀팁</Text>
-            </View>
             {tips.map((tip, i) => (
-              <View key={i} style={s.tipRow}>
-                <View style={s.tipDot} />
-                <Text style={[typo.body2, { color: colors.textSecondary, flex: 1 }]}>{tip}</Text>
+              <View key={`t${i}`} style={s.hintRow}>
+                <Ionicons name="bulb-outline" size={14} color={colors.yellow} />
+                <Text style={[typo.caption1, { color: colors.textSecondary, flex: 1 }]}>{tip}</Text>
               </View>
             ))}
           </View>
@@ -527,6 +513,7 @@ const s = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderBottomColor: colors.divider,
   },
+  stepInstruction: { ...typo.body1, color: colors.textPrimary, lineHeight: 24 },
   stepRow: { flexDirection: "row", gap: space.lg },
   stepDot: {
     width: 24,
@@ -577,31 +564,18 @@ const s = StyleSheet.create({
     alignSelf: "flex-start",
     marginBottom: space.lg,
   },
-  warningsCard: {
-    backgroundColor: colors.redLight,
+  hintsCard: {
+    backgroundColor: colors.bgPrimary,
     marginHorizontal: space.gutter,
     marginTop: space.cardGap,
     borderRadius: radius.xxl,
     padding: space.cardPad,
   },
-  tipsCard: {
-    backgroundColor: colors.yellowLight,
-    marginHorizontal: space.gutter,
-    marginTop: space.cardGap,
-    borderRadius: radius.xxl,
-    padding: space.cardPad,
-  },
-  tipsHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: space.md,
-    marginBottom: space.xl,
-  },
-  tipRow: {
+  hintRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: space.lg,
-    marginBottom: space.lg,
+    gap: space.md,
+    marginBottom: space.md,
   },
   tipDot: {
     width: 5,
