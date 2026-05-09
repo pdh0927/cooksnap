@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, StyleSheet, Alert, Platform } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet, Alert, Platform, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, typo, space, radius } from "../../src/theme";
@@ -8,16 +8,37 @@ interface SettingsRow {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   value?: string;
+  action?: () => void;
 }
 
 const APP_VERSION = Constants.expoConfig?.version ?? "1.0.0";
+const BUNDLE_ID = Constants.expoConfig?.ios?.bundleIdentifier ?? "com.cooksnap.app";
+const PRIVACY_POLICY_URL = "https://cooksnap.app/privacy";
 
 const MENU_ITEMS: SettingsRow[] = [
   { icon: "information-circle-outline", label: "버전 정보", value: APP_VERSION },
   { icon: "document-text-outline", label: "오픈소스 라이선스" },
-  { icon: "chatbubble-outline", label: "문의하기" },
-  { icon: "star-outline", label: "앱 평가하기" },
-  { icon: "shield-checkmark-outline", label: "개인정보 처리방침" },
+  {
+    icon: "chatbubble-outline",
+    label: "문의하기",
+    action: () => Linking.openURL("mailto:support@cooksnap.app?subject=CookSnap%20문의"),
+  },
+  {
+    icon: "star-outline",
+    label: "앱 평가하기",
+    action: () => {
+      const storeUrl = Platform.select({
+        ios: `https://apps.apple.com/app/id000000000?action=write-review`,
+        default: `market://details?id=${BUNDLE_ID}`,
+      });
+      Linking.openURL(storeUrl).catch(() => {});
+    },
+  },
+  {
+    icon: "shield-checkmark-outline",
+    label: "개인정보 처리방침",
+    action: () => Linking.openURL(PRIVACY_POLICY_URL).catch(() => {}),
+  },
 ];
 
 export default function SettingsScreen() {
@@ -55,7 +76,9 @@ export default function SettingsScreen() {
               <Pressable
                 style={({ pressed }) => [s.menuRow, pressed && s.menuRowPressed]}
                 onPress={() => {
-                  if (item.label === "버전 정보") {
+                  if (item.action) {
+                    item.action();
+                  } else if (item.label === "버전 정보") {
                     Alert.alert(
                       "버전 정보",
                       `CookSnap v${APP_VERSION}\nExpo SDK ${Constants.expoConfig?.sdkVersion ?? "54"}\nReact Native 0.81\nPlatform: ${Platform.OS} ${Platform.Version}`,
