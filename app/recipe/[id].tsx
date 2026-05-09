@@ -397,8 +397,8 @@ export default function RecipeDetailScreen() {
         style={[s.ctaWrap, { paddingBottom: insets.bottom + space.lg }]}
       >
         <AnimatedPressable onPress={() => router.push(`/recipe/cook/${id}`)} style={s.ctaBtn} accessibilityLabel="요리 시작하기" accessibilityRole="button">
-          <Ionicons name="play" size={20} color={colors.white} />
-          <Text style={[typo.body1Bold, { color: colors.white }]}>요리 시작하기</Text>
+          <Ionicons name="play" size={22} color={colors.white} />
+          <Text style={[typo.heading2, { color: colors.white }]}>요리 시작하기</Text>
         </AnimatedPressable>
       </LinearGradient>
     </View>
@@ -546,12 +546,17 @@ const s = StyleSheet.create({
   },
   ctaBtn: {
     backgroundColor: colors.orange,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
     height: size.ctaHeight,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: space.md,
+    shadowColor: colors.orange,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
   },
   categoryChip: {
     flexDirection: "row",
