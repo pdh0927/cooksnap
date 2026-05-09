@@ -93,7 +93,7 @@ export const size = {
   searchThumbW: 100,   // search result thumbnail width
   searchThumbH: 72,    // search result thumbnail height
   heroBtn: 40,         // hero overlay button (back, share, etc.)
-  ctaHeight: 60,       // primary CTA button height
+  ctaHeight: 72,       // primary CTA button height (배민/토스 스타일)
 };
 
 // Dark mode tokens (cooking mode)
