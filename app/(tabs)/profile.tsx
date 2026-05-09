@@ -13,7 +13,7 @@ interface SettingsRow {
 
 const APP_VERSION = Constants.expoConfig?.version ?? "1.0.0";
 const BUNDLE_ID = Constants.expoConfig?.ios?.bundleIdentifier ?? "com.cooksnap.app";
-const PRIVACY_POLICY_URL = "https://cooksnap.app/privacy";
+const PRIVACY_POLICY_URL = "https://pdh0927.github.io/cooksnap-privacy/";
 
 const MENU_ITEMS: SettingsRow[] = [
   { icon: "information-circle-outline", label: "버전 정보", value: APP_VERSION },
